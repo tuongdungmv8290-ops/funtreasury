@@ -3,15 +3,29 @@ import { WalletCard } from '@/components/dashboard/WalletCard';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { TransactionChart } from '@/components/dashboard/TransactionChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
-import { mockWallets, mockTransactions, calculateStats, formatCurrency } from '@/lib/mockData';
-import { Wallet, RefreshCw } from 'lucide-react';
+import { useWallets } from '@/hooks/useWallets';
+import { useTransactionStats } from '@/hooks/useTransactions';
+import { formatCurrency } from '@/lib/mockData';
+import { Wallet, RefreshCw, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useQueryClient } from '@tanstack/react-query';
 
 const Index = () => {
   const [dateRange, setDateRange] = useState<7 | 30>(30);
-  const stats = calculateStats(mockTransactions, dateRange);
-  const totalBalance = mockWallets.reduce((sum, w) => sum + w.balance, 0);
+  const { data: wallets, isLoading: walletsLoading } = useWallets();
+  const { data: stats, isLoading: statsLoading } = useTransactionStats(dateRange);
+  const queryClient = useQueryClient();
+
+  const totalBalance = wallets?.reduce((sum, w) => sum + w.totalBalance, 0) || 0;
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['wallets'] });
+    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    queryClient.invalidateQueries({ queryKey: ['transaction-stats'] });
+  };
+
+  const isLoading = walletsLoading || statsLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,8 +65,18 @@ const Index = () => {
                 30 Days
               </button>
             </div>
-            <Button variant="outline" size="sm" className="gap-2 border-border/60 hover:border-treasury-gold/50 hover:bg-treasury-gold/5">
-              <RefreshCw className="w-4 h-4" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2 border-border/60 hover:border-treasury-gold/50 hover:bg-treasury-gold/5"
+              onClick={handleRefresh}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
               Sync
             </Button>
           </div>
@@ -70,21 +94,21 @@ const Index = () => {
           />
           <StatsCard
             title="Total Inflow"
-            value={stats.inflow}
+            value={stats?.inflow || 0}
             type="inflow"
             subtitle={`${dateRange}D`}
             index={1}
           />
           <StatsCard
             title="Total Outflow"
-            value={stats.outflow}
+            value={stats?.outflow || 0}
             type="outflow"
             subtitle={`${dateRange}D`}
             index={2}
           />
           <StatsCard
             title="Net Flow"
-            value={stats.netflow}
+            value={stats?.netflow || 0}
             type="netflow"
             subtitle={`${dateRange}D`}
             index={3}
@@ -94,11 +118,17 @@ const Index = () => {
         {/* Wallet Cards */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-4">Treasury Wallets</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {mockWallets.map((wallet, index) => (
-              <WalletCard key={wallet.id} wallet={wallet} index={index} />
-            ))}
-          </div>
+          {walletsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-treasury-gold" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {wallets?.map((wallet, index) => (
+                <WalletCard key={wallet.id} wallet={wallet} index={index} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Charts and Recent Transactions */}
