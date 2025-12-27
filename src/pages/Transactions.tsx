@@ -1,23 +1,19 @@
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/layout/Header';
-import {
-  mockTransactions,
-  formatCurrency,
-  shortenAddress,
-  formatDate,
-  type Transaction,
-} from '@/lib/mockData';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useWallets } from '@/hooks/useWallets';
+import { formatCurrency, shortenAddress, formatDate } from '@/lib/mockData';
 import {
   ArrowUpRight,
   ArrowDownLeft,
   ExternalLink,
   Search,
-  Filter,
   Download,
   Copy,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -40,44 +36,38 @@ const Transactions = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const { data: wallets } = useWallets();
+  const { data: transactions, isLoading } = useTransactions({
+    walletId: walletFilter !== 'all' ? walletFilter : undefined,
+    direction: directionFilter !== 'all' ? (directionFilter as 'IN' | 'OUT') : undefined,
+    tokenSymbol: tokenFilter !== 'all' ? tokenFilter : undefined,
+    search: search || undefined,
+  });
+
   const tokens = useMemo(() => {
-    const tokenSet = new Set(mockTransactions.map((tx) => tx.tokenSymbol));
+    if (!transactions) return [];
+    const tokenSet = new Set(transactions.map((tx) => tx.token_symbol));
     return Array.from(tokenSet);
-  }, []);
+  }, [transactions]);
 
-  const filteredTransactions = useMemo(() => {
-    return mockTransactions.filter((tx) => {
-      const matchesSearch =
-        search === '' ||
-        tx.txHash.toLowerCase().includes(search.toLowerCase()) ||
-        tx.tokenSymbol.toLowerCase().includes(search.toLowerCase()) ||
-        tx.fromAddress.toLowerCase().includes(search.toLowerCase()) ||
-        tx.toAddress.toLowerCase().includes(search.toLowerCase());
-
-      const matchesWallet =
-        walletFilter === 'all' || tx.walletId === walletFilter;
-
-      const matchesDirection =
-        directionFilter === 'all' || tx.direction === directionFilter;
-
-      const matchesToken =
-        tokenFilter === 'all' || tx.tokenSymbol === tokenFilter;
-
-      return matchesSearch && matchesWallet && matchesDirection && matchesToken;
-    });
-  }, [search, walletFilter, directionFilter, tokenFilter]);
+  const filteredTransactions = transactions || [];
 
   const paginatedTransactions = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredTransactions.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredTransactions, currentPage]);
 
-  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE));
 
   const copyToClipboard = async (text: string, id: string) => {
     await navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const getWalletName = (walletId: string) => {
+    const wallet = wallets?.find(w => w.id === walletId);
+    return wallet?.name?.replace('Treasury Wallet ', 'W') || 'Unknown';
   };
 
   const exportCSV = () => {
@@ -97,17 +87,17 @@ const Transactions = () => {
     ];
     const rows = filteredTransactions.map((tx) => [
       formatDate(tx.timestamp),
-      tx.walletName,
+      getWalletName(tx.wallet_id),
       tx.direction,
-      tx.tokenSymbol,
+      tx.token_symbol,
       tx.amount.toString(),
-      tx.usdValue.toString(),
-      tx.fromAddress,
-      tx.toAddress,
-      tx.txHash,
+      tx.usd_value.toString(),
+      tx.from_address,
+      tx.to_address,
+      tx.tx_hash,
       tx.status,
-      tx.category || '',
-      tx.note || '',
+      tx.metadata?.category || '',
+      tx.metadata?.note || '',
     ]);
 
     const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
@@ -162,8 +152,11 @@ const Transactions = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-white border-border shadow-lg">
                   <SelectItem value="all">All Wallets</SelectItem>
-                  <SelectItem value="wallet-1">Wallet 1</SelectItem>
-                  <SelectItem value="wallet-2">Wallet 2</SelectItem>
+                  {wallets?.map((wallet) => (
+                    <SelectItem key={wallet.id} value={wallet.id}>
+                      {wallet.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -197,173 +190,181 @@ const Transactions = () => {
 
         {/* Transactions Table */}
         <div className="treasury-card overflow-hidden bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-secondary/50">
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Date</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Wallet</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Direction</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Token</th>
-                  <th className="text-right py-4 px-4 text-sm font-semibold text-foreground">Amount</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">From/To</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Tx Hash</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Status</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Category</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedTransactions.map((tx, index) => (
-                  <tr
-                    key={tx.id}
-                    className={cn(
-                      "border-b border-border/50 hover:bg-primary/5 transition-colors group",
-                      index % 2 === 0 ? "bg-white" : "bg-secondary/30"
-                    )}
-                  >
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-foreground">
-                        {formatDate(tx.timestamp)}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-muted-foreground font-medium">
-                        {tx.walletName.replace('Treasury Wallet ', 'W')}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div
-                        className={cn(
-                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold',
-                          tx.direction === 'IN'
-                            ? 'bg-inflow/10 text-inflow border border-inflow/20'
-                            : 'bg-outflow/10 text-outflow border border-outflow/20'
-                        )}
-                      >
-                        {tx.direction === 'IN' ? (
-                          <ArrowDownLeft className="w-3 h-3" />
-                        ) : (
-                          <ArrowUpRight className="w-3 h-3" />
-                        )}
-                        {tx.direction === 'IN' ? 'In' : 'Out'}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm font-semibold text-foreground">
-                        {tx.tokenSymbol}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <div>
-                        <p
-                          className={cn(
-                            'text-sm font-mono font-semibold',
-                            tx.direction === 'IN' ? 'text-inflow' : 'text-outflow'
-                          )}
-                        >
-                          {tx.direction === 'IN' ? '+' : '-'}
-                          {tx.amount.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatCurrency(tx.usdValue)}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground font-mono">
-                          {shortenAddress(
-                            tx.direction === 'IN' ? tx.fromAddress : tx.toAddress
-                          )}
-                        </span>
-                        <button
-                          onClick={() =>
-                            copyToClipboard(
-                              tx.direction === 'IN' ? tx.fromAddress : tx.toAddress,
-                              `addr-${tx.id}`
-                            )
-                          }
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
-                        >
-                          {copiedId === `addr-${tx.id}` ? (
-                            <CheckCircle className="w-3.5 h-3.5 text-inflow" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground font-mono">
-                          {shortenAddress(tx.txHash)}
-                        </span>
-                        <a
-                          href={`https://bscscan.com/tx/${tx.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
-                        </a>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span
-                        className={cn(
-                          'inline-flex px-2.5 py-1 rounded-full text-xs font-semibold',
-                          tx.status === 'success'
-                            ? 'bg-inflow/10 text-inflow'
-                            : tx.status === 'failed'
-                            ? 'bg-outflow/10 text-outflow'
-                            : 'bg-primary/10 text-primary'
-                        )}
-                      >
-                        {tx.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-muted-foreground">
-                        {tx.category || '-'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-between px-4 py-4 border-t border-border bg-secondary/30">
-            <p className="text-sm text-muted-foreground">
-              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
-              {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of{' '}
-              {filteredTransactions.length} results
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="bg-white hover:bg-secondary border-border"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-sm text-foreground font-medium px-3 py-1 bg-white rounded border border-border">
-                {currentPage} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="bg-white hover:bg-secondary border-border"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-treasury-gold" />
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-secondary/50">
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Date</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Wallet</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Direction</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Token</th>
+                      <th className="text-right py-4 px-4 text-sm font-semibold text-foreground">Amount</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">From/To</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Tx Hash</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Status</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedTransactions.map((tx, index) => (
+                      <tr
+                        key={tx.id}
+                        className={cn(
+                          "border-b border-border/50 hover:bg-primary/5 transition-colors group",
+                          index % 2 === 0 ? "bg-white" : "bg-secondary/30"
+                        )}
+                      >
+                        <td className="py-4 px-4">
+                          <span className="text-sm text-foreground">
+                            {formatDate(tx.timestamp)}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-sm text-muted-foreground font-medium">
+                            {getWalletName(tx.wallet_id)}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div
+                            className={cn(
+                              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold',
+                              tx.direction === 'IN'
+                                ? 'bg-inflow/10 text-inflow border border-inflow/20'
+                                : 'bg-outflow/10 text-outflow border border-outflow/20'
+                            )}
+                          >
+                            {tx.direction === 'IN' ? (
+                              <ArrowDownLeft className="w-3 h-3" />
+                            ) : (
+                              <ArrowUpRight className="w-3 h-3" />
+                            )}
+                            {tx.direction === 'IN' ? 'In' : 'Out'}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-sm font-semibold text-foreground">
+                            {tx.token_symbol}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <div>
+                            <p
+                              className={cn(
+                                'text-sm font-mono font-semibold',
+                                tx.direction === 'IN' ? 'text-inflow' : 'text-outflow'
+                              )}
+                            >
+                              {tx.direction === 'IN' ? '+' : '-'}
+                              {tx.amount.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatCurrency(tx.usd_value)}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground font-mono">
+                              {shortenAddress(
+                                tx.direction === 'IN' ? tx.from_address : tx.to_address
+                              )}
+                            </span>
+                            <button
+                              onClick={() =>
+                                copyToClipboard(
+                                  tx.direction === 'IN' ? tx.from_address : tx.to_address,
+                                  `addr-${tx.id}`
+                                )
+                              }
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
+                            >
+                              {copiedId === `addr-${tx.id}` ? (
+                                <CheckCircle className="w-3.5 h-3.5 text-inflow" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground font-mono">
+                              {shortenAddress(tx.tx_hash)}
+                            </span>
+                            <a
+                              href={`https://bscscan.com/tx/${tx.tx_hash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                            </a>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span
+                            className={cn(
+                              'inline-flex px-2.5 py-1 rounded-full text-xs font-semibold',
+                              tx.status === 'success'
+                                ? 'bg-inflow/10 text-inflow'
+                                : tx.status === 'failed'
+                                ? 'bg-outflow/10 text-outflow'
+                                : 'bg-primary/10 text-primary'
+                            )}
+                          >
+                            {tx.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-sm text-muted-foreground">
+                            {tx.metadata?.category || '-'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between px-4 py-4 border-t border-border bg-secondary/30">
+                <p className="text-sm text-muted-foreground">
+                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
+                  {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of{' '}
+                  {filteredTransactions.length} results
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="bg-white hover:bg-secondary border-border"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm text-foreground font-medium px-3 py-1 bg-white rounded border border-border">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="bg-white hover:bg-secondary border-border"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
     </div>
