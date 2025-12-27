@@ -15,29 +15,29 @@ export function RecentTransactions() {
         </div>
         <Link
           to="/transactions"
-          className="text-sm text-treasury-gold hover:text-treasury-gold-glow transition-colors flex items-center gap-1"
+          className="text-sm font-medium text-treasury-gold hover:text-treasury-gold-glow transition-colors flex items-center gap-1 px-3 py-1.5 rounded-lg bg-treasury-gold/10 border border-treasury-gold/30 hover:bg-treasury-gold/20"
         >
           View all
           <ArrowUpRight className="w-4 h-4" />
         </Link>
       </div>
 
-      <div className="space-y-3">
-        {recentTxs.map((tx, index) => (
+      <div className="space-y-2">
+        {recentTxs.map((tx) => (
           <div
             key={tx.id}
             className={cn(
-              "flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border/30",
-              "hover:bg-secondary/50 transition-colors group"
+              "flex items-center justify-between p-3.5 rounded-xl bg-secondary/50 border border-border/50",
+              "hover:bg-secondary/80 hover:border-border transition-all group"
             )}
           >
             <div className="flex items-center gap-3">
               <div
                 className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center",
+                  "w-10 h-10 rounded-xl flex items-center justify-center",
                   tx.direction === 'IN'
-                    ? "bg-inflow/10 border border-inflow/20"
-                    : "bg-outflow/10 border border-outflow/20"
+                    ? "bg-inflow/10 border border-inflow/30"
+                    : "bg-outflow/10 border border-outflow/30"
                 )}
               >
                 {tx.direction === 'IN' ? (
@@ -48,7 +48,7 @@ export function RecentTransactions() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-foreground">{tx.tokenSymbol}</span>
+                  <span className="font-semibold text-foreground">{tx.tokenSymbol}</span>
                   <span className="text-xs text-muted-foreground">
                     {tx.direction === 'IN' ? 'from' : 'to'} {shortenAddress(tx.direction === 'IN' ? tx.fromAddress : tx.toAddress)}
                   </span>
@@ -67,13 +67,13 @@ export function RecentTransactions() {
             <div className="text-right">
               <p
                 className={cn(
-                  "font-mono font-medium",
+                  "font-mono font-semibold",
                   tx.direction === 'IN' ? "inflow-text" : "outflow-text"
                 )}
               >
                 {tx.direction === 'IN' ? '+' : '-'}{tx.amount.toLocaleString()} {tx.tokenSymbol}
               </p>
-              <p className="text-xs text-muted-foreground">{formatCurrency(tx.usdValue)}</p>
+              <p className="text-xs text-muted-foreground font-medium">{formatCurrency(tx.usdValue)}</p>
             </div>
           </div>
         ))}

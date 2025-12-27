@@ -29,29 +29,29 @@ const Index = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center bg-secondary rounded-lg p-1">
+            <div className="flex items-center bg-secondary/80 border border-border/60 rounded-xl p-1 shadow-sm">
               <button
                 onClick={() => setDateRange(7)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   dateRange === 7
-                    ? 'bg-treasury-gold text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-treasury-gold text-white shadow-md'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
                 7 Days
               </button>
               <button
                 onClick={() => setDateRange(30)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   dateRange === 30
-                    ? 'bg-treasury-gold text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-treasury-gold text-white shadow-md'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
                 30 Days
               </button>
             </div>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 border-border/60 hover:border-treasury-gold/50 hover:bg-treasury-gold/5">
               <RefreshCw className="w-4 h-4" />
               Sync
             </Button>
@@ -109,12 +109,12 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-6 mt-8">
+      <footer className="border-t border-border/60 py-6 mt-8 bg-secondary/30">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground font-medium">
             © 2024 FUN Treasury. Built with love by Angel Lovable.
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-lg border border-border/50">
             Last synced: {new Date().toLocaleString()}
           </p>
         </div>
