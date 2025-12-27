@@ -1,6 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, Settings, Wallet } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Settings, Wallet, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -10,6 +13,12 @@ const navItems = [
 
 export function Header() {
   const location = useLocation();
+  const { signOut, user } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success('Đã đăng xuất thành công');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-border shadow-sm">
@@ -51,28 +60,56 @@ export function Header() {
           })}
         </nav>
 
-        {/* Mobile Navigation */}
-        <nav className="flex md:hidden items-center gap-1 bg-secondary/50 p-1 rounded-xl">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200",
-                  isActive
-                    ? "bg-white text-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/50"
-                )}
+        <div className="flex items-center gap-3">
+          {/* User info & Logout */}
+          {user && (
+            <div className="hidden sm:flex items-center gap-3">
+              <span className="text-sm text-muted-foreground truncate max-w-[150px]">
+                {user.email}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
-                <Icon className="w-5 h-5" />
-              </Link>
-            );
-          })}
-        </nav>
+                <LogOut className="h-4 w-4 mr-1" />
+                <span className="hidden lg:inline">Đăng xuất</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Mobile Navigation */}
+          <nav className="flex md:hidden items-center gap-1 bg-secondary/50 p-1 rounded-xl">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200",
+                    isActive
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/50"
+                  )}
+                >
+                  <Icon className="w-5 h-5" />
+                </Link>
+              );
+            })}
+            {user && (
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center w-10 h-10 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            )}
+          </nav>
+        </div>
       </div>
     </header>
   );
