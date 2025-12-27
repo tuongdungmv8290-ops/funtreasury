@@ -64,8 +64,8 @@ export default {
         treasury: {
           gold: "hsl(var(--treasury-gold))",
           "gold-glow": "hsl(var(--treasury-gold-glow))",
-          navy: "hsl(var(--treasury-navy))",
-          "navy-light": "hsl(var(--treasury-navy-light))",
+          light: "hsl(var(--treasury-light))",
+          "light-accent": "hsl(var(--treasury-light-accent))",
         },
         inflow: {
           DEFAULT: "hsl(var(--inflow))",
