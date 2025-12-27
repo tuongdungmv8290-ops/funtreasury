@@ -55,10 +55,10 @@ const Settings = () => {
         </div>
 
         {/* Wallet Configuration */}
-        <div className="treasury-card mb-6">
+        <div className="treasury-card mb-6 bg-white">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-treasury-gold/10 border border-treasury-gold/20 flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-treasury-gold" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 flex items-center justify-center shadow-sm">
+              <Wallet className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-foreground">Wallet Configuration</h2>
@@ -69,34 +69,34 @@ const Settings = () => {
           <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="wallet1">Treasury Wallet 1</Label>
+                <Label htmlFor="wallet1" className="text-foreground font-medium">Treasury Wallet 1</Label>
                 <Input
                   id="wallet1"
                   value={wallet1Address}
                   onChange={(e) => setWallet1Address(e.target.value)}
                   placeholder="0x..."
-                  className="font-mono bg-secondary border-border"
+                  className="font-mono bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wallet2">Treasury Wallet 2</Label>
+                <Label htmlFor="wallet2" className="text-foreground font-medium">Treasury Wallet 2</Label>
                 <Input
                   id="wallet2"
                   value={wallet2Address}
                   onChange={(e) => setWallet2Address(e.target.value)}
                   placeholder="0x..."
-                  className="font-mono bg-secondary border-border"
+                  className="font-mono bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="chain">Blockchain Network</Label>
+              <Label htmlFor="chain" className="text-foreground font-medium">Blockchain Network</Label>
               <Select value={chain} onValueChange={setChain}>
-                <SelectTrigger className="w-full md:w-[280px] bg-secondary border-border">
+                <SelectTrigger className="w-full md:w-[280px] bg-white border-border hover:border-primary/50 transition-colors shadow-sm">
                   <SelectValue placeholder="Select chain" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-border shadow-lg z-50">
                   <SelectItem value="BNB">BNB Smart Chain</SelectItem>
                   <SelectItem value="ETH">Ethereum</SelectItem>
                   <SelectItem value="POLYGON">Polygon</SelectItem>
@@ -109,9 +109,9 @@ const Settings = () => {
         </div>
 
         {/* Sync Configuration */}
-        <div className="treasury-card mb-6">
+        <div className="treasury-card mb-6 bg-white">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-inflow/10 border border-inflow/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-inflow/20 to-inflow/10 border border-inflow/30 flex items-center justify-center shadow-sm">
               <RefreshCw className="w-5 h-5 text-inflow" />
             </div>
             <div>
@@ -121,9 +121,9 @@ const Settings = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 border border-border">
               <div>
-                <Label htmlFor="autoSync">Auto Sync</Label>
+                <Label htmlFor="autoSync" className="text-foreground font-medium">Auto Sync</Label>
                 <p className="text-sm text-muted-foreground">
                   Automatically sync transactions at regular intervals
                 </p>
@@ -132,16 +132,17 @@ const Settings = () => {
                 id="autoSync"
                 checked={autoSync}
                 onCheckedChange={setAutoSync}
+                className="data-[state=checked]:bg-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="syncInterval">Sync Interval (minutes)</Label>
+              <Label htmlFor="syncInterval" className="text-foreground font-medium">Sync Interval (minutes)</Label>
               <Select value={syncInterval} onValueChange={setSyncInterval} disabled={!autoSync}>
-                <SelectTrigger className="w-full md:w-[180px] bg-secondary border-border">
+                <SelectTrigger className="w-full md:w-[200px] bg-white border-border hover:border-primary/50 transition-colors shadow-sm disabled:opacity-50">
                   <SelectValue placeholder="Select interval" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-border shadow-lg z-50">
                   <SelectItem value="1">Every 1 minute</SelectItem>
                   <SelectItem value="5">Every 5 minutes</SelectItem>
                   <SelectItem value="15">Every 15 minutes</SelectItem>
@@ -154,8 +155,7 @@ const Settings = () => {
               <Button
                 onClick={handleSyncNow}
                 disabled={isSyncing}
-                className="gap-2"
-                variant="outline"
+                className="gap-2 bg-inflow text-white hover:bg-inflow/90 shadow-sm"
               >
                 <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                 {isSyncing ? 'Syncing...' : 'Sync Now'}
@@ -165,19 +165,21 @@ const Settings = () => {
         </div>
 
         {/* API Configuration Notice */}
-        <div className="treasury-card mb-6 border-treasury-gold/30">
+        <div className="treasury-card mb-6 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/30">
           <div className="flex gap-4">
-            <AlertCircle className="w-5 h-5 text-treasury-gold flex-shrink-0 mt-0.5" />
+            <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-primary" />
+            </div>
             <div>
-              <h3 className="font-medium text-foreground mb-1">API Configuration Required</h3>
+              <h3 className="font-semibold text-foreground mb-1">API Configuration Required</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 To enable live blockchain data, you'll need to configure API keys for your chosen network. 
                 Connect to Lovable Cloud to securely store your API keys.
               </p>
-              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <span className="px-2 py-1 rounded bg-secondary">RPC_URL</span>
-                <span className="px-2 py-1 rounded bg-secondary">EXPLORER_API_KEY</span>
-                <span className="px-2 py-1 rounded bg-secondary">TOKENS_WHITELIST</span>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="px-3 py-1.5 rounded-full bg-white border border-border text-foreground font-medium shadow-sm">RPC_URL</span>
+                <span className="px-3 py-1.5 rounded-full bg-white border border-border text-foreground font-medium shadow-sm">EXPLORER_API_KEY</span>
+                <span className="px-3 py-1.5 rounded-full bg-white border border-border text-foreground font-medium shadow-sm">TOKENS_WHITELIST</span>
               </div>
             </div>
           </div>
@@ -188,7 +190,7 @@ const Settings = () => {
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="gap-2 bg-treasury-gold text-primary-foreground hover:bg-treasury-gold/90"
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md px-6"
           >
             {isSaving ? (
               <>
