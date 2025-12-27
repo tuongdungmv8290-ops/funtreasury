@@ -134,7 +134,10 @@ const Transactions = () => {
               {filteredTransactions.length} transactions found
             </p>
           </div>
-          <Button onClick={exportCSV} variant="outline" className="gap-2">
+          <Button 
+            onClick={exportCSV} 
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+          >
             <Download className="w-4 h-4" />
             Export CSV
           </Button>
@@ -149,15 +152,15 @@ const Transactions = () => {
                 placeholder="Search by hash, token, address..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-secondary border-border"
+                className="pl-10 bg-white border-border focus:border-primary focus:ring-primary/20"
               />
             </div>
             <div className="flex flex-wrap gap-3">
               <Select value={walletFilter} onValueChange={setWalletFilter}>
-                <SelectTrigger className="w-[160px] bg-secondary border-border">
+                <SelectTrigger className="w-[160px] bg-white border-border hover:border-primary/50 transition-colors">
                   <SelectValue placeholder="All Wallets" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-border shadow-lg">
                   <SelectItem value="all">All Wallets</SelectItem>
                   <SelectItem value="wallet-1">Wallet 1</SelectItem>
                   <SelectItem value="wallet-2">Wallet 2</SelectItem>
@@ -165,10 +168,10 @@ const Transactions = () => {
               </Select>
 
               <Select value={directionFilter} onValueChange={setDirectionFilter}>
-                <SelectTrigger className="w-[140px] bg-secondary border-border">
+                <SelectTrigger className="w-[140px] bg-white border-border hover:border-primary/50 transition-colors">
                   <SelectValue placeholder="All Directions" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-border shadow-lg">
                   <SelectItem value="all">All Directions</SelectItem>
                   <SelectItem value="IN">Inflow</SelectItem>
                   <SelectItem value="OUT">Outflow</SelectItem>
@@ -176,10 +179,10 @@ const Transactions = () => {
               </Select>
 
               <Select value={tokenFilter} onValueChange={setTokenFilter}>
-                <SelectTrigger className="w-[120px] bg-secondary border-border">
+                <SelectTrigger className="w-[120px] bg-white border-border hover:border-primary/50 transition-colors">
                   <SelectValue placeholder="All Tokens" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-border shadow-lg">
                   <SelectItem value="all">All Tokens</SelectItem>
                   {tokens.map((token) => (
                     <SelectItem key={token} value={token}>
@@ -193,27 +196,30 @@ const Transactions = () => {
         </div>
 
         {/* Transactions Table */}
-        <div className="treasury-card overflow-hidden">
+        <div className="treasury-card overflow-hidden bg-white">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground">Date</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground">Wallet</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground">Direction</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground">Token</th>
-                  <th className="text-right py-4 px-4 text-sm font-medium text-muted-foreground">Amount</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground">From/To</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground">Tx Hash</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground">Category</th>
+                <tr className="border-b border-border bg-secondary/50">
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Date</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Wallet</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Direction</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Token</th>
+                  <th className="text-right py-4 px-4 text-sm font-semibold text-foreground">Amount</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">From/To</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Tx Hash</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Status</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Category</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedTransactions.map((tx) => (
+                {paginatedTransactions.map((tx, index) => (
                   <tr
                     key={tx.id}
-                    className="border-b border-border/50 hover:bg-secondary/30 transition-colors group"
+                    className={cn(
+                      "border-b border-border/50 hover:bg-primary/5 transition-colors group",
+                      index % 2 === 0 ? "bg-white" : "bg-secondary/30"
+                    )}
                   >
                     <td className="py-4 px-4">
                       <span className="text-sm text-foreground">
@@ -221,14 +227,14 @@ const Transactions = () => {
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-muted-foreground font-medium">
                         {tx.walletName.replace('Treasury Wallet ', 'W')}
                       </span>
                     </td>
                     <td className="py-4 px-4">
                       <div
                         className={cn(
-                          'inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium',
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold',
                           tx.direction === 'IN'
                             ? 'bg-inflow/10 text-inflow border border-inflow/20'
                             : 'bg-outflow/10 text-outflow border border-outflow/20'
@@ -243,7 +249,7 @@ const Transactions = () => {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-sm font-medium text-foreground">
+                      <span className="text-sm font-semibold text-foreground">
                         {tx.tokenSymbol}
                       </span>
                     </td>
@@ -251,8 +257,8 @@ const Transactions = () => {
                       <div>
                         <p
                           className={cn(
-                            'text-sm font-mono font-medium',
-                            tx.direction === 'IN' ? 'inflow-text' : 'outflow-text'
+                            'text-sm font-mono font-semibold',
+                            tx.direction === 'IN' ? 'text-inflow' : 'text-outflow'
                           )}
                         >
                           {tx.direction === 'IN' ? '+' : '-'}
@@ -277,12 +283,12 @@ const Transactions = () => {
                               `addr-${tx.id}`
                             )
                           }
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
                         >
                           {copiedId === `addr-${tx.id}` ? (
                             <CheckCircle className="w-3.5 h-3.5 text-inflow" />
                           ) : (
-                            <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
+                            <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
                           )}
                         </button>
                       </div>
@@ -296,21 +302,21 @@ const Transactions = () => {
                           href={`https://bscscan.com/tx/${tx.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
                         >
-                          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
+                          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
                         </a>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <span
                         className={cn(
-                          'inline-flex px-2 py-1 rounded-md text-xs font-medium',
+                          'inline-flex px-2.5 py-1 rounded-full text-xs font-semibold',
                           tx.status === 'success'
                             ? 'bg-inflow/10 text-inflow'
                             : tx.status === 'failed'
                             ? 'bg-outflow/10 text-outflow'
-                            : 'bg-treasury-gold/10 text-treasury-gold'
+                            : 'bg-primary/10 text-primary'
                         )}
                       >
                         {tx.status}
@@ -328,7 +334,7 @@ const Transactions = () => {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-4 py-4 border-t border-border">
+          <div className="flex items-center justify-between px-4 py-4 border-t border-border bg-secondary/30">
             <p className="text-sm text-muted-foreground">
               Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
               {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of{' '}
@@ -340,17 +346,19 @@ const Transactions = () => {
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                className="bg-white hover:bg-secondary border-border"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="text-sm text-muted-foreground px-2">
-                Page {currentPage} of {totalPages}
+              <span className="text-sm text-foreground font-medium px-3 py-1 bg-white rounded border border-border">
+                {currentPage} / {totalPages}
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
+                className="bg-white hover:bg-secondary border-border"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
