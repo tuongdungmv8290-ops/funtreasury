@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/mockData';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 interface StatsCardProps {
@@ -25,86 +25,90 @@ export function StatsCard({ title, value, type, icon: CustomIcon, subtitle, inde
       case 'netflow':
         return isPositive ? TrendingUp : TrendingDown;
       default:
-        return Minus;
+        return Wallet;
     }
   };
 
-  const getColors = () => {
+  const getStyles = () => {
     switch (type) {
       case 'inflow':
         return {
-          bg: 'from-inflow/20 to-inflow/5',
-          border: 'border-inflow/20',
-          icon: 'text-inflow',
-          value: 'inflow-text',
+          cardClass: 'treasury-card',
+          iconBg: 'bg-inflow/10 border-inflow/30',
+          iconColor: 'text-inflow',
+          valueClass: 'inflow-text',
+          decorGradient: 'from-inflow/15 to-transparent',
         };
       case 'outflow':
         return {
-          bg: 'from-outflow/20 to-outflow/5',
-          border: 'border-outflow/20',
-          icon: 'text-outflow',
-          value: 'outflow-text',
+          cardClass: 'treasury-card',
+          iconBg: 'bg-outflow/10 border-outflow/30',
+          iconColor: 'text-outflow',
+          valueClass: 'outflow-text',
+          decorGradient: 'from-outflow/15 to-transparent',
         };
       case 'netflow':
         return isPositive
           ? {
-              bg: 'from-inflow/20 to-inflow/5',
-              border: 'border-inflow/20',
-              icon: 'text-inflow',
-              value: 'inflow-text',
+              cardClass: 'treasury-card',
+              iconBg: 'bg-inflow/10 border-inflow/30',
+              iconColor: 'text-inflow',
+              valueClass: 'inflow-text',
+              decorGradient: 'from-inflow/15 to-transparent',
             }
           : {
-              bg: 'from-outflow/20 to-outflow/5',
-              border: 'border-outflow/20',
-              icon: 'text-outflow',
-              value: 'outflow-text',
+              cardClass: 'treasury-card',
+              iconBg: 'bg-outflow/10 border-outflow/30',
+              iconColor: 'text-outflow',
+              valueClass: 'outflow-text',
+              decorGradient: 'from-outflow/15 to-transparent',
             };
       default:
         return {
-          bg: 'from-treasury-gold/20 to-treasury-gold/5',
-          border: 'border-treasury-gold/20',
-          icon: 'text-treasury-gold',
-          value: 'gold-text',
+          cardClass: 'treasury-card-gold',
+          iconBg: 'bg-treasury-gold/15 border-treasury-gold/40',
+          iconColor: 'text-treasury-gold',
+          valueClass: 'gold-text',
+          decorGradient: 'from-treasury-gold/20 to-transparent',
         };
     }
   };
 
   const Icon = getIcon();
-  const colors = getColors();
+  const styles = getStyles();
 
   return (
     <div
       className={cn(
-        "treasury-card relative overflow-hidden animate-fade-in",
+        styles.cardClass,
+        "relative overflow-hidden animate-fade-in"
       )}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Decorative gradient */}
+      {/* Decorative gradient orb */}
       <div className={cn(
-        "absolute top-0 left-0 w-24 h-24 rounded-full blur-2xl opacity-50",
-        `bg-gradient-to-br ${colors.bg}`
+        "absolute -top-6 -left-6 w-28 h-28 rounded-full blur-3xl opacity-60",
+        `bg-gradient-to-br ${styles.decorGradient}`
       )} />
 
       <div className="relative">
         <div className="flex items-start justify-between mb-4">
           <div className={cn(
-            "w-10 h-10 rounded-lg bg-gradient-to-br flex items-center justify-center",
-            colors.bg,
-            colors.border,
-            "border"
+            "w-11 h-11 rounded-xl flex items-center justify-center border",
+            styles.iconBg
           )}>
-            <Icon className={cn("w-5 h-5", colors.icon)} />
+            <Icon className={cn("w-5 h-5", styles.iconColor)} />
           </div>
           {subtitle && (
-            <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-md">
+            <span className="text-xs font-medium text-muted-foreground bg-secondary/80 px-2.5 py-1 rounded-lg border border-border/50">
               {subtitle}
             </span>
           )}
         </div>
 
         <div>
-          <p className="text-sm text-muted-foreground mb-1">{title}</p>
-          <p className={cn("stat-value", colors.value)}>
+          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+          <p className={cn("stat-value", styles.valueClass)}>
             {type === 'netflow' && value > 0 ? '+' : ''}
             {formatCurrency(Math.abs(value))}
           </p>

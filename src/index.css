@@ -61,6 +61,7 @@
     --gradient-outflow: linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 84%, 50%));
 
     /* Shadows - Light Theme */
+    --shadow: 221 39% 17% / 0.08;
     --shadow-gold: 0 4px 24px hsl(46 65% 52% / 0.15);
     --shadow-card: 0 2px 12px hsl(221 39% 17% / 0.06);
     --shadow-glow: 0 0 40px hsl(46 65% 52% / 0.1);
@@ -128,21 +129,28 @@
 }
 
 @layer components {
+  /* Treasury Card Styles - Light Mode Luxury */
   .treasury-card {
-    @apply bg-card border border-border rounded-xl p-6;
-    background: var(--gradient-card);
-    box-shadow: var(--shadow-card);
+    @apply bg-card border border-border/60 rounded-2xl p-6;
+    box-shadow: 0 2px 12px -2px hsl(var(--shadow)), 0 1px 4px -1px hsl(var(--shadow));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  .treasury-card:hover {
+    box-shadow: 0 8px 24px -4px hsl(var(--shadow)), 0 2px 8px -2px hsl(var(--shadow));
+    transform: translateY(-2px);
+  }
+
+  /* Gold Accent Card */
   .treasury-card-gold {
-    @apply treasury-card relative overflow-hidden;
-    border: 1px solid hsl(var(--treasury-gold) / 0.2);
+    @apply bg-gradient-to-br from-card via-card to-treasury-gold/5 border border-treasury-gold/30 rounded-2xl p-6;
+    box-shadow: 0 2px 12px -2px hsl(46 65% 52% / 0.15), 0 1px 4px -1px hsl(var(--shadow));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .treasury-card-gold::before {
-    content: '';
-    @apply absolute inset-0 opacity-5;
-    background: var(--gradient-gold);
+  .treasury-card-gold:hover {
+    box-shadow: 0 8px 24px -4px hsl(46 65% 52% / 0.25), 0 2px 8px -2px hsl(var(--shadow));
+    transform: translateY(-2px);
   }
 
   .stat-value {
