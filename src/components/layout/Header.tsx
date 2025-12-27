@@ -12,15 +12,14 @@ export function Header() {
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 glass-effect">
+    <header className="sticky top-0 z-50 w-full glass-effect shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-treasury-gold to-amber-600 flex items-center justify-center shadow-lg group-hover:shadow-treasury-gold/30 transition-shadow duration-300">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-amber-600 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300">
               <Wallet className="w-5 h-5 text-primary-foreground" />
             </div>
-            <div className="absolute inset-0 rounded-xl bg-treasury-gold/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-bold gold-text">FUN Treasury</span>

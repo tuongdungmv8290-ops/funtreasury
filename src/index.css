@@ -2,77 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Roboto:wght@300;400;500;700&display=swap');
 
 @layer base {
   :root {
-    /* Treasury Theme - Dark Fintech */
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* Treasury Theme - Light Luxury Fintech */
+    --background: 210 20% 98%;
+    --foreground: 221 39% 17%;
 
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 221 39% 17%;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 39% 17%;
 
-    --primary: 45 93% 58%;
-    --primary-foreground: 222 47% 6%;
+    --primary: 46 65% 52%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 221 39% 17%;
 
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 45 93% 58%;
-    --accent-foreground: 222 47% 6%;
+    --accent: 46 65% 52%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 45 93% 58%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 46 65% 52%;
 
     --radius: 0.75rem;
 
-    /* Custom Treasury Colors */
-    --treasury-gold: 45 93% 58%;
-    --treasury-gold-glow: 45 93% 68%;
-    --treasury-navy: 222 47% 11%;
-    --treasury-navy-light: 222 47% 15%;
+    /* Custom Treasury Colors - Light Theme */
+    --treasury-gold: 46 65% 52%;
+    --treasury-gold-glow: 46 75% 62%;
+    --treasury-light: 210 20% 98%;
+    --treasury-light-accent: 210 20% 94%;
     
-    --inflow: 142 71% 45%;
-    --inflow-glow: 142 71% 55%;
-    --outflow: 0 72% 51%;
-    --outflow-glow: 0 72% 61%;
+    --inflow: 217 91% 60%;
+    --inflow-glow: 217 91% 70%;
+    --outflow: 0 84% 60%;
+    --outflow-glow: 0 84% 70%;
     
-    --chart-1: 45 93% 58%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 0 72% 51%;
-    --chart-4: 217 91% 60%;
+    --chart-1: 46 65% 52%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 0 84% 60%;
+    --chart-4: 142 71% 45%;
     --chart-5: 280 65% 60%;
 
-    /* Gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(45, 93%, 58%), hsl(38, 92%, 50%));
-    --gradient-card: linear-gradient(135deg, hsl(222, 47%, 11%), hsl(222, 47%, 8%));
-    --gradient-inflow: linear-gradient(135deg, hsl(142, 71%, 45%), hsl(142, 71%, 35%));
-    --gradient-outflow: linear-gradient(135deg, hsl(0, 72%, 51%), hsl(0, 72%, 41%));
+    /* Gradients - Light Theme */
+    --gradient-gold: linear-gradient(135deg, hsl(46, 65%, 52%), hsl(38, 70%, 45%));
+    --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%), hsl(210, 20%, 98%));
+    --gradient-inflow: linear-gradient(135deg, hsl(217, 91%, 60%), hsl(217, 91%, 50%));
+    --gradient-outflow: linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 84%, 50%));
 
-    /* Shadows */
-    --shadow-gold: 0 0 40px hsl(45 93% 58% / 0.15);
-    --shadow-card: 0 8px 32px hsl(222 47% 4% / 0.4);
-    --shadow-glow: 0 0 60px hsl(45 93% 58% / 0.1);
+    /* Shadows - Light Theme */
+    --shadow-gold: 0 4px 24px hsl(46 65% 52% / 0.15);
+    --shadow-card: 0 2px 12px hsl(221 39% 17% / 0.06);
+    --shadow-glow: 0 0 40px hsl(46 65% 52% / 0.1);
 
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 45 93% 58%;
-    --sidebar-primary-foreground: 222 47% 6%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 45 93% 58%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 221 39% 17%;
+    --sidebar-primary: 46 65% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent-foreground: 221 39% 17%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 46 65% 52%;
   }
 
   .dark {
@@ -130,22 +130,23 @@
 @layer components {
   .treasury-card {
     @apply bg-card border border-border rounded-xl p-6;
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(222 47% 7%) 100%);
+    background: var(--gradient-card);
     box-shadow: var(--shadow-card);
   }
 
   .treasury-card-gold {
     @apply treasury-card relative overflow-hidden;
+    border: 1px solid hsl(var(--treasury-gold) / 0.2);
   }
 
   .treasury-card-gold::before {
     content: '';
-    @apply absolute inset-0 opacity-10;
+    @apply absolute inset-0 opacity-5;
     background: var(--gradient-gold);
   }
 
   .stat-value {
-    @apply text-3xl font-bold tracking-tight;
+    @apply text-3xl font-bold tracking-tight text-foreground;
     font-family: 'JetBrains Mono', monospace;
   }
 
@@ -173,8 +174,7 @@
   }
 
   .glass-effect {
-    @apply backdrop-blur-xl;
-    background: hsl(var(--card) / 0.8);
+    @apply backdrop-blur-xl bg-card/95 border-b border-border;
   }
 
   .animate-pulse-slow {
