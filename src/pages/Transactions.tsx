@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Header } from '@/components/layout/Header';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
+import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
 import { formatCurrency, shortenAddress, formatDate } from '@/lib/mockData';
 import {
   ArrowUpRight,
@@ -25,6 +26,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { EditableCategory } from '@/components/transactions/EditableCategory';
+import { EditableNote } from '@/components/transactions/EditableNote';
+import { EditableTags } from '@/components/transactions/EditableTags';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -43,6 +47,27 @@ const Transactions = () => {
     tokenSymbol: tokenFilter !== 'all' ? tokenFilter : undefined,
     search: search || undefined,
   });
+  
+  const updateMetadata = useUpdateTxMetadata();
+  const [savingTxId, setSavingTxId] = useState<string | null>(null);
+
+  const handleUpdateCategory = async (txId: string, category: string | null) => {
+    setSavingTxId(txId);
+    await updateMetadata.mutateAsync({ transactionId: txId, category });
+    setSavingTxId(null);
+  };
+
+  const handleUpdateNote = async (txId: string, note: string | null) => {
+    setSavingTxId(txId);
+    await updateMetadata.mutateAsync({ transactionId: txId, note });
+    setSavingTxId(null);
+  };
+
+  const handleUpdateTags = async (txId: string, tags: string[] | null) => {
+    setSavingTxId(txId);
+    await updateMetadata.mutateAsync({ transactionId: txId, tags });
+    setSavingTxId(null);
+  };
 
   const tokens = useMemo(() => {
     if (!transactions) return [];
@@ -209,6 +234,8 @@ const Transactions = () => {
                       <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Tx Hash</th>
                       <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Status</th>
                       <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Category</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Note</th>
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Tags</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -322,9 +349,25 @@ const Transactions = () => {
                           </span>
                         </td>
                         <td className="py-4 px-4">
-                          <span className="text-sm text-muted-foreground">
-                            {tx.metadata?.category || '-'}
-                          </span>
+                          <EditableCategory
+                            value={tx.metadata?.category || null}
+                            onSave={(category) => handleUpdateCategory(tx.id, category)}
+                            isLoading={savingTxId === tx.id && updateMetadata.isPending}
+                          />
+                        </td>
+                        <td className="py-4 px-4">
+                          <EditableNote
+                            value={tx.metadata?.note || null}
+                            onSave={(note) => handleUpdateNote(tx.id, note)}
+                            isLoading={savingTxId === tx.id && updateMetadata.isPending}
+                          />
+                        </td>
+                        <td className="py-4 px-4">
+                          <EditableTags
+                            value={tx.metadata?.tags || null}
+                            onSave={(tags) => handleUpdateTags(tx.id, tags)}
+                            isLoading={savingTxId === tx.id && updateMetadata.isPending}
+                          />
                         </td>
                       </tr>
                     ))}
