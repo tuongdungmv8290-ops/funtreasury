@@ -3,7 +3,7 @@ import { Header } from '@/components/layout/Header';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
 import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
-import { formatCurrency, shortenAddress, formatDate } from '@/lib/mockData';
+import { formatCurrency, shortenAddress } from '@/lib/mockData';
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -15,6 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Filter,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -26,11 +28,67 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { EditableCategory } from '@/components/transactions/EditableCategory';
 import { EditableNote } from '@/components/transactions/EditableNote';
 import { EditableTags } from '@/components/transactions/EditableTags';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import type { Transaction } from '@/hooks/useTransactions';
 
 const ITEMS_PER_PAGE = 10;
+
+// Format date as DD/MM/YYYY HH:mm
+const formatDateCSV = (date: Date): string => {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
+// Format date for display
+const formatDate = (date: Date): string => {
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+// Format USD value as $1,234.56
+const formatUSDValue = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
+// Escape CSV values properly
+const escapeCSV = (value: string): string => {
+  if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+};
+
+// Get current date formatted for filename
+const getFileNameDate = (): string => {
+  const now = new Date();
+  const day = now.getDate().toString().padStart(2, '0');
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const year = now.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 const Transactions = () => {
   const [search, setSearch] = useState('');
@@ -39,6 +97,7 @@ const Transactions = () => {
   const [tokenFilter, setTokenFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data: wallets } = useWallets();
   const { data: transactions, isLoading } = useTransactions({
@@ -92,10 +151,16 @@ const Transactions = () => {
 
   const getWalletName = (walletId: string) => {
     const wallet = wallets?.find(w => w.id === walletId);
+    return wallet?.name || 'Unknown';
+  };
+
+  const getWalletShortName = (walletId: string) => {
+    const wallet = wallets?.find(w => w.id === walletId);
     return wallet?.name?.replace('Treasury Wallet ', 'W') || 'Unknown';
   };
 
-  const exportCSV = () => {
+  // Generate CSV content from transactions
+  const generateCSV = (txList: Transaction[]): string => {
     const headers = [
       'Date',
       'Wallet',
@@ -109,29 +174,116 @@ const Transactions = () => {
       'Status',
       'Category',
       'Note',
+      'Tags',
     ];
-    const rows = filteredTransactions.map((tx) => [
-      formatDate(tx.timestamp),
-      getWalletName(tx.wallet_id),
+    
+    const rows = txList.map((tx) => [
+      formatDateCSV(tx.timestamp),
+      escapeCSV(getWalletName(tx.wallet_id)),
       tx.direction,
       tx.token_symbol,
       tx.amount.toString(),
-      tx.usd_value.toString(),
+      formatUSDValue(tx.usd_value),
       tx.from_address,
       tx.to_address,
       tx.tx_hash,
       tx.status,
-      tx.metadata?.category || '',
-      tx.metadata?.note || '',
+      escapeCSV(tx.metadata?.category || ''),
+      escapeCSV(tx.metadata?.note || ''),
+      escapeCSV((tx.metadata?.tags || []).join(', ')),
     ]);
 
-    const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+  };
+
+  // Download CSV file
+  const downloadCSV = (content: string, count: number) => {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `treasury-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `treasury-transactions-${getFileNameDate()}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export thành công",
+      description: `Đã export ${count} transactions ra file CSV`,
+    });
+  };
+
+  // Export filtered transactions (currently visible after filters)
+  const exportFilteredCSV = () => {
+    if (filteredTransactions.length === 0) {
+      toast({
+        title: "Không có dữ liệu",
+        description: "Không có transactions nào để export",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const csv = generateCSV(filteredTransactions);
+    downloadCSV(csv, filteredTransactions.length);
+  };
+
+  // Export ALL transactions from database
+  const exportAllCSV = async () => {
+    setIsExporting(true);
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          tx_metadata (category, note, tags)
+        `)
+        .order('timestamp', { ascending: false });
+
+      if (error) throw error;
+
+      const allTransactions: Transaction[] = (data || []).map(tx => ({
+        id: tx.id,
+        wallet_id: tx.wallet_id,
+        tx_hash: tx.tx_hash,
+        block_number: tx.block_number,
+        timestamp: new Date(tx.timestamp),
+        from_address: tx.from_address,
+        to_address: tx.to_address,
+        direction: tx.direction as 'IN' | 'OUT',
+        token_address: tx.token_address,
+        token_symbol: tx.token_symbol,
+        amount: Number(tx.amount),
+        usd_value: Number(tx.usd_value),
+        gas_fee: Number(tx.gas_fee),
+        status: tx.status,
+        metadata: tx.tx_metadata ? {
+          category: tx.tx_metadata.category,
+          note: tx.tx_metadata.note,
+          tags: tx.tx_metadata.tags,
+        } : undefined,
+      }));
+
+      if (allTransactions.length === 0) {
+        toast({
+          title: "Không có dữ liệu",
+          description: "Không có transactions nào trong database",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const csv = generateCSV(allTransactions);
+      downloadCSV(csv, allTransactions.length);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Lỗi export",
+        description: "Không thể export dữ liệu. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -149,13 +301,50 @@ const Transactions = () => {
               {filteredTransactions.length} transactions found
             </p>
           </div>
-          <Button 
-            onClick={exportCSV} 
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-light text-treasury-dark hover:from-treasury-gold-light hover:to-treasury-gold shadow-lg font-semibold"
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Export to CSV
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-white border-border shadow-xl">
+              <DropdownMenuItem 
+                onClick={exportFilteredCSV}
+                className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+              >
+                <Filter className="w-4 h-4 mr-2 text-treasury-gold" />
+                <div className="flex flex-col">
+                  <span className="font-medium">Export Filtered</span>
+                  <span className="text-xs text-muted-foreground">
+                    {filteredTransactions.length} transactions
+                  </span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={exportAllCSV}
+                className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+                disabled={isExporting}
+              >
+                <Download className="w-4 h-4 mr-2 text-treasury-gold" />
+                <div className="flex flex-col">
+                  <span className="font-medium">Export All</span>
+                  <span className="text-xs text-muted-foreground">
+                    All transactions in database
+                  </span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Filters */}
@@ -254,7 +443,7 @@ const Transactions = () => {
                         </td>
                         <td className="py-4 px-4">
                           <span className="text-sm text-muted-foreground font-medium">
-                            {getWalletName(tx.wallet_id)}
+                            {getWalletShortName(tx.wallet_id)}
                           </span>
                         </td>
                         <td className="py-4 px-4">
