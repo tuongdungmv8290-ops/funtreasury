@@ -111,12 +111,13 @@ export function useTransactionStats(days: number = 30) {
 
       const { data, error } = await supabase
         .from('transactions')
-        .select('direction, usd_value, status')
+        .select('direction, usd_value, status, token_symbol')
         .gte('timestamp', fromDate.toISOString())
         .eq('status', 'success');
 
       if (error) throw error;
 
+      const uniqueTokens = new Set<string>();
       const stats = (data || []).reduce(
         (acc, tx) => {
           const value = Number(tx.usd_value);
@@ -126,6 +127,7 @@ export function useTransactionStats(days: number = 30) {
             acc.outflow += value;
           }
           acc.txCount++;
+          uniqueTokens.add(tx.token_symbol);
           return acc;
         },
         { inflow: 0, outflow: 0, txCount: 0 }
@@ -134,6 +136,7 @@ export function useTransactionStats(days: number = 30) {
       return {
         ...stats,
         netflow: stats.inflow - stats.outflow,
+        activeTokens: uniqueTokens.size,
       };
     },
   });
