@@ -11,9 +11,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, AlertCircle, Crown } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
@@ -29,6 +30,13 @@ const Settings = () => {
   const [syncInterval, setSyncInterval] = useState('5');
   const [autoSync, setAutoSync] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Moralis API state
+  const [moralisApiKey, setMoralisApiKey] = useState('');
+  const [showMoralisKey, setShowMoralisKey] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [connectionMessage, setConnectionMessage] = useState('');
 
   // Populate form when wallets load
   useEffect(() => {
@@ -75,10 +83,52 @@ const Settings = () => {
 
   const handleSyncNow = async () => {
     setIsSyncing(true);
-    // Simulate sync - will be implemented in Checkpoint 4
+    // Simulate sync - will be implemented in Checkpoint 4.2
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsSyncing(false);
     toast.success('Sync completed! (Demo mode)');
+  };
+
+  const handleTestMoralisConnection = async () => {
+    if (!moralisApiKey.trim()) {
+      toast.error('Vui lòng nhập Moralis API Key');
+      return;
+    }
+    
+    setIsTestingConnection(true);
+    setConnectionStatus('idle');
+    setConnectionMessage('');
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('test-moralis-connection', {
+        body: { api_key: moralisApiKey }
+      });
+      
+      if (error) {
+        console.error('Supabase function error:', error);
+        setConnectionStatus('error');
+        setConnectionMessage('Không thể kết nối tới server');
+        toast.error('Không thể kết nối tới server');
+        return;
+      }
+      
+      if (data?.success) {
+        setConnectionStatus('success');
+        setConnectionMessage(data.message);
+        toast.success('🎉 ' + data.message);
+      } else {
+        setConnectionStatus('error');
+        setConnectionMessage(data?.error || 'Test connection failed');
+        toast.error(data?.error || 'Test connection failed');
+      }
+    } catch (error) {
+      console.error('Test connection error:', error);
+      setConnectionStatus('error');
+      setConnectionMessage('Network error - Kiểm tra kết nối mạng');
+      toast.error('Không thể kết nối tới server');
+    } finally {
+      setIsTestingConnection(false);
+    }
   };
 
   if (isLoading) {
@@ -264,6 +314,108 @@ const Settings = () => {
           </Button>
         </div>
 
+        {/* Moralis Realtime Sync Section */}
+        <div className="treasury-card mb-6 bg-gradient-to-br from-primary/5 via-white to-primary/10 border-2 border-primary/30">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+              <Link className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Moralis Realtime Sync (Free Tier)</h2>
+              <p className="text-sm text-muted-foreground">Kết nối on-chain sync miễn phí với Moralis API</p>
+            </div>
+          </div>
+
+          {/* Info Note */}
+          <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20">
+            <div className="flex items-start gap-3">
+              <span className="text-xl">💡</span>
+              <div>
+                <p className="text-sm text-foreground font-medium mb-1">
+                  Đăng ký miễn phí tại{' '}
+                  <a 
+                    href="https://moralis.io/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    moralis.io
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Free tier đủ sync hàng nghìn transactions/ngày!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* API Key Input */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="moralisApiKey" className="text-foreground font-medium">
+                Moralis API Key <span className="text-outflow">*</span>
+              </Label>
+              <div className="relative">
+                <Input
+                  id="moralisApiKey"
+                  type={showMoralisKey ? 'text' : 'password'}
+                  value={moralisApiKey}
+                  onChange={(e) => setMoralisApiKey(e.target.value)}
+                  placeholder="Nhập Moralis API key miễn phí..."
+                  className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-base pr-12 font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowMoralisKey(!showMoralisKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showMoralisKey ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Test Connection Button */}
+            <Button
+              onClick={handleTestMoralisConnection}
+              disabled={isTestingConnection || !moralisApiKey.trim()}
+              className="w-full md:w-auto gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-8 py-6 text-lg font-semibold disabled:opacity-50"
+            >
+              {isTestingConnection ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Đang kiểm tra...
+                </>
+              ) : (
+                <>
+                  <Link className="w-5 h-5" />
+                  Test Moralis Connection
+                </>
+              )}
+            </Button>
+
+            {/* Connection Status Display */}
+            {connectionStatus !== 'idle' && (
+              <div className={`mt-4 p-4 rounded-xl border-2 flex items-center gap-3 ${
+                connectionStatus === 'success' 
+                  ? 'bg-inflow/10 border-inflow/30 text-inflow' 
+                  : 'bg-outflow/10 border-outflow/30 text-outflow'
+              }`}>
+                {connectionStatus === 'success' ? (
+                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                ) : (
+                  <XCircle className="w-6 h-6 flex-shrink-0" />
+                )}
+                <span className="font-medium">{connectionMessage}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Sync Configuration */}
         <div className="treasury-card mb-6 bg-white">
           <div className="flex items-center gap-3 mb-6">
@@ -272,7 +424,7 @@ const Settings = () => {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-foreground">Sync Settings</h2>
-              <p className="text-sm text-muted-foreground">Cấu hình đồng bộ dữ liệu (Checkpoint 4)</p>
+              <p className="text-sm text-muted-foreground">Cấu hình đồng bộ dữ liệu (Bước 4.2)</p>
             </div>
           </div>
 
@@ -316,25 +468,6 @@ const Settings = () => {
                 <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                 {isSyncing ? 'Syncing...' : 'Sync Now'}
               </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* API Configuration Notice */}
-        <div className="treasury-card mb-6 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/30">
-          <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground mb-1">API Configuration (Checkpoint 4)</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Để kích hoạt đồng bộ on-chain thực sự, bạn cần cấu hình API keys cho blockchain network.
-              </p>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-3 py-1.5 rounded-full bg-white border border-border text-foreground font-medium shadow-sm">RPC_URL</span>
-                <span className="px-3 py-1.5 rounded-full bg-white border border-border text-foreground font-medium shadow-sm">EXPLORER_API_KEY</span>
-              </div>
             </div>
           </div>
         </div>
