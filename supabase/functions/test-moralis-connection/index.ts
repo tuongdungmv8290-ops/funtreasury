@@ -29,13 +29,17 @@ serve(async (req) => {
 
     // Test với địa chỉ zero để verify API key hoạt động
     const testAddress = '0x0000000000000000000000000000000000000000';
+    
+    // Use Headers object to properly handle special characters
+    const headers = new Headers();
+    headers.set('X-API-Key', api_key.trim());
+    headers.set('Accept', 'application/json');
+    
     const response = await fetch(
       `https://deep-index.moralis.io/api/v2.2/wallets/${testAddress}/transfers?chain=bsc&limit=1`,
       {
-        headers: {
-          'X-API-Key': api_key,
-          'Accept': 'application/json'
-        }
+        method: 'GET',
+        headers: headers
       }
     );
 
