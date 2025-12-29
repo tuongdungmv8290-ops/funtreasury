@@ -1,1 +1,4 @@
 project_id = "ubauaedefaafdmyygiiu"
+
+[functions.test-moralis-connection]
+verify_jwt = false
