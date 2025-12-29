@@ -38,6 +38,11 @@ const Settings = () => {
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [connectionMessage, setConnectionMessage] = useState('');
 
+  // Token contract addresses
+  const [camlyCoinAddress, setCamlyCoinAddress] = useState('');
+  const [usdtAddress, setUsdtAddress] = useState('');
+  const [btcbAddress, setBtcbAddress] = useState('');
+
   // Populate form when wallets load
   useEffect(() => {
     if (wallets.length > 0) {
@@ -291,6 +296,66 @@ const Settings = () => {
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Token Contracts Card */}
+        <div className="treasury-card mb-6 bg-white">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-inflow to-inflow/70 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-lg">💎</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Token Contracts</h2>
+              <p className="text-sm text-muted-foreground">Nhập contract address các token cần theo dõi</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* CAMLY COIN */}
+            <div className="space-y-2">
+              <Label htmlFor="camlyCoin" className="text-foreground font-medium flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary"></span>
+                CAMLY COIN
+              </Label>
+              <Input
+                id="camlyCoin"
+                value={camlyCoinAddress}
+                onChange={(e) => setCamlyCoinAddress(e.target.value)}
+                placeholder="0x... (Contract address)"
+                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+              />
+            </div>
+
+            {/* USDT */}
+            <div className="space-y-2">
+              <Label htmlFor="usdt" className="text-foreground font-medium flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-inflow"></span>
+                USDT (Tether)
+              </Label>
+              <Input
+                id="usdt"
+                value={usdtAddress}
+                onChange={(e) => setUsdtAddress(e.target.value)}
+                placeholder="0x... (Contract address)"
+                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+              />
+            </div>
+
+            {/* BTCB */}
+            <div className="space-y-2">
+              <Label htmlFor="btcb" className="text-foreground font-medium flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                BTCB (Bitcoin BEP20)
+              </Label>
+              <Input
+                id="btcb"
+                value={btcbAddress}
+                onChange={(e) => setBtcbAddress(e.target.value)}
+                placeholder="0x... (Contract address)"
+                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Save Button - Big Gold */}
