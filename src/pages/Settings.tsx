@@ -15,11 +15,13 @@ import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
+import { useApiSettings } from '@/hooks/useApiSettings';
 import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
   const { contracts, isLoading: isLoadingContracts, updateAllContracts, getContractBySymbol } = useTokenContracts();
+  const { settings: apiSettings, isLoading: isLoadingApiSettings, updateSetting, getSettingByKey } = useApiSettings();
   
   // Local state for form
   const [wallet1Name, setWallet1Name] = useState('');
@@ -73,6 +75,13 @@ const Settings = () => {
     }
   }, [contracts, getContractBySymbol]);
 
+  // Populate Moralis API key when loaded
+  useEffect(() => {
+    if (apiSettings.length > 0) {
+      setMoralisApiKey(getSettingByKey('MORALIS_API_KEY'));
+    }
+  }, [apiSettings, getSettingByKey]);
+
   const handleSaveWallets = async () => {
     if (wallets.length < 2) {
       toast.error('Không tìm thấy đủ ví trong database');
@@ -98,13 +107,18 @@ const Settings = () => {
     updateWallets(updatedWallets);
 
     // Save token contracts
-    const success = await updateAllContracts([
+    const contractsSuccess = await updateAllContracts([
       { symbol: 'CAMLY', contract_address: camlyCoinAddress },
       { symbol: 'USDT', contract_address: usdtAddress },
       { symbol: 'BTCB', contract_address: btcbAddress },
     ]);
 
-    if (success) {
+    // Save Moralis API key
+    if (moralisApiKey) {
+      updateSetting({ key_name: 'MORALIS_API_KEY', key_value: moralisApiKey });
+    }
+
+    if (contractsSuccess) {
       toast.success('Đã lưu tất cả cấu hình thành công');
     }
   };
@@ -159,7 +173,7 @@ const Settings = () => {
     }
   };
 
-  if (isLoading || isLoadingContracts) {
+  if (isLoading || isLoadingContracts || isLoadingApiSettings) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
