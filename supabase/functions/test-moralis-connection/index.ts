@@ -27,17 +27,14 @@ serve(async (req) => {
 
     console.log('Testing Moralis connection with provided API key...');
 
-    // Use a known address to verify API key works - Binance Hot Wallet
-    const testAddress = '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3';
-    
     // Use Headers object to properly handle special characters
     const headers = new Headers();
     headers.set('X-API-Key', api_key.trim());
     headers.set('Accept', 'application/json');
     
-    // Use the correct v2 endpoint for token balances
+    // Use web3 version endpoint - simple and always works for API key validation
     const response = await fetch(
-      `https://deep-index.moralis.io/api/v2/${testAddress}/erc20?chain=bsc`,
+      `https://deep-index.moralis.io/api/v2/web3/version`,
       {
         method: 'GET',
         headers: headers
