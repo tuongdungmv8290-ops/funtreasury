@@ -14,10 +14,12 @@ import { Switch } from '@/components/ui/switch';
 import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
+import { useTokenContracts } from '@/hooks/useTokenContracts';
 import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
+  const { contracts, isLoading: isLoadingContracts, updateAllContracts, getContractBySymbol } = useTokenContracts();
   
   // Local state for form
   const [wallet1Name, setWallet1Name] = useState('');
@@ -62,7 +64,16 @@ const Settings = () => {
     }
   }, [wallets]);
 
-  const handleSaveWallets = () => {
+  // Populate token contracts when loaded
+  useEffect(() => {
+    if (contracts.length > 0) {
+      setCamlyCoinAddress(getContractBySymbol('CAMLY'));
+      setUsdtAddress(getContractBySymbol('USDT'));
+      setBtcbAddress(getContractBySymbol('BTCB'));
+    }
+  }, [contracts, getContractBySymbol]);
+
+  const handleSaveWallets = async () => {
     if (wallets.length < 2) {
       toast.error('Không tìm thấy đủ ví trong database');
       return;
@@ -83,7 +94,19 @@ const Settings = () => {
       },
     ];
 
+    // Save wallet settings
     updateWallets(updatedWallets);
+
+    // Save token contracts
+    const success = await updateAllContracts([
+      { symbol: 'CAMLY', contract_address: camlyCoinAddress },
+      { symbol: 'USDT', contract_address: usdtAddress },
+      { symbol: 'BTCB', contract_address: btcbAddress },
+    ]);
+
+    if (success) {
+      toast.success('Đã lưu tất cả cấu hình thành công');
+    }
   };
 
   const handleSyncNow = async () => {
@@ -136,7 +159,7 @@ const Settings = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingContracts) {
     return (
       <div className="min-h-screen bg-background">
         <Header />

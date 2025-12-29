@@ -85,6 +85,33 @@ export type Database = {
           },
         ]
       }
+      token_contracts: {
+        Row: {
+          contract_address: string | null
+          created_at: string
+          id: string
+          name: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          contract_address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          contract_address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tokens: {
         Row: {
           balance: number
