@@ -47,7 +47,18 @@ export function TokenBalancesCard() {
     }
   }
 
-  const tokenList = Array.from(allTokens.values()).filter(t => t.totalBalance > 0);
+  // Sort tokens: CAMLY first, then FUN, then by balance
+  const tokenList = Array.from(allTokens.values())
+    .filter(t => t.totalBalance > 0)
+    .sort((a, b) => {
+      // Priority tokens first
+      const priority: Record<string, number> = { 'CAMLY': 0, 'FUN': 1, 'BNB': 2, 'USDT': 3, 'USDC': 4, 'BTCB': 5 };
+      const aPriority = priority[a.symbol] ?? 100;
+      const bPriority = priority[b.symbol] ?? 100;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+      // Then by balance
+      return b.totalBalance - a.totalBalance;
+    });
 
   // Get icon/color for each token
   const getTokenColor = (symbol: string) => {
