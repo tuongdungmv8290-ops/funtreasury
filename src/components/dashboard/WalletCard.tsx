@@ -4,6 +4,41 @@ import { cn } from '@/lib/utils';
 import { formatCurrency, shortenAddress } from '@/lib/mockData';
 import type { Wallet } from '@/hooks/useWallets';
 
+// Official token logos from CryptoLogos
+const TOKEN_LOGOS: Record<string, string> = {
+  'CAMLY': 'https://cryptologos.cc/logos/camly-coin-camly-logo.png',
+  'BNB': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
+  'USDT': 'https://cryptologos.cc/logos/tether-usdt-logo.png',
+  'BTC': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+  'BTCB': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+  'FUN': 'https://cryptologos.cc/logos/funtoken-fun-logo.png',
+  'USDC': 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
+};
+
+function TokenLogo({ symbol, size = 20 }: { symbol: string; size?: number }) {
+  const [hasError, setHasError] = useState(false);
+  const logoUrl = TOKEN_LOGOS[symbol];
+
+  if (!logoUrl || hasError) {
+    return (
+      <span className="text-xs font-bold text-muted-foreground">
+        {symbol.substring(0, 2)}
+      </span>
+    );
+  }
+
+  return (
+    <img 
+      src={logoUrl} 
+      alt={`${symbol} logo`}
+      className="rounded-full object-cover transition-transform duration-200 hover:scale-110"
+      style={{ width: size, height: size }}
+      onError={() => setHasError(true)}
+      loading="lazy"
+    />
+  );
+}
+
 interface WalletCardProps {
   wallet: Wallet;
   index: number;
@@ -102,17 +137,22 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
                 {filteredTokens.map((token) => (
                   <div
                     key={token.id}
-                    className="px-3 py-2.5 rounded-xl bg-secondary/70 border border-border/60 hover:border-treasury-gold/30 transition-colors"
+                    className="px-3 py-2.5 rounded-xl bg-secondary/70 border border-border/60 hover:border-treasury-gold/30 transition-all duration-200 group"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">{token.symbol}</span>
-                      <span className="text-xs text-muted-foreground font-medium">
-                        {formatCurrency(token.usd_value)}
-                      </span>
+                    <div className="flex items-center gap-2">
+                      <TokenLogo symbol={token.symbol} size={20} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-foreground">{token.symbol}</span>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {formatCurrency(token.usd_value)}
+                          </span>
+                        </div>
+                        <p className="text-sm font-mono text-muted-foreground truncate">
+                          {token.balance.toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-sm font-mono text-muted-foreground mt-1">
-                      {token.balance.toLocaleString()}
-                    </p>
                   </div>
                 ))}
               </div>
