@@ -1,9 +1,10 @@
 import { useTokenBalances, WalletBalances } from '@/hooks/useTokenBalances';
-import { Loader2, Coins, RefreshCw, AlertCircle } from 'lucide-react';
+import { Loader2, Coins, RefreshCw, AlertCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 export function TokenBalancesCard() {
   const { data: balances, isLoading, error, refetch } = useTokenBalances();
@@ -16,7 +17,7 @@ export function TokenBalancesCard() {
       await refetch();
       toast.success('Đã cập nhật số dư token!');
     } catch (e) {
-      toast.error('Không thể cập nhật số dư');
+      // Error handled below
     } finally {
       setIsRefreshing(false);
     }
@@ -60,6 +61,9 @@ export function TokenBalancesCard() {
     return colors[symbol] || 'from-gray-400 to-gray-600';
   };
 
+  // Check if error is due to missing API key
+  const isApiKeyMissing = error?.message?.includes('API Key') || error?.message?.includes('Moralis');
+
   if (isLoading) {
     return (
       <div className="treasury-card">
@@ -80,9 +84,21 @@ export function TokenBalancesCard() {
           </div>
           <h3 className="text-lg font-semibold text-foreground">Token Balances</h3>
         </div>
-        <div className="flex items-center gap-2 text-outflow bg-outflow/10 p-3 rounded-lg">
-          <AlertCircle className="w-5 h-5" />
-          <span className="text-sm">Không thể tải số dư. Kiểm tra cấu hình API key.</span>
+        <div className="flex flex-col gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
+          <div className="flex items-center gap-2 text-primary">
+            <AlertCircle className="w-5 h-5" />
+            <span className="text-sm font-medium">
+              {isApiKeyMissing ? 'Cần cấu hình Moralis API Key' : 'Không thể tải số dư'}
+            </span>
+          </div>
+          {isApiKeyMissing && (
+            <Link to="/settings">
+              <Button variant="outline" size="sm" className="gap-2 border-primary/50 text-primary hover:bg-primary/10">
+                <Settings className="w-4 h-4" />
+                Đi tới Settings
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     );
