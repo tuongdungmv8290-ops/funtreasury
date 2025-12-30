@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface MoralisTransfer {
+interface ERC20Transfer {
   transaction_hash: string;
   block_number: string;
   block_timestamp: string;
@@ -15,6 +15,16 @@ interface MoralisTransfer {
   value: string;
   token_symbol?: string;
   token_address?: string | null;
+  token_decimals?: string;
+}
+
+interface NativeTransfer {
+  hash: string; // Native uses 'hash' not 'transaction_hash'
+  block_number: string;
+  block_timestamp: string;
+  from_address: string;
+  to_address: string;
+  value: string;
 }
 
 interface WalletData {
@@ -34,6 +44,18 @@ function getMoralisChain(chain: string): string {
     'BASE': '0x2105',   // Base Mainnet
   };
   return chainMap[chain] || '0x38'; // Default to BSC
+}
+
+// Get native token symbol for chain
+function getNativeSymbol(chain: string): string {
+  const symbols: Record<string, string> = {
+    'BNB': 'BNB',
+    'ETH': 'ETH',
+    'POLYGON': 'MATIC',
+    'ARB': 'ETH',
+    'BASE': 'ETH',
+  };
+  return symbols[chain] || 'BNB';
 }
 
 serve(async (req) => {
@@ -133,66 +155,74 @@ serve(async (req) => {
       
       try {
         const moralisChain = getMoralisChain(wallet.chain);
-        
-        // Fetch ERC20 token transfers
-        const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=100`;
-        
-        console.log(`Calling Moralis API: ${transfersUrl}`);
+        const nativeSymbol = getNativeSymbol(wallet.chain);
         
         const headers = new Headers();
         headers.set('X-API-Key', moralisApiKey.trim());
         headers.set('Accept', 'application/json');
+
+        // Fetch ERC20 token transfers
+        const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=100`;
+        console.log(`Calling Moralis ERC20 API: ${transfersUrl}`);
         
         const response = await fetch(transfersUrl, {
           method: 'GET',
           headers: headers
         });
 
-        if (!response.ok) {
+        let erc20Transfers: ERC20Transfer[] = [];
+        if (response.ok) {
+          const data = await response.json();
+          erc20Transfers = data.result || [];
+          console.log(`Found ${erc20Transfers.length} ERC20 transfers for ${wallet.name}`);
+        } else {
           const errorText = await response.text();
-          console.error(`Moralis API error for ${wallet.name}:`, response.status, errorText);
-          syncResults.push({ wallet: wallet.name, newTxCount: 0, error: `API error: ${response.status}` });
-          continue;
+          console.error(`Moralis ERC20 API error for ${wallet.name}:`, response.status, errorText);
         }
 
-        const data = await response.json();
-        const transfers: MoralisTransfer[] = data.result || [];
+        // Fetch native token (BNB/ETH) transfers - uses different endpoint
+        const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=100`;
+        console.log(`Calling Moralis Native API: ${nativeUrl}`);
         
-        console.log(`Found ${transfers.length} transfers for ${wallet.name}`);
-
-        // Also fetch native token (BNB/ETH) transfers
-        const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=50`;
         const nativeResponse = await fetch(nativeUrl, {
           method: 'GET',
           headers: headers
         });
 
-        let nativeTransfers: MoralisTransfer[] = [];
+        let nativeTransfers: NativeTransfer[] = [];
         if (nativeResponse.ok) {
           const nativeData = await nativeResponse.json();
-          nativeTransfers = (nativeData.result || []).filter((tx: any) => tx.value && tx.value !== '0');
+          // Filter only transactions with value (native token transfers)
+          nativeTransfers = (nativeData.result || []).filter((tx: NativeTransfer) => 
+            tx.value && tx.value !== '0' && tx.hash
+          );
           console.log(`Found ${nativeTransfers.length} native transfers for ${wallet.name}`);
+        } else {
+          console.error(`Moralis Native API error for ${wallet.name}:`, nativeResponse.status);
         }
 
-        // Combine all transfers
-        const allTransfers = [...transfers, ...nativeTransfers];
-
-        if (allTransfers.length === 0) {
+        if (erc20Transfers.length === 0 && nativeTransfers.length === 0) {
           console.log(`No transfers found for ${wallet.name}`);
           syncResults.push({ wallet: wallet.name, newTxCount: 0 });
           continue;
         }
 
-        // 4. Upsert transactions (prevent duplicates using tx_hash)
+        // 4. Process and upsert transactions
         let newTxCount = 0;
-        
-        for (const tx of allTransfers) {
+
+        // Process ERC20 transfers
+        for (const tx of erc20Transfers) {
+          if (!tx.transaction_hash) {
+            console.log('Skipping ERC20 tx without hash');
+            continue;
+          }
+
           const direction = tx.to_address?.toLowerCase() === wallet.address.toLowerCase() ? 'IN' : 'OUT';
           
-          // Calculate value in decimal format
+          // Calculate value with decimals
           let amount = 0;
           try {
-            const decimals = tx.token_symbol ? 18 : 18; // Default to 18 decimals
+            const decimals = tx.token_decimals ? parseInt(tx.token_decimals) : 18;
             amount = parseFloat(tx.value) / Math.pow(10, decimals);
           } catch {
             amount = 0;
@@ -207,9 +237,9 @@ serve(async (req) => {
             to_address: tx.to_address || '',
             direction: direction,
             token_address: tx.token_address || null,
-            token_symbol: tx.token_symbol || (wallet.chain === 'BNB' ? 'BNB' : 'ETH'),
+            token_symbol: tx.token_symbol || 'UNKNOWN',
             amount: amount,
-            usd_value: 0, // Will be calculated later with price API
+            usd_value: 0,
             gas_fee: 0,
             status: 'success'
           };
@@ -227,7 +257,60 @@ serve(async (req) => {
               .insert(transactionData);
 
             if (insertError) {
-              console.error(`Error inserting tx ${tx.transaction_hash}:`, insertError);
+              console.error(`Error inserting ERC20 tx ${tx.transaction_hash}:`, insertError);
+            } else {
+              newTxCount++;
+            }
+          }
+        }
+
+        // Process native transfers (BNB/ETH) - uses 'hash' field
+        for (const tx of nativeTransfers) {
+          if (!tx.hash) {
+            console.log('Skipping native tx without hash');
+            continue;
+          }
+
+          const direction = tx.to_address?.toLowerCase() === wallet.address.toLowerCase() ? 'IN' : 'OUT';
+          
+          // Native token has 18 decimals
+          let amount = 0;
+          try {
+            amount = parseFloat(tx.value) / Math.pow(10, 18);
+          } catch {
+            amount = 0;
+          }
+
+          const transactionData = {
+            wallet_id: wallet.id,
+            tx_hash: tx.hash, // Use 'hash' for native transfers
+            block_number: parseInt(tx.block_number) || 0,
+            timestamp: tx.block_timestamp || new Date().toISOString(),
+            from_address: tx.from_address || '',
+            to_address: tx.to_address || '',
+            direction: direction,
+            token_address: null,
+            token_symbol: nativeSymbol,
+            amount: amount,
+            usd_value: 0,
+            gas_fee: 0,
+            status: 'success'
+          };
+
+          // Check if transaction already exists
+          const { data: existing } = await supabase
+            .from('transactions')
+            .select('id')
+            .eq('tx_hash', tx.hash)
+            .maybeSingle();
+
+          if (!existing) {
+            const { error: insertError } = await supabase
+              .from('transactions')
+              .insert(transactionData);
+
+            if (insertError) {
+              console.error(`Error inserting native tx ${tx.hash}:`, insertError);
             } else {
               newTxCount++;
             }
@@ -239,13 +322,19 @@ serve(async (req) => {
         totalNewTransactions += newTxCount;
 
         // 5. Update sync state
+        const maxBlockNumber = Math.max(
+          ...erc20Transfers.map(t => parseInt(t.block_number) || 0),
+          ...nativeTransfers.map(t => parseInt(t.block_number) || 0),
+          0
+        );
+
         const { error: syncStateError } = await supabase
           .from('sync_state')
           .upsert({
             wallet_id: wallet.id,
             last_sync_at: new Date().toISOString(),
             sync_status: 'idle',
-            last_block_synced: allTransfers.length > 0 ? parseInt(allTransfers[0].block_number) : 0
+            last_block_synced: maxBlockNumber
           }, {
             onConflict: 'wallet_id'
           });
@@ -268,9 +357,12 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Sync thành công! Đã thêm ${totalNewTransactions} giao dịch mới.`,
+      message: totalNewTransactions > 0 
+        ? `Sync thành công! Đã thêm ${totalNewTransactions} giao dịch mới.`
+        : 'Sync hoàn tất! Không có giao dịch mới.',
       totalNewTransactions,
-      results: syncResults
+      results: syncResults,
+      syncTime: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

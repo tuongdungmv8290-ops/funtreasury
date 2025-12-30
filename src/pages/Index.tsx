@@ -31,23 +31,37 @@ const Index = () => {
 
   const handleSyncNow = async () => {
     setIsSyncing(true);
+    toast.loading('🔄 Đang sync transactions từ BNB Chain...', { id: 'sync-toast' });
+    
     try {
-      // Call real sync function
       const { data, error } = await supabase.functions.invoke('sync-transactions');
       
       if (error) {
-        toast.error('Không thể sync transactions');
+        toast.error('❌ Không thể sync transactions', { id: 'sync-toast' });
       } else if (data?.success) {
-        toast.success(`🎉 ${data.message}`);
+        const syncTime = new Date(data.syncTime).toLocaleTimeString('vi-VN');
+        if (data.totalNewTransactions > 0) {
+          toast.success(
+            `🎉 Sync hoàn tất! Thêm ${data.totalNewTransactions} giao dịch mới – Dashboard cập nhật realtime!`,
+            { id: 'sync-toast', duration: 5000 }
+          );
+        } else {
+          toast.success(
+            `✅ Sync hoàn tất lúc ${syncTime} – Không có giao dịch mới`,
+            { id: 'sync-toast', duration: 3000 }
+          );
+        }
+        
+        // Auto refresh all data after successful sync
+        queryClient.invalidateQueries({ queryKey: ['token-balances'] });
+        queryClient.invalidateQueries({ queryKey: ['wallets'] });
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        queryClient.invalidateQueries({ queryKey: ['transaction-stats'] });
       } else {
-        toast.error(data?.error || 'Sync failed');
+        toast.error(`❌ ${data?.error || 'Sync failed'}`, { id: 'sync-toast' });
       }
-      
-      // Also refresh token balances
-      queryClient.invalidateQueries({ queryKey: ['token-balances'] });
-      handleRefresh();
     } catch (e) {
-      toast.error('Lỗi kết nối');
+      toast.error('❌ Lỗi kết nối tới server', { id: 'sync-toast' });
     } finally {
       setIsSyncing(false);
     }
