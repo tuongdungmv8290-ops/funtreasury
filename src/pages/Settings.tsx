@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Clipboard } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Clipboard, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
@@ -27,6 +27,27 @@ const isValidContractAddress = (address: string): boolean => {
 // Validate Moralis API key
 const isValidMoralisKey = (key: string): boolean => {
   return key.length > 50;
+};
+
+// Helper to copy to clipboard
+const copyToClipboard = async (text: string, label: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success(`Đã copy ${label}`);
+  } catch {
+    toast.error('Không thể copy');
+  }
+};
+
+// Helper to paste from clipboard
+const pasteFromClipboard = async (): Promise<string | null> => {
+  try {
+    const text = await navigator.clipboard.readText();
+    return text;
+  } catch {
+    toast.error('Không thể đọc clipboard - hãy paste trực tiếp (Ctrl+V)');
+    return null;
+  }
 };
 
 const Settings = () => {
@@ -396,6 +417,11 @@ const Settings = () => {
             </div>
           </div>
 
+          <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
+            <span>💡</span>
+            Paste contract address trực tiếp (Ctrl+V) hoặc dùng nút Paste – dữ liệu lưu vĩnh viễn
+          </p>
+
           <div className="space-y-4">
             {/* CAMLY COIN */}
             <div className="space-y-2">
@@ -411,41 +437,64 @@ const Settings = () => {
                   onChange={(e) => {
                     const value = e.target.value;
                     setCamlyCoinAddress(value);
-                    if (value && !isValidContractAddress(value)) {
-                      toast.error('Contract address phải bắt đầu bằng 0x và có 42 ký tự');
+                    if (value && isValidContractAddress(value) && value.length === 42) {
+                      toast.success('✅ CAMLY Contract hợp lệ!', { duration: 2000 });
                     }
                   }}
                   placeholder="0x... (Contract address)"
-                  className={`font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm ${
-                    camlyCoinAddress && !isValidContractAddress(camlyCoinAddress) ? 'border-outflow' : ''
+                  className={`font-mono text-sm bg-secondary/30 shadow-sm transition-all duration-200 ${
+                    camlyCoinAddress && !isValidContractAddress(camlyCoinAddress) 
+                      ? 'border-outflow focus:border-outflow focus:ring-outflow/20' 
+                      : camlyCoinAddress && isValidContractAddress(camlyCoinAddress)
+                        ? 'border-inflow focus:border-inflow focus:ring-inflow/20'
+                        : 'border-border focus:border-primary focus:ring-primary/20'
                   }`}
                 />
+                {/* Paste Button */}
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
                   onClick={async () => {
-                    try {
-                      const text = await navigator.clipboard.readText();
+                    const text = await pasteFromClipboard();
+                    if (text) {
                       setCamlyCoinAddress(text);
-                      if (isValidContractAddress(text)) {
-                        toast.success('Đã paste CAMLY contract address');
+                      if (isValidContractAddress(text) && text.length === 42) {
+                        toast.success('✅ Đã paste CAMLY contract hợp lệ!');
                       } else {
                         toast.error('Contract address không hợp lệ (phải 0x + 40 ký tự hex)');
                       }
-                    } catch {
-                      toast.error('Không thể đọc clipboard');
                     }
                   }}
                   className="shrink-0 border-border hover:bg-primary/10 hover:border-primary"
+                  title="Paste từ clipboard"
                 >
                   <Clipboard className="w-4 h-4" />
                 </Button>
+                {/* Copy Button - only show when has valid address */}
+                {camlyCoinAddress && isValidContractAddress(camlyCoinAddress) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(camlyCoinAddress, 'CAMLY contract')}
+                    className="shrink-0 border-inflow/50 hover:bg-inflow/10 hover:border-inflow text-inflow"
+                    title="Copy địa chỉ"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
               {camlyCoinAddress && !isValidContractAddress(camlyCoinAddress) && (
                 <p className="text-xs text-outflow flex items-center gap-1">
                   <XCircle className="w-3 h-3" />
                   Địa chỉ phải bắt đầu bằng 0x và có đúng 42 ký tự
+                </p>
+              )}
+              {camlyCoinAddress && isValidContractAddress(camlyCoinAddress) && (
+                <p className="text-xs text-inflow flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  Contract hợp lệ
                 </p>
               )}
             </div>
@@ -464,13 +513,17 @@ const Settings = () => {
                   onChange={(e) => {
                     const value = e.target.value;
                     setUsdtAddress(value);
-                    if (value && !isValidContractAddress(value)) {
-                      toast.error('Contract address phải bắt đầu bằng 0x và có 42 ký tự');
+                    if (value && isValidContractAddress(value) && value.length === 42) {
+                      toast.success('✅ USDT Contract hợp lệ!', { duration: 2000 });
                     }
                   }}
                   placeholder="0x... (Contract address)"
-                  className={`font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm ${
-                    usdtAddress && !isValidContractAddress(usdtAddress) ? 'border-outflow' : ''
+                  className={`font-mono text-sm bg-secondary/30 shadow-sm transition-all duration-200 ${
+                    usdtAddress && !isValidContractAddress(usdtAddress) 
+                      ? 'border-outflow focus:border-outflow focus:ring-outflow/20' 
+                      : usdtAddress && isValidContractAddress(usdtAddress)
+                        ? 'border-inflow focus:border-inflow focus:ring-inflow/20'
+                        : 'border-border focus:border-primary focus:ring-primary/20'
                   }`}
                 />
                 <Button
@@ -478,27 +531,44 @@ const Settings = () => {
                   variant="outline"
                   size="icon"
                   onClick={async () => {
-                    try {
-                      const text = await navigator.clipboard.readText();
+                    const text = await pasteFromClipboard();
+                    if (text) {
                       setUsdtAddress(text);
-                      if (isValidContractAddress(text)) {
-                        toast.success('Đã paste USDT contract address');
+                      if (isValidContractAddress(text) && text.length === 42) {
+                        toast.success('✅ Đã paste USDT contract hợp lệ!');
                       } else {
                         toast.error('Contract address không hợp lệ (phải 0x + 40 ký tự hex)');
                       }
-                    } catch {
-                      toast.error('Không thể đọc clipboard');
                     }
                   }}
                   className="shrink-0 border-border hover:bg-primary/10 hover:border-primary"
+                  title="Paste từ clipboard"
                 >
                   <Clipboard className="w-4 h-4" />
                 </Button>
+                {usdtAddress && isValidContractAddress(usdtAddress) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(usdtAddress, 'USDT contract')}
+                    className="shrink-0 border-inflow/50 hover:bg-inflow/10 hover:border-inflow text-inflow"
+                    title="Copy địa chỉ"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
               {usdtAddress && !isValidContractAddress(usdtAddress) && (
                 <p className="text-xs text-outflow flex items-center gap-1">
                   <XCircle className="w-3 h-3" />
                   Địa chỉ phải bắt đầu bằng 0x và có đúng 42 ký tự
+                </p>
+              )}
+              {usdtAddress && isValidContractAddress(usdtAddress) && (
+                <p className="text-xs text-inflow flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  Contract hợp lệ
                 </p>
               )}
             </div>
@@ -517,13 +587,17 @@ const Settings = () => {
                   onChange={(e) => {
                     const value = e.target.value;
                     setBtcbAddress(value);
-                    if (value && !isValidContractAddress(value)) {
-                      toast.error('Contract address phải bắt đầu bằng 0x và có 42 ký tự');
+                    if (value && isValidContractAddress(value) && value.length === 42) {
+                      toast.success('✅ BTCB Contract hợp lệ!', { duration: 2000 });
                     }
                   }}
                   placeholder="0x... (Contract address)"
-                  className={`font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm ${
-                    btcbAddress && !isValidContractAddress(btcbAddress) ? 'border-outflow' : ''
+                  className={`font-mono text-sm bg-secondary/30 shadow-sm transition-all duration-200 ${
+                    btcbAddress && !isValidContractAddress(btcbAddress) 
+                      ? 'border-outflow focus:border-outflow focus:ring-outflow/20' 
+                      : btcbAddress && isValidContractAddress(btcbAddress)
+                        ? 'border-inflow focus:border-inflow focus:ring-inflow/20'
+                        : 'border-border focus:border-primary focus:ring-primary/20'
                   }`}
                 />
                 <Button
@@ -531,27 +605,44 @@ const Settings = () => {
                   variant="outline"
                   size="icon"
                   onClick={async () => {
-                    try {
-                      const text = await navigator.clipboard.readText();
+                    const text = await pasteFromClipboard();
+                    if (text) {
                       setBtcbAddress(text);
-                      if (isValidContractAddress(text)) {
-                        toast.success('Đã paste BTCB contract address');
+                      if (isValidContractAddress(text) && text.length === 42) {
+                        toast.success('✅ Đã paste BTCB contract hợp lệ!');
                       } else {
                         toast.error('Contract address không hợp lệ (phải 0x + 40 ký tự hex)');
                       }
-                    } catch {
-                      toast.error('Không thể đọc clipboard');
                     }
                   }}
                   className="shrink-0 border-border hover:bg-primary/10 hover:border-primary"
+                  title="Paste từ clipboard"
                 >
                   <Clipboard className="w-4 h-4" />
                 </Button>
+                {btcbAddress && isValidContractAddress(btcbAddress) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(btcbAddress, 'BTCB contract')}
+                    className="shrink-0 border-inflow/50 hover:bg-inflow/10 hover:border-inflow text-inflow"
+                    title="Copy địa chỉ"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
               {btcbAddress && !isValidContractAddress(btcbAddress) && (
                 <p className="text-xs text-outflow flex items-center gap-1">
                   <XCircle className="w-3 h-3" />
                   Địa chỉ phải bắt đầu bằng 0x và có đúng 42 ký tự
+                </p>
+              )}
+              {btcbAddress && isValidContractAddress(btcbAddress) && (
+                <p className="text-xs text-inflow flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  Contract hợp lệ
                 </p>
               )}
             </div>
@@ -646,6 +737,10 @@ const Settings = () => {
               <Label htmlFor="moralisApiKey" className="text-foreground font-medium">
                 Moralis API Key <span className="text-outflow">*</span>
               </Label>
+              <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                <span>💡</span>
+                Paste API key trực tiếp (Ctrl+V) hoặc dùng nút Paste
+              </p>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Input
@@ -656,12 +751,16 @@ const Settings = () => {
                       const value = e.target.value;
                       setMoralisApiKey(value);
                       if (value && isValidMoralisKey(value)) {
-                        toast.success('API Key hợp lệ!');
+                        toast.success('✅ API Key hợp lệ!', { duration: 2000 });
                       }
                     }}
                     placeholder="Nhập Moralis API key miễn phí..."
-                    className={`bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-base pr-12 font-mono ${
-                      moralisApiKey && !isValidMoralisKey(moralisApiKey) ? 'border-outflow' : ''
+                    className={`bg-white shadow-sm text-base pr-12 font-mono transition-all duration-200 ${
+                      moralisApiKey && !isValidMoralisKey(moralisApiKey) 
+                        ? 'border-outflow focus:border-outflow focus:ring-outflow/20' 
+                        : moralisApiKey && isValidMoralisKey(moralisApiKey)
+                          ? 'border-inflow focus:border-inflow focus:ring-inflow/20'
+                          : 'border-border focus:border-primary focus:ring-primary/20'
                     }`}
                   />
                   <button
@@ -681,23 +780,46 @@ const Settings = () => {
                   variant="outline"
                   size="icon"
                   onClick={async () => {
-                    try {
-                      const text = await navigator.clipboard.readText();
+                    const text = await pasteFromClipboard();
+                    if (text) {
                       setMoralisApiKey(text);
                       if (isValidMoralisKey(text)) {
-                        toast.success('Đã paste API Key hợp lệ!');
+                        toast.success('✅ Đã paste API Key hợp lệ!');
                       } else {
                         toast.error('API Key phải có hơn 50 ký tự');
                       }
-                    } catch {
-                      toast.error('Không thể đọc clipboard');
                     }
                   }}
                   className="shrink-0 border-border hover:bg-primary/10 hover:border-primary h-10 w-10"
+                  title="Paste từ clipboard"
                 >
                   <Clipboard className="w-4 h-4" />
                 </Button>
+                {moralisApiKey && isValidMoralisKey(moralisApiKey) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(moralisApiKey, 'API Key')}
+                    className="shrink-0 border-inflow/50 hover:bg-inflow/10 hover:border-inflow text-inflow h-10 w-10"
+                    title="Copy API Key"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
+              {moralisApiKey && !isValidMoralisKey(moralisApiKey) && (
+                <p className="text-xs text-outflow flex items-center gap-1 mt-1">
+                  <XCircle className="w-3 h-3" />
+                  API Key phải có hơn 50 ký tự
+                </p>
+              )}
+              {moralisApiKey && isValidMoralisKey(moralisApiKey) && (
+                <p className="text-xs text-inflow flex items-center gap-1 mt-1">
+                  <CheckCircle className="w-3 h-3" />
+                  API Key hợp lệ
+                </p>
+              )}
               {moralisApiKey && !isValidMoralisKey(moralisApiKey) && (
                 <p className="text-xs text-outflow flex items-center gap-1">
                   <XCircle className="w-3 h-3" />
