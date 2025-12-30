@@ -152,10 +152,32 @@ const Settings = () => {
 
   const handleSyncNow = async () => {
     setIsSyncing(true);
-    // Simulate sync - will be implemented in Checkpoint 4.2
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSyncing(false);
-    toast.success('Sync completed! (Demo mode)');
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-transactions');
+      
+      if (error) {
+        console.error('Sync function error:', error);
+        toast.error('Không thể kết nối tới server sync');
+        return;
+      }
+      
+      if (data?.success) {
+        const newTxCount = data.totalNewTransactions || 0;
+        toast.success(`🎉 ${data.message}`, {
+          description: data.results?.map((r: any) => 
+            `${r.wallet}: +${r.newTxCount} tx${r.error ? ` (${r.error})` : ''}`
+          ).join(' | ')
+        });
+      } else {
+        toast.error(data?.error || 'Sync failed');
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      toast.error('Lỗi kết nối khi sync');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleTestMoralisConnection = async () => {
