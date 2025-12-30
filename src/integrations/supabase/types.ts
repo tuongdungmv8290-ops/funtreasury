@@ -74,6 +74,7 @@ export type Database = {
           error_message: string | null
           id: string
           last_block_synced: number
+          last_cursor: string | null
           last_sync_at: string | null
           sync_status: string
           updated_at: string
@@ -84,6 +85,7 @@ export type Database = {
           error_message?: string | null
           id?: string
           last_block_synced?: number
+          last_cursor?: string | null
           last_sync_at?: string | null
           sync_status?: string
           updated_at?: string
@@ -94,6 +96,7 @@ export type Database = {
           error_message?: string | null
           id?: string
           last_block_synced?: number
+          last_cursor?: string | null
           last_sync_at?: string | null
           sync_status?: string
           updated_at?: string
