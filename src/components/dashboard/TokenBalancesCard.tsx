@@ -57,8 +57,19 @@ export function TokenBalancesCard() {
       'USDT': 'from-green-400 to-green-600',
       'BTCB': 'from-orange-400 to-orange-600',
       'CAMLY': 'from-purple-400 to-pink-500',
+      'FUN': 'from-primary to-primary/70',
+      'USDC': 'from-blue-500 to-blue-700',
     };
     return colors[symbol] || 'from-gray-400 to-gray-600';
+  };
+
+  // Get display name for token
+  const getTokenDisplayName = (symbol: string, name: string) => {
+    const displayNames: Record<string, string> = {
+      'CAMLY': 'CAMLY COIN',
+      'FUN': 'FUN Token',
+    };
+    return displayNames[symbol] || name;
   };
 
   // Check if error is due to missing API key
@@ -147,7 +158,7 @@ export function TokenBalancesCard() {
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">{token.symbol}</p>
-                  <p className="text-xs text-muted-foreground">{token.name}</p>
+                  <p className="text-xs text-muted-foreground">{getTokenDisplayName(token.symbol, token.name)}</p>
                 </div>
               </div>
               <div className="text-right">

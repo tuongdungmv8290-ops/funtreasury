@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { InputWithPaste } from '@/components/ui/input-with-paste';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -11,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2 } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
@@ -227,7 +228,9 @@ const Settings = () => {
         { symbol: 'BTCB', contract_address: btcbAddress },
       ]);
       if (success) {
-        toast.success('Đã lưu Token Contracts thành công');
+        toast.success('Đã lưu Token Contracts thành công!', {
+          description: 'Dữ liệu sẽ giữ nguyên sau khi reload trang.'
+        });
       }
     } finally {
       setIsSavingContracts(false);
@@ -243,6 +246,9 @@ const Settings = () => {
     setIsSavingApiKey(true);
     try {
       await updateSettingAsync({ key_name: 'MORALIS_API_KEY', key_value: moralisApiKey.trim() });
+      toast.success('Đã lưu Moralis API Key thành công!', {
+        description: 'Dữ liệu sẽ giữ nguyên sau khi reload trang.'
+      });
     } finally {
       setIsSavingApiKey(false);
     }
@@ -509,45 +515,56 @@ const Settings = () => {
           <div className="space-y-4">
             {/* CAMLY COIN */}
             <div className="space-y-2">
-              <Label htmlFor="camlyCoin" className="text-foreground font-medium">
+              <Label htmlFor="camlyCoin" className="text-foreground font-medium flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></span>
                 CAMLY COIN
               </Label>
-              <Input
+              <InputWithPaste
                 id="camlyCoin"
                 value={camlyCoinAddress}
                 onChange={(e) => setCamlyCoinAddress(e.target.value)}
-                placeholder="0x..."
+                placeholder="0x... (paste contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
             </div>
 
             {/* USDT */}
             <div className="space-y-2">
-              <Label htmlFor="usdt" className="text-foreground font-medium">
+              <Label htmlFor="usdt" className="text-foreground font-medium flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 USDT (Tether)
               </Label>
-              <Input
+              <InputWithPaste
                 id="usdt"
                 value={usdtAddress}
                 onChange={(e) => setUsdtAddress(e.target.value)}
-                placeholder="0x..."
+                placeholder="0x... (paste contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
             </div>
 
             {/* BTCB */}
             <div className="space-y-2">
-              <Label htmlFor="btcb" className="text-foreground font-medium">
+              <Label htmlFor="btcb" className="text-foreground font-medium flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
                 BTCB (Bitcoin BEP20)
               </Label>
-              <Input
+              <InputWithPaste
                 id="btcb"
                 value={btcbAddress}
                 onChange={(e) => setBtcbAddress(e.target.value)}
-                placeholder="0x..."
+                placeholder="0x... (paste contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
             </div>
+          </div>
+
+          {/* Note */}
+          <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
+            <p className="text-xs text-muted-foreground flex items-center gap-2">
+              <ClipboardPaste className="w-3.5 h-3.5 text-primary" />
+              <span>Paste contract/API key suôn sẻ – lưu vĩnh viễn! Ctrl+V hoặc nhấn icon paste.</span>
+            </p>
           </div>
 
           {/* Save Token Contracts Button */}
@@ -635,19 +652,19 @@ const Settings = () => {
               <Label htmlFor="moralisApiKey" className="text-foreground font-medium">
                 Moralis API Key <span className="text-outflow">*</span>
               </Label>
-              <div className="relative">
-                <Input
+              <div className="relative flex items-center">
+                <InputWithPaste
                   id="moralisApiKey"
                   type={showMoralisKey ? 'text' : 'password'}
                   value={moralisApiKey}
                   onChange={(e) => setMoralisApiKey(e.target.value)}
-                  placeholder="Nhập Moralis API key..."
-                  className="bg-secondary/30 shadow-sm text-sm pr-12 font-mono border-border focus:border-primary focus:ring-primary/20"
+                  placeholder="Nhập Moralis API key... (paste hoặc Ctrl+V)"
+                  className="bg-secondary/30 shadow-sm text-sm pr-20 font-mono border-border focus:border-primary focus:ring-primary/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowMoralisKey(!showMoralisKey)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-10 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
                   title={showMoralisKey ? 'Ẩn' : 'Hiện'}
                 >
                   {showMoralisKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
