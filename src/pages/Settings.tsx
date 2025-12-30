@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
@@ -47,6 +47,111 @@ const Settings = () => {
   const [camlyCoinAddress, setCamlyCoinAddress] = useState('');
   const [usdtAddress, setUsdtAddress] = useState('');
   const [btcbAddress, setBtcbAddress] = useState('');
+
+  // Admin management
+  const [newAdminUserId, setNewAdminUserId] = useState('');
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
+  const [adminList, setAdminList] = useState<{ user_id: string; email?: string }[]>([]);
+  const [isLoadingAdmins, setIsLoadingAdmins] = useState(false);
+
+  // Fetch admin list
+  const fetchAdmins = async () => {
+    setIsLoadingAdmins(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      
+      if (error) {
+        console.error('Error fetching admins:', error);
+        return;
+      }
+      
+      // Get emails from profiles
+      if (data && data.length > 0) {
+        const userIds = data.map(d => d.user_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, email')
+          .in('user_id', userIds);
+        
+        const adminsWithEmail = data.map(admin => ({
+          user_id: admin.user_id,
+          email: profiles?.find(p => p.user_id === admin.user_id)?.email || 'Unknown'
+        }));
+        
+        setAdminList(adminsWithEmail);
+      } else {
+        setAdminList([]);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    } finally {
+      setIsLoadingAdmins(false);
+    }
+  };
+
+  // Add new admin
+  const handleAddAdmin = async () => {
+    if (!newAdminUserId.trim()) {
+      toast.error('Vui lòng nhập User ID');
+      return;
+    }
+
+    setIsAddingAdmin(true);
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({ user_id: newAdminUserId.trim(), role: 'admin' });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('User này đã là admin');
+        } else {
+          console.error('Error adding admin:', error);
+          toast.error('Không thể thêm admin: ' + error.message);
+        }
+        return;
+      }
+
+      toast.success('Đã thêm admin mới thành công!');
+      setNewAdminUserId('');
+      fetchAdmins();
+    } catch (err) {
+      console.error('Error:', err);
+      toast.error('Có lỗi xảy ra');
+    } finally {
+      setIsAddingAdmin(false);
+    }
+  };
+
+  // Remove admin
+  const handleRemoveAdmin = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId)
+        .eq('role', 'admin');
+
+      if (error) {
+        console.error('Error removing admin:', error);
+        toast.error('Không thể xóa admin');
+        return;
+      }
+
+      toast.success('Đã xóa admin');
+      fetchAdmins();
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  };
+
+  // Load admins on mount
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
 
   // Populate form when wallets load
   useEffect(() => {
@@ -660,6 +765,101 @@ const Settings = () => {
                 {isSyncing ? 'Syncing...' : 'Sync Now'}
               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* Admin Management */}
+        <div className="treasury-card mb-6 bg-white">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-destructive/20 to-destructive/10 border border-destructive/30 flex items-center justify-center shadow-sm">
+              <Shield className="w-6 h-6 text-destructive" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Admin Management</h2>
+              <p className="text-sm text-muted-foreground">Quản lý quyền admin cho Treasury</p>
+            </div>
+          </div>
+
+          {/* Add New Admin */}
+          <div className="space-y-4 mb-6">
+            <Label className="text-foreground font-medium">Thêm Admin mới bằng User ID</Label>
+            <div className="flex gap-3">
+              <Input
+                value={newAdminUserId}
+                onChange={(e) => setNewAdminUserId(e.target.value)}
+                placeholder="Nhập User ID (UUID)..."
+                className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+              />
+              <Button
+                onClick={handleAddAdmin}
+                disabled={isAddingAdmin || !newAdminUserId.trim()}
+                className="gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg"
+              >
+                {isAddingAdmin ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <UserPlus className="w-4 h-4" />
+                )}
+                Thêm Admin
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Lưu ý: User ID là UUID của user trong database (có thể tìm trong bảng profiles)
+            </p>
+          </div>
+
+          {/* Admin List */}
+          <div className="border-t border-border pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <Label className="text-foreground font-medium">Danh sách Admin hiện tại</Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={fetchAdmins}
+                disabled={isLoadingAdmins}
+                className="gap-1 text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoadingAdmins ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
+
+            {isLoadingAdmins ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : adminList.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Chưa có admin nào
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {adminList.map((admin) => (
+                  <div
+                    key={admin.user_id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Shield className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{admin.email}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{admin.user_id}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveAdmin(admin.user_id)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>
