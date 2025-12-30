@@ -652,26 +652,45 @@ const Settings = () => {
               <Label htmlFor="moralisApiKey" className="text-foreground font-medium">
                 Moralis API Key <span className="text-outflow">*</span>
               </Label>
-              <div className="relative flex items-center">
-                <InputWithPaste
+              <div className="relative">
+                <input
                   id="moralisApiKey"
                   type={showMoralisKey ? 'text' : 'password'}
                   value={moralisApiKey}
                   onChange={(e) => setMoralisApiKey(e.target.value)}
-                  placeholder="Nhập Moralis API key... (paste hoặc Ctrl+V)"
-                  className="bg-secondary/30 shadow-sm text-sm pr-20 font-mono border-border focus:border-primary focus:ring-primary/20"
+                  placeholder="Nhập Moralis API key... (paste Ctrl+V)"
+                  className="flex h-10 w-full rounded-md border border-input bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:border-primary pr-20 shadow-sm transition-all"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowMoralisKey(!showMoralisKey)}
-                  className="absolute right-10 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
-                  title={showMoralisKey ? 'Ẩn' : 'Hiện'}
-                >
-                  {showMoralisKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        if (text) {
+                          setMoralisApiKey(text.trim());
+                          toast.success("Đã paste API Key!", { description: "Nhấn Save để lưu" });
+                        }
+                      } catch (err) {
+                        toast.error("Không thể đọc clipboard");
+                      }
+                    }}
+                    className="p-1.5 rounded-md hover:bg-primary/10 text-primary/60 hover:text-primary transition-colors"
+                    title="Paste từ clipboard"
+                  >
+                    <ClipboardPaste className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMoralisKey(!showMoralisKey)}
+                    className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
+                    title={showMoralisKey ? 'Ẩn' : 'Hiện'}
+                  >
+                    {showMoralisKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
             </div>
-
             {/* Save & Test Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
