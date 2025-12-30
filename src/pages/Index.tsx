@@ -3,6 +3,7 @@ import { WalletCard } from '@/components/dashboard/WalletCard';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { TransactionChart } from '@/components/dashboard/TransactionChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
+import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
@@ -11,6 +12,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [dateRange, setDateRange] = useState<7 | 30>(30);
@@ -29,13 +31,26 @@ const Index = () => {
 
   const handleSyncNow = async () => {
     setIsSyncing(true);
-    // Simulate sync delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    handleRefresh();
-    setIsSyncing(false);
-    toast.success('Sync completed!', {
-      description: 'Demo mode - Real blockchain sync coming in Checkpoint 4',
-    });
+    try {
+      // Call real sync function
+      const { data, error } = await supabase.functions.invoke('sync-transactions');
+      
+      if (error) {
+        toast.error('Không thể sync transactions');
+      } else if (data?.success) {
+        toast.success(`🎉 ${data.message}`);
+      } else {
+        toast.error(data?.error || 'Sync failed');
+      }
+      
+      // Also refresh token balances
+      queryClient.invalidateQueries({ queryKey: ['token-balances'] });
+      handleRefresh();
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const isLoading = walletsLoading || statsLoading;
@@ -209,9 +224,10 @@ const Index = () => {
           )}
         </div>
 
-        {/* Charts and Recent Transactions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Charts, Token Balances and Recent Transactions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <TransactionChart />
+          <TokenBalancesCard />
           <RecentTransactions />
         </div>
       </main>
