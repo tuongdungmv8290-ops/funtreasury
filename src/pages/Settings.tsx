@@ -55,6 +55,11 @@ const Settings = () => {
   const [adminList, setAdminList] = useState<{ user_id: string; email?: string }[]>([]);
   const [isLoadingAdmins, setIsLoadingAdmins] = useState(false);
 
+  // Flags to track if form has been initialized (prevent overwriting user input)
+  const [isWalletsInitialized, setIsWalletsInitialized] = useState(false);
+  const [isContractsInitialized, setIsContractsInitialized] = useState(false);
+  const [isApiKeyInitialized, setIsApiKeyInitialized] = useState(false);
+
   // Fetch admin list
   const fetchAdmins = async () => {
     setIsLoadingAdmins(true);
@@ -154,9 +159,9 @@ const Settings = () => {
     fetchAdmins();
   }, []);
 
-  // Populate form when wallets load
+  // Populate form when wallets load - ONLY ONCE
   useEffect(() => {
-    if (wallets.length > 0) {
+    if (wallets.length > 0 && !isWalletsInitialized) {
       const w1 = wallets[0];
       const w2 = wallets[1];
       
@@ -170,24 +175,35 @@ const Settings = () => {
         setWallet2Name(w2.name || 'Treasury Wallet 2');
         setWallet2Address(w2.address || '');
       }
+      setIsWalletsInitialized(true);
+      console.log('Wallets initialized:', wallets);
     }
-  }, [wallets]);
+  }, [wallets, isWalletsInitialized]);
 
-  // Populate token contracts when loaded
+  // Populate token contracts when loaded - ONLY ONCE
   useEffect(() => {
-    if (contracts.length > 0) {
-      setCamlyCoinAddress(getContractBySymbol('CAMLY'));
-      setUsdtAddress(getContractBySymbol('USDT'));
-      setBtcbAddress(getContractBySymbol('BTCB'));
+    if (contracts.length > 0 && !isContractsInitialized) {
+      const camly = getContractBySymbol('CAMLY');
+      const usdt = getContractBySymbol('USDT');
+      const btcb = getContractBySymbol('BTCB');
+      
+      setCamlyCoinAddress(camly);
+      setUsdtAddress(usdt);
+      setBtcbAddress(btcb);
+      setIsContractsInitialized(true);
+      console.log('Token contracts initialized:', { camly, usdt, btcb });
     }
-  }, [contracts, getContractBySymbol]);
+  }, [contracts, isContractsInitialized, getContractBySymbol]);
 
-  // Populate Moralis API key when loaded
+  // Populate Moralis API key when loaded - ONLY ONCE
   useEffect(() => {
-    if (apiSettings.length > 0) {
-      setMoralisApiKey(getSettingByKey('MORALIS_API_KEY'));
+    if (apiSettings.length > 0 && !isApiKeyInitialized) {
+      const key = getSettingByKey('MORALIS_API_KEY');
+      setMoralisApiKey(key);
+      setIsApiKeyInitialized(true);
+      console.log('Moralis API key initialized, length:', key?.length || 0);
     }
-  }, [apiSettings, getSettingByKey]);
+  }, [apiSettings, isApiKeyInitialized, getSettingByKey]);
 
   // State for saving
   const [isSavingContracts, setIsSavingContracts] = useState(false);
