@@ -27,6 +27,27 @@ function getMoralisChain(chain: string): string {
   return chainMap[chain] || '0x38';
 }
 
+// Fetch Bitcoin balance using Blockchain.info API
+async function fetchBitcoinBalance(address: string): Promise<number> {
+  try {
+    const url = `https://blockchain.info/q/addressbalance/${address}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      console.log(`Bitcoin API error for ${address}: ${response.status}`);
+      return 0;
+    }
+    
+    const satoshis = await response.text();
+    const btcBalance = parseInt(satoshis) / 100000000; // Convert satoshis to BTC
+    console.log(`Bitcoin balance for ${address}: ${btcBalance} BTC`);
+    return btcBalance;
+  } catch (error) {
+    console.error(`Error fetching Bitcoin balance:`, error);
+    return 0;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -92,65 +113,78 @@ serve(async (req) => {
     const allBalances: { wallet: string; walletName: string; tokens: TokenBalance[] }[] = [];
 
     for (const wallet of wallets) {
-      if (!wallet.address || !wallet.address.startsWith('0x')) {
-        continue;
-      }
-
-      console.log(`Fetching balances for ${wallet.name}: ${wallet.address}`);
-      const moralisChain = getMoralisChain(wallet.chain);
+      console.log(`Fetching balances for ${wallet.name}: ${wallet.address} (${wallet.chain})`);
 
       try {
-        const headers = new Headers();
-        headers.set('X-API-Key', moralisApiKey.trim());
-        headers.set('Accept', 'application/json');
-
-        // Get native balance (BNB/ETH)
-        const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/balance?chain=${moralisChain}`;
-        const nativeResponse = await fetch(nativeUrl, { method: 'GET', headers });
-        
-        let nativeBalance = '0';
-        if (nativeResponse.ok) {
-          const nativeData = await nativeResponse.json();
-          nativeBalance = nativeData.balance || '0';
-        }
-
-        // Get ERC20 token balances
-        const tokensUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20?chain=${moralisChain}`;
-        const tokensResponse = await fetch(tokensUrl, { method: 'GET', headers });
-
         const walletTokens: TokenBalance[] = [];
 
-        // Add native token
-        const nativeSymbol = wallet.chain === 'ETH' ? 'ETH' : 'BNB';
-        const nativeBalanceFormatted = parseFloat(nativeBalance) / 1e18;
-        walletTokens.push({
-          symbol: nativeSymbol,
-          name: nativeSymbol === 'BNB' ? 'BNB' : 'Ethereum',
-          balance: nativeBalanceFormatted.toFixed(6),
-          decimals: 18,
-          usd_value: 0, // Will need price API
-          contract_address: 'native'
-        });
-
-        if (tokensResponse.ok) {
-          const tokensData = await tokensResponse.json();
+        // Handle Bitcoin chain separately
+        if (wallet.chain === 'BTC') {
+          const btcBalance = await fetchBitcoinBalance(wallet.address);
+          walletTokens.push({
+            symbol: 'BTCB',
+            name: 'Bitcoin',
+            balance: btcBalance.toFixed(8),
+            decimals: 8,
+            usd_value: 0,
+            contract_address: 'native-btc'
+          });
+        } else if (wallet.address && wallet.address.startsWith('0x')) {
+          // Handle EVM chains (BNB, ETH, etc.)
+          const moralisChain = getMoralisChain(wallet.chain);
           
-          for (const token of tokensData || []) {
-            // Only include tracked tokens or tokens with significant balance
-            const isTracked = contractAddresses.includes(token.token_address?.toLowerCase());
-            const balance = parseFloat(token.balance) / Math.pow(10, token.decimals || 18);
+          const headers = new Headers();
+          headers.set('X-API-Key', moralisApiKey.trim());
+          headers.set('Accept', 'application/json');
+
+          // Get native balance (BNB/ETH)
+          const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/balance?chain=${moralisChain}`;
+          const nativeResponse = await fetch(nativeUrl, { method: 'GET', headers });
+          
+          let nativeBalance = '0';
+          if (nativeResponse.ok) {
+            const nativeData = await nativeResponse.json();
+            nativeBalance = nativeData.balance || '0';
+          }
+
+          // Get ERC20 token balances
+          const tokensUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20?chain=${moralisChain}`;
+          const tokensResponse = await fetch(tokensUrl, { method: 'GET', headers });
+
+          // Add native token
+          const nativeSymbol = wallet.chain === 'ETH' ? 'ETH' : 'BNB';
+          const nativeBalanceFormatted = parseFloat(nativeBalance) / 1e18;
+          walletTokens.push({
+            symbol: nativeSymbol,
+            name: nativeSymbol === 'BNB' ? 'BNB' : 'Ethereum',
+            balance: nativeBalanceFormatted.toFixed(6),
+            decimals: 18,
+            usd_value: 0,
+            contract_address: 'native'
+          });
+
+          if (tokensResponse.ok) {
+            const tokensData = await tokensResponse.json();
             
-            if (isTracked || balance > 0) {
-              walletTokens.push({
-                symbol: token.symbol || 'Unknown',
-                name: token.name || token.symbol || 'Unknown Token',
-                balance: balance.toFixed(6),
-                decimals: token.decimals || 18,
-                usd_value: 0,
-                contract_address: token.token_address || ''
-              });
+            for (const token of tokensData || []) {
+              const isTracked = contractAddresses.includes(token.token_address?.toLowerCase());
+              const balance = parseFloat(token.balance) / Math.pow(10, token.decimals || 18);
+              
+              if (isTracked || balance > 0) {
+                walletTokens.push({
+                  symbol: token.symbol || 'Unknown',
+                  name: token.name || token.symbol || 'Unknown Token',
+                  balance: balance.toFixed(6),
+                  decimals: token.decimals || 18,
+                  usd_value: 0,
+                  contract_address: token.token_address || ''
+                });
+              }
             }
           }
+        } else {
+          console.log(`Skipping wallet ${wallet.name}: unsupported address format`);
+          continue;
         }
 
         allBalances.push({
