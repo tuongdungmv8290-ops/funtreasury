@@ -75,28 +75,45 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
           <p className="stat-value-gold">{formatCurrency(wallet.totalBalance)}</p>
         </div>
 
-        {/* Token Balances */}
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Token Holdings</p>
-          <div className="grid grid-cols-2 gap-2">
-            {wallet.tokens.slice(0, 4).map((token) => (
-              <div
-                key={token.id}
-                className="px-3 py-2.5 rounded-xl bg-secondary/70 border border-border/60 hover:border-treasury-gold/30 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">{token.symbol}</span>
-                  <span className="text-xs text-muted-foreground font-medium">
-                    {formatCurrency(token.usd_value)}
-                  </span>
-                </div>
-                <p className="text-sm font-mono text-muted-foreground mt-1">
-                  {token.balance.toLocaleString()}
-                </p>
+        {/* Token Balances - Only show 4 sacred tokens */}
+        {(() => {
+          const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTCB'];
+          const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTCB': 3 };
+          
+          const filteredTokens = wallet.tokens
+            .filter(token => ALLOWED_TOKENS.includes(token.symbol))
+            .sort((a, b) => {
+              const aOrder = TOKEN_ORDER[a.symbol] ?? 100;
+              const bOrder = TOKEN_ORDER[b.symbol] ?? 100;
+              return aOrder - bOrder;
+            });
+          
+          if (filteredTokens.length === 0) return null;
+          
+          return (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Token Holdings</p>
+              <div className="grid grid-cols-2 gap-2">
+                {filteredTokens.map((token) => (
+                  <div
+                    key={token.id}
+                    className="px-3 py-2.5 rounded-xl bg-secondary/70 border border-border/60 hover:border-treasury-gold/30 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground">{token.symbol}</span>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {formatCurrency(token.usd_value)}
+                      </span>
+                    </div>
+                    <p className="text-sm font-mono text-muted-foreground mt-1">
+                      {token.balance.toLocaleString()}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
