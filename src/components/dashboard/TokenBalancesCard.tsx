@@ -6,6 +6,46 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
+// Official token logos from CryptoLogos
+const TOKEN_LOGOS: Record<string, string> = {
+  'CAMLY': 'https://cryptologos.cc/logos/camly-coin-camly-logo.png',
+  'BNB': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
+  'USDT': 'https://cryptologos.cc/logos/tether-usdt-logo.png',
+  'BTC': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+  'BTCB': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+  'FUN': 'https://cryptologos.cc/logos/funtoken-fun-logo.png',
+  'USDC': 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
+};
+
+// Default coin icon for unknown tokens
+const DEFAULT_LOGO = 'https://cryptologos.cc/logos/cryptocom-chain-cro-logo.png';
+
+function TokenLogo({ symbol, size = 36 }: { symbol: string; size?: number }) {
+  const [hasError, setHasError] = useState(false);
+  const logoUrl = TOKEN_LOGOS[symbol] || DEFAULT_LOGO;
+
+  return (
+    <div 
+      className="relative rounded-full overflow-hidden bg-secondary border border-border/50 flex items-center justify-center transition-transform duration-200 hover:scale-110"
+      style={{ width: size, height: size }}
+    >
+      {!hasError ? (
+        <img 
+          src={logoUrl} 
+          alt={`${symbol} logo`}
+          className="w-full h-full object-cover"
+          onError={() => setHasError(true)}
+          loading="lazy"
+        />
+      ) : (
+        <span className="text-xs font-bold text-muted-foreground">
+          {symbol.substring(0, 2)}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function TokenBalancesCard() {
   const { data: balances, isLoading, error, refetch } = useTokenBalances();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -58,8 +98,8 @@ export function TokenBalancesCard() {
   }
 
   // Show these tokens, in specific order - BTC (native) and BTCB (BNB chain) are separate
-  const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTCB', 'BTC'];
-  const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTCB': 3, 'BTC': 4 };
+  const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB'];
+  const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTC': 3, 'BTCB': 4 };
   
   const tokenList = Array.from(allTokens.values())
     .filter(t => t.totalBalance > 0 && ALLOWED_TOKENS.includes(t.symbol))
@@ -68,21 +108,6 @@ export function TokenBalancesCard() {
       const bOrder = TOKEN_ORDER[b.symbol] ?? 100;
       return aOrder - bOrder;
     });
-
-  // Get icon/color for each token
-  const getTokenColor = (symbol: string, chain?: string) => {
-    const colors: Record<string, string> = {
-      'BNB': 'from-yellow-400 to-yellow-600',
-      'ETH': 'from-blue-400 to-blue-600',
-      'USDT': 'from-green-400 to-green-600',
-      'BTCB': 'from-orange-400 to-orange-600',
-      'BTC': 'from-amber-500 to-orange-700',
-      'CAMLY': 'from-purple-400 to-pink-500',
-      'FUN': 'from-primary to-primary/70',
-      'USDC': 'from-blue-500 to-blue-700',
-    };
-    return colors[symbol] || 'from-gray-400 to-gray-600';
-  };
 
   // Get display name for token
   const getTokenDisplayName = (symbol: string, name: string, chain?: string) => {
@@ -171,14 +196,10 @@ export function TokenBalancesCard() {
           {tokenList.map((token) => (
             <div
               key={`${token.symbol}-${token.chain}`}
-              className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 hover:border-primary/30 transition-colors"
+              className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 hover:border-primary/30 transition-all duration-200 group"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${getTokenColor(token.symbol, token.chain)} flex items-center justify-center shadow-sm`}>
-                  <span className="text-white font-bold text-xs">
-                    {token.symbol.substring(0, 3)}
-                  </span>
-                </div>
+                <TokenLogo symbol={token.symbol} size={36} />
                 <div>
                   <p className="font-semibold text-foreground">{token.symbol}</p>
                   <p className="text-xs text-muted-foreground">{getTokenDisplayName(token.symbol, token.name, token.chain)}</p>
