@@ -11,12 +11,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Clipboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
 import { useApiSettings } from '@/hooks/useApiSettings';
 import { supabase } from '@/integrations/supabase/client';
+
+// Validate contract address format
+const isValidContractAddress = (address: string): boolean => {
+  if (!address) return true; // Empty is allowed
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+};
+
+// Validate Moralis API key
+const isValidMoralisKey = (key: string): boolean => {
+  return key.length > 50;
+};
 
 const Settings = () => {
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
@@ -339,6 +350,18 @@ const Settings = () => {
                   Ethereum
                 </div>
               </SelectItem>
+              <SelectItem value="BTC" className="text-base py-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                  Bitcoin
+                </div>
+              </SelectItem>
+              <SelectItem value="SOL" className="text-base py-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-green-400"></span>
+                  Solana
+                </div>
+              </SelectItem>
               <SelectItem value="POLYGON" className="text-base py-3">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-purple-500"></span>
@@ -380,14 +403,51 @@ const Settings = () => {
                 <span className="w-2 h-2 rounded-full bg-primary"></span>
                 CAMLY COIN
               </Label>
-              <input
-                id="camlyCoin"
-                type="text"
-                value={camlyCoinAddress}
-                onChange={(e) => setCamlyCoinAddress(e.target.value)}
-                placeholder="0x... (Contract address)"
-                className="flex h-10 w-full rounded-md border border-border bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              />
+              <div className="relative flex gap-2">
+                <Input
+                  id="camlyCoin"
+                  type="text"
+                  value={camlyCoinAddress}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setCamlyCoinAddress(value);
+                    if (value && !isValidContractAddress(value)) {
+                      toast.error('Contract address phải bắt đầu bằng 0x và có 42 ký tự');
+                    }
+                  }}
+                  placeholder="0x... (Contract address)"
+                  className={`font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm ${
+                    camlyCoinAddress && !isValidContractAddress(camlyCoinAddress) ? 'border-outflow' : ''
+                  }`}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      setCamlyCoinAddress(text);
+                      if (isValidContractAddress(text)) {
+                        toast.success('Đã paste CAMLY contract address');
+                      } else {
+                        toast.error('Contract address không hợp lệ (phải 0x + 40 ký tự hex)');
+                      }
+                    } catch {
+                      toast.error('Không thể đọc clipboard');
+                    }
+                  }}
+                  className="shrink-0 border-border hover:bg-primary/10 hover:border-primary"
+                >
+                  <Clipboard className="w-4 h-4" />
+                </Button>
+              </div>
+              {camlyCoinAddress && !isValidContractAddress(camlyCoinAddress) && (
+                <p className="text-xs text-outflow flex items-center gap-1">
+                  <XCircle className="w-3 h-3" />
+                  Địa chỉ phải bắt đầu bằng 0x và có đúng 42 ký tự
+                </p>
+              )}
             </div>
 
             {/* USDT */}
@@ -396,14 +456,51 @@ const Settings = () => {
                 <span className="w-2 h-2 rounded-full bg-inflow"></span>
                 USDT (Tether)
               </Label>
-              <input
-                id="usdt"
-                type="text"
-                value={usdtAddress}
-                onChange={(e) => setUsdtAddress(e.target.value)}
-                placeholder="0x... (Contract address)"
-                className="flex h-10 w-full rounded-md border border-border bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              />
+              <div className="relative flex gap-2">
+                <Input
+                  id="usdt"
+                  type="text"
+                  value={usdtAddress}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setUsdtAddress(value);
+                    if (value && !isValidContractAddress(value)) {
+                      toast.error('Contract address phải bắt đầu bằng 0x và có 42 ký tự');
+                    }
+                  }}
+                  placeholder="0x... (Contract address)"
+                  className={`font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm ${
+                    usdtAddress && !isValidContractAddress(usdtAddress) ? 'border-outflow' : ''
+                  }`}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      setUsdtAddress(text);
+                      if (isValidContractAddress(text)) {
+                        toast.success('Đã paste USDT contract address');
+                      } else {
+                        toast.error('Contract address không hợp lệ (phải 0x + 40 ký tự hex)');
+                      }
+                    } catch {
+                      toast.error('Không thể đọc clipboard');
+                    }
+                  }}
+                  className="shrink-0 border-border hover:bg-primary/10 hover:border-primary"
+                >
+                  <Clipboard className="w-4 h-4" />
+                </Button>
+              </div>
+              {usdtAddress && !isValidContractAddress(usdtAddress) && (
+                <p className="text-xs text-outflow flex items-center gap-1">
+                  <XCircle className="w-3 h-3" />
+                  Địa chỉ phải bắt đầu bằng 0x và có đúng 42 ký tự
+                </p>
+              )}
             </div>
 
             {/* BTCB */}
@@ -412,14 +509,51 @@ const Settings = () => {
                 <span className="w-2 h-2 rounded-full bg-orange-500"></span>
                 BTCB (Bitcoin BEP20)
               </Label>
-              <input
-                id="btcb"
-                type="text"
-                value={btcbAddress}
-                onChange={(e) => setBtcbAddress(e.target.value)}
-                placeholder="0x... (Contract address)"
-                className="flex h-10 w-full rounded-md border border-border bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              />
+              <div className="relative flex gap-2">
+                <Input
+                  id="btcb"
+                  type="text"
+                  value={btcbAddress}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setBtcbAddress(value);
+                    if (value && !isValidContractAddress(value)) {
+                      toast.error('Contract address phải bắt đầu bằng 0x và có 42 ký tự');
+                    }
+                  }}
+                  placeholder="0x... (Contract address)"
+                  className={`font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm ${
+                    btcbAddress && !isValidContractAddress(btcbAddress) ? 'border-outflow' : ''
+                  }`}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      setBtcbAddress(text);
+                      if (isValidContractAddress(text)) {
+                        toast.success('Đã paste BTCB contract address');
+                      } else {
+                        toast.error('Contract address không hợp lệ (phải 0x + 40 ký tự hex)');
+                      }
+                    } catch {
+                      toast.error('Không thể đọc clipboard');
+                    }
+                  }}
+                  className="shrink-0 border-border hover:bg-primary/10 hover:border-primary"
+                >
+                  <Clipboard className="w-4 h-4" />
+                </Button>
+              </div>
+              {btcbAddress && !isValidContractAddress(btcbAddress) && (
+                <p className="text-xs text-outflow flex items-center gap-1">
+                  <XCircle className="w-3 h-3" />
+                  Địa chỉ phải bắt đầu bằng 0x và có đúng 42 ký tự
+                </p>
+              )}
             </div>
           </div>
 
@@ -512,27 +646,70 @@ const Settings = () => {
               <Label htmlFor="moralisApiKey" className="text-foreground font-medium">
                 Moralis API Key <span className="text-outflow">*</span>
               </Label>
-              <div className="relative">
-                <input
-                  id="moralisApiKey"
-                  type={showMoralisKey ? 'text' : 'password'}
-                  value={moralisApiKey}
-                  onChange={(e) => setMoralisApiKey(e.target.value)}
-                  placeholder="Nhập Moralis API key miễn phí..."
-                  className="flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-base pr-12 font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                />
-                <button
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="moralisApiKey"
+                    type={showMoralisKey ? 'text' : 'password'}
+                    value={moralisApiKey}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setMoralisApiKey(value);
+                      if (value && isValidMoralisKey(value)) {
+                        toast.success('API Key hợp lệ!');
+                      }
+                    }}
+                    placeholder="Nhập Moralis API key miễn phí..."
+                    className={`bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-base pr-12 font-mono ${
+                      moralisApiKey && !isValidMoralisKey(moralisApiKey) ? 'border-outflow' : ''
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowMoralisKey(!showMoralisKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showMoralisKey ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+                <Button
                   type="button"
-                  onClick={() => setShowMoralisKey(!showMoralisKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      setMoralisApiKey(text);
+                      if (isValidMoralisKey(text)) {
+                        toast.success('Đã paste API Key hợp lệ!');
+                      } else {
+                        toast.error('API Key phải có hơn 50 ký tự');
+                      }
+                    } catch {
+                      toast.error('Không thể đọc clipboard');
+                    }
+                  }}
+                  className="shrink-0 border-border hover:bg-primary/10 hover:border-primary h-10 w-10"
                 >
-                  {showMoralisKey ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
+                  <Clipboard className="w-4 h-4" />
+                </Button>
               </div>
+              {moralisApiKey && !isValidMoralisKey(moralisApiKey) && (
+                <p className="text-xs text-outflow flex items-center gap-1">
+                  <XCircle className="w-3 h-3" />
+                  API Key phải có hơn 50 ký tự
+                </p>
+              )}
+              {moralisApiKey && isValidMoralisKey(moralisApiKey) && (
+                <p className="text-xs text-inflow flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  API Key hợp lệ
+                </p>
+              )}
             </div>
 
             {/* Save & Test Buttons */}
