@@ -82,7 +82,12 @@ const Settings = () => {
     }
   }, [apiSettings, getSettingByKey]);
 
-  const handleSaveWallets = async () => {
+  // State for saving
+  const [isSavingContracts, setIsSavingContracts] = useState(false);
+  const [isSavingApiKey, setIsSavingApiKey] = useState(false);
+
+  // Save only wallet settings
+  const handleSaveWallets = () => {
     if (wallets.length < 2) {
       toast.error('Không tìm thấy đủ ví trong database');
       return;
@@ -103,24 +108,45 @@ const Settings = () => {
       },
     ];
 
-    // Save wallet settings
     updateWallets(updatedWallets);
+  };
 
-    // Save token contracts
-    const contractsSuccess = await updateAllContracts([
-      { symbol: 'CAMLY', contract_address: camlyCoinAddress },
-      { symbol: 'USDT', contract_address: usdtAddress },
-      { symbol: 'BTCB', contract_address: btcbAddress },
-    ]);
-
-    // Save Moralis API key
-    if (moralisApiKey) {
-      updateSetting({ key_name: 'MORALIS_API_KEY', key_value: moralisApiKey });
+  // Save only token contracts
+  const handleSaveTokenContracts = async () => {
+    setIsSavingContracts(true);
+    try {
+      const success = await updateAllContracts([
+        { symbol: 'CAMLY', contract_address: camlyCoinAddress },
+        { symbol: 'USDT', contract_address: usdtAddress },
+        { symbol: 'BTCB', contract_address: btcbAddress },
+      ]);
+      if (success) {
+        toast.success('Đã lưu Token Contracts thành công');
+      }
+    } finally {
+      setIsSavingContracts(false);
     }
+  };
 
-    if (contractsSuccess) {
-      toast.success('Đã lưu tất cả cấu hình thành công');
+  // Save only Moralis API key
+  const handleSaveMoralisKey = () => {
+    if (!moralisApiKey.trim()) {
+      toast.error('Vui lòng nhập Moralis API Key');
+      return;
     }
+    setIsSavingApiKey(true);
+    updateSetting(
+      { key_name: 'MORALIS_API_KEY', key_value: moralisApiKey },
+      {
+        onSuccess: () => {
+          toast.success('Đã lưu Moralis API Key thành công');
+          setIsSavingApiKey(false);
+        },
+        onError: () => {
+          setIsSavingApiKey(false);
+        },
+      }
+    );
   };
 
   const handleSyncNow = async () => {
@@ -393,6 +419,31 @@ const Settings = () => {
               />
             </div>
           </div>
+
+          {/* Save Token Contracts Button */}
+          <div className="mt-6 pt-6 border-t border-border">
+            <Button
+              onClick={handleSaveTokenContracts}
+              disabled={isSavingContracts}
+              className="w-full md:w-auto gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-6 py-5 text-base font-semibold"
+            >
+              {isSavingContracts ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Đang lưu...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Save Token Contracts
+                </>
+              )}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              <CheckCircle className="w-3 h-3 text-inflow" />
+              Dữ liệu sẽ được giữ lại khi reload trang
+            </p>
+          </div>
         </div>
 
         {/* Save Button - Big Gold */}
@@ -481,24 +532,48 @@ const Settings = () => {
               </div>
             </div>
 
-            {/* Test Connection Button */}
-            <Button
-              onClick={handleTestMoralisConnection}
-              disabled={isTestingConnection || !moralisApiKey.trim()}
-              className="w-full md:w-auto gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-8 py-6 text-lg font-semibold disabled:opacity-50"
-            >
-              {isTestingConnection ? (
-                <>
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  Đang kiểm tra...
-                </>
-              ) : (
-                <>
-                  <Link className="w-5 h-5" />
-                  Test Moralis Connection
-                </>
-              )}
-            </Button>
+            {/* Save & Test Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={handleSaveMoralisKey}
+                disabled={isSavingApiKey || !moralisApiKey.trim()}
+                className="gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-6 py-5 text-base font-semibold disabled:opacity-50"
+              >
+                {isSavingApiKey ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Save Moralis API Key
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={handleTestMoralisConnection}
+                disabled={isTestingConnection || !moralisApiKey.trim()}
+                variant="outline"
+                className="gap-3 border-primary/50 text-primary hover:bg-primary/10 px-6 py-5 text-base font-semibold disabled:opacity-50"
+              >
+                {isTestingConnection ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Đang kiểm tra...
+                  </>
+                ) : (
+                  <>
+                    <Link className="w-5 h-5" />
+                    Test Connection
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              <CheckCircle className="w-3 h-3 text-inflow" />
+              Dữ liệu sẽ được giữ lại khi reload trang
+            </p>
 
             {/* Connection Status Display */}
             {connectionStatus !== 'idle' && (
