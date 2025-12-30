@@ -45,17 +45,24 @@ export function useTokenContracts() {
 
   const updateAllContracts = async (contracts: { symbol: string; contract_address: string }[]) => {
     try {
+      console.log('Saving token contracts:', contracts);
+      
       const promises = contracts.map(({ symbol, contract_address }) =>
         supabase
           .from('token_contracts')
           .update({ contract_address })
           .eq('symbol', symbol)
+          .select()
       );
 
       const results = await Promise.all(promises);
       
       for (const result of results) {
-        if (result.error) throw result.error;
+        if (result.error) {
+          console.error('Error updating contract:', result.error);
+          throw result.error;
+        }
+        console.log('Contract updated:', result.data);
       }
 
       queryClient.invalidateQueries({ queryKey: ['token-contracts'] });
