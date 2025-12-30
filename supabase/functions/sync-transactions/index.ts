@@ -50,27 +50,33 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 1. Get Moralis API key from database
-    console.log('Fetching Moralis API key from database...');
-    const { data: apiSettings, error: apiError } = await supabase
-      .from('api_settings')
-      .select('key_value')
-      .eq('key_name', 'MORALIS_API_KEY')
-      .maybeSingle();
+    // 1. Get Moralis API key - prioritize env variable, fallback to database
+    console.log('Fetching Moralis API key...');
+    let moralisApiKey = Deno.env.get('MORALIS_API_KEY');
+    
+    if (!moralisApiKey) {
+      const { data: apiSettings, error: apiError } = await supabase
+        .from('api_settings')
+        .select('key_value')
+        .eq('key_name', 'MORALIS_API_KEY')
+        .maybeSingle();
 
-    if (apiError) {
-      console.error('Error fetching API key:', apiError);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Không thể đọc API key từ database'
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      if (apiError) {
+        console.error('Error fetching API key:', apiError);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Không thể đọc API key từ database'
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      moralisApiKey = apiSettings?.key_value || null;
     }
 
-    if (!apiSettings?.key_value) {
-      console.error('Moralis API key not found in database');
+    if (!moralisApiKey) {
+      console.error('Moralis API key not found');
       return new Response(JSON.stringify({
         success: false,
         error: 'Chưa cấu hình Moralis API Key. Vui lòng vào Settings để thêm.'
@@ -80,7 +86,6 @@ serve(async (req) => {
       });
     }
 
-    const moralisApiKey = apiSettings.key_value;
     console.log('Moralis API key found');
 
     // 2. Get wallet addresses from database

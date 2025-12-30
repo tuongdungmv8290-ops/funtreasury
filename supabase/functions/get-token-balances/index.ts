@@ -39,14 +39,19 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get Moralis API key
-    const { data: apiSettings } = await supabase
-      .from('api_settings')
-      .select('key_value')
-      .eq('key_name', 'MORALIS_API_KEY')
-      .maybeSingle();
+    // Get Moralis API key - prioritize env variable, fallback to database
+    let moralisApiKey = Deno.env.get('MORALIS_API_KEY');
+    
+    if (!moralisApiKey) {
+      const { data: apiSettings } = await supabase
+        .from('api_settings')
+        .select('key_value')
+        .eq('key_name', 'MORALIS_API_KEY')
+        .maybeSingle();
+      moralisApiKey = apiSettings?.key_value || null;
+    }
 
-    if (!apiSettings?.key_value) {
+    if (!moralisApiKey) {
       return new Response(JSON.stringify({
         success: false,
         error: 'Chưa cấu hình Moralis API Key'
@@ -56,7 +61,7 @@ serve(async (req) => {
       });
     }
 
-    const moralisApiKey = apiSettings.key_value;
+    console.log('Moralis API key found');
 
     // Get wallets
     const { data: wallets } = await supabase
