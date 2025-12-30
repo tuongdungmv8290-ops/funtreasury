@@ -38,6 +38,12 @@ interface SyncState {
   wallet_id: string;
   last_block_synced: number;
   last_sync_at: string | null;
+  last_cursor: string | null;
+}
+
+interface MoralisResponse {
+  result: ERC20Transfer[] | NativeTransfer[];
+  cursor?: string | null;
 }
 
 // Map chain names to Moralis chain format
@@ -163,10 +169,10 @@ serve(async (req) => {
         const moralisChain = getMoralisChain(wallet.chain);
         const nativeSymbol = getNativeSymbol(wallet.chain);
         
-        // Get last synced block for incremental sync
+        // Get last synced block and cursor for incremental sync
         const { data: syncStateData } = await supabase
           .from('sync_state')
-          .select('last_block_synced')
+          .select('last_block_synced, last_cursor')
           .eq('wallet_id', wallet.id)
           .maybeSingle();
         
@@ -178,48 +184,74 @@ serve(async (req) => {
         headers.set('Accept', 'application/json');
 
         // Fetch ERC20 token transfers with from_block for incremental sync
+        // Use pagination with cursor - loop until no more results
         const fromBlockParam = lastBlockSynced > 0 ? `&from_block=${lastBlockSynced + 1}` : '';
-        const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=100${fromBlockParam}`;
-        console.log(`Calling Moralis ERC20 API: ${transfersUrl}`);
-        
-        const response = await fetch(transfersUrl, {
-          method: 'GET',
-          headers: headers
-        });
-
         let erc20Transfers: ERC20Transfer[] = [];
-        if (response.ok) {
-          const data = await response.json();
-          erc20Transfers = data.result || [];
-          console.log(`Found ${erc20Transfers.length} ERC20 transfers for ${wallet.name}`);
-        } else {
-          const errorText = await response.text();
-          console.error(`Moralis ERC20 API error for ${wallet.name}:`, response.status, errorText);
-        }
-
-        // Fetch native token (BNB/ETH) transfers - uses different endpoint with from_block
-        const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=100${fromBlockParam}`;
-        console.log(`Calling Moralis Native API: ${nativeUrl}`);
+        let erc20Cursor: string | null = null;
+        let pageCount = 0;
+        const MAX_PAGES = 10; // Safety limit: 10 pages x 1000 = 10,000 transactions max per sync
         
-        const nativeResponse = await fetch(nativeUrl, {
-          method: 'GET',
-          headers: headers
-        });
+        do {
+          const cursorParam = erc20Cursor ? `&cursor=${erc20Cursor}` : '';
+          const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=1000${fromBlockParam}${cursorParam}`;
+          console.log(`Calling Moralis ERC20 API (page ${pageCount + 1}): ${transfersUrl}`);
+          
+          const response = await fetch(transfersUrl, {
+            method: 'GET',
+            headers: headers
+          });
 
+          if (response.ok) {
+            const data: MoralisResponse = await response.json();
+            const pageTransfers = (data.result || []) as ERC20Transfer[];
+            erc20Transfers = [...erc20Transfers, ...pageTransfers];
+            erc20Cursor = data.cursor || null;
+            console.log(`Page ${pageCount + 1}: ${pageTransfers.length} ERC20 transfers, cursor: ${erc20Cursor ? 'yes' : 'no'}`);
+          } else {
+            const errorText = await response.text();
+            console.error(`Moralis ERC20 API error for ${wallet.name}:`, response.status, errorText);
+            break;
+          }
+          pageCount++;
+        } while (erc20Cursor && pageCount < MAX_PAGES);
+        
+        console.log(`Total ERC20 transfers for ${wallet.name}: ${erc20Transfers.length}`);
+
+        // Fetch native token (BNB/ETH) transfers with pagination
         let nativeTransfers: NativeTransfer[] = [];
-        if (nativeResponse.ok) {
-          const nativeData = await nativeResponse.json();
-          // Filter only transactions with value (native token transfers)
-          nativeTransfers = (nativeData.result || []).filter((tx: NativeTransfer) => 
-            tx.value && tx.value !== '0' && tx.hash
-          );
-          console.log(`Found ${nativeTransfers.length} native transfers for ${wallet.name}`);
-        } else {
-          console.error(`Moralis Native API error for ${wallet.name}:`, nativeResponse.status);
-        }
+        let nativeCursor: string | null = null;
+        pageCount = 0;
+        
+        do {
+          const cursorParam = nativeCursor ? `&cursor=${nativeCursor}` : '';
+          const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=1000${fromBlockParam}${cursorParam}`;
+          console.log(`Calling Moralis Native API (page ${pageCount + 1}): ${nativeUrl}`);
+          
+          const nativeResponse = await fetch(nativeUrl, {
+            method: 'GET',
+            headers: headers
+          });
+
+          if (nativeResponse.ok) {
+            const nativeData: MoralisResponse = await nativeResponse.json();
+            // Filter only transactions with value (native token transfers)
+            const pageTransfers = ((nativeData.result || []) as NativeTransfer[]).filter((tx: NativeTransfer) => 
+              tx.value && tx.value !== '0' && tx.hash
+            );
+            nativeTransfers = [...nativeTransfers, ...pageTransfers];
+            nativeCursor = nativeData.cursor || null;
+            console.log(`Page ${pageCount + 1}: ${pageTransfers.length} native transfers, cursor: ${nativeCursor ? 'yes' : 'no'}`);
+          } else {
+            console.error(`Moralis Native API error for ${wallet.name}:`, nativeResponse.status);
+            break;
+          }
+          pageCount++;
+        } while (nativeCursor && pageCount < MAX_PAGES);
+        
+        console.log(`Total native transfers for ${wallet.name}: ${nativeTransfers.length}`);
 
         if (erc20Transfers.length === 0 && nativeTransfers.length === 0) {
-          console.log(`No transfers found for ${wallet.name}`);
+          console.log(`No new transfers found for ${wallet.name}`);
           syncResults.push({ wallet: wallet.name, newTxCount: 0 });
           continue;
         }
