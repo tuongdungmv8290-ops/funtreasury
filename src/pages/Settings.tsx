@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 const Settings = () => {
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
   const { contracts, isLoading: isLoadingContracts, updateAllContracts, getContractBySymbol } = useTokenContracts();
-  const { settings: apiSettings, isLoading: isLoadingApiSettings, updateSetting, getSettingByKey } = useApiSettings();
+  const { settings: apiSettings, isLoading: isLoadingApiSettings, updateSettingAsync, getSettingByKey } = useApiSettings();
   
   // Local state for form
   const [wallet1Name, setWallet1Name] = useState('');
@@ -130,24 +130,17 @@ const Settings = () => {
   };
 
   // Save only Moralis API key
-  const handleSaveMoralisKey = () => {
+  const handleSaveMoralisKey = async () => {
     if (!moralisApiKey.trim()) {
       toast.error('Vui lòng nhập Moralis API Key');
       return;
     }
     setIsSavingApiKey(true);
-    updateSetting(
-      { key_name: 'MORALIS_API_KEY', key_value: moralisApiKey },
-      {
-        onSuccess: () => {
-          toast.success('Đã lưu Moralis API Key thành công');
-          setIsSavingApiKey(false);
-        },
-        onError: () => {
-          setIsSavingApiKey(false);
-        },
-      }
-    );
+    try {
+      await updateSettingAsync({ key_name: 'MORALIS_API_KEY', key_value: moralisApiKey.trim() });
+    } finally {
+      setIsSavingApiKey(false);
+    }
   };
 
   const handleSyncNow = async () => {

@@ -26,15 +26,25 @@ export function useApiSettings() {
 
   const updateSettingMutation = useMutation({
     mutationFn: async ({ key_name, key_value }: { key_name: string; key_value: string }) => {
-      const { error } = await supabase
+      console.log('Saving API setting:', key_name, 'value length:', key_value?.length);
+      
+      const { data, error } = await supabase
         .from('api_settings')
         .update({ key_value })
-        .eq('key_name', key_name);
+        .eq('key_name', key_name)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+      
+      console.log('API setting saved successfully:', data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['api-settings'] });
+      toast.success('Đã lưu API setting thành công');
     },
     onError: (error) => {
       console.error('Error updating API setting:', error);
@@ -53,6 +63,7 @@ export function useApiSettings() {
     isLoading: settingsQuery.isLoading,
     isError: settingsQuery.isError,
     updateSetting: updateSettingMutation.mutate,
+    updateSettingAsync: updateSettingMutation.mutateAsync,
     getSettingByKey,
     isUpdating: updateSettingMutation.isPending,
   };
