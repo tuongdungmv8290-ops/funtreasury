@@ -7,18 +7,41 @@ import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
-import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins } from 'lucide-react';
-import { useState } from 'react';
+import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 const Index = () => {
   const [dateRange, setDateRange] = useState<7 | 30>(30);
   const [isSyncing, setIsSyncing] = useState(false);
   const { data: wallets, isLoading: walletsLoading } = useWallets();
   const { data: stats, isLoading: statsLoading } = useTransactionStats(dateRange);
+  
+  // Fetch last sync time from sync_state
+  const { data: lastSyncTime, refetch: refetchSyncTime } = useQuery({
+    queryKey: ['last-sync-time'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sync_state')
+        .select('last_sync_at')
+        .order('last_sync_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (error || !data?.last_sync_at) return null;
+      return new Date(data.last_sync_at);
+    },
+    refetchInterval: 60000, // Refresh every minute to update "X phút trước"
+  });
+
+  const getLastSyncedText = () => {
+    if (!lastSyncTime) return null;
+    return formatDistanceToNow(lastSyncTime, { addSuffix: true, locale: vi });
+  };
   const queryClient = useQueryClient();
 
   const totalBalance = wallets?.reduce((sum, w) => sum + w.totalBalance, 0) || 0;
@@ -57,6 +80,7 @@ const Index = () => {
         queryClient.invalidateQueries({ queryKey: ['wallets'] });
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
         queryClient.invalidateQueries({ queryKey: ['transaction-stats'] });
+        refetchSyncTime(); // Update last synced time
       } else {
         toast.error(`❌ ${data?.error || 'Sync failed'}`, { id: 'sync-toast' });
       }
@@ -107,19 +131,27 @@ const Index = () => {
                 30 Days
               </button>
             </div>
-            <Button 
-              className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg hover:shadow-xl transition-all px-4 md:px-6"
-              onClick={handleSyncNow}
-              disabled={isSyncing}
-            >
-              {isSyncing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
+            <div className="flex flex-col items-end gap-1">
+              <Button 
+                className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg hover:shadow-xl transition-all px-4 md:px-6"
+                onClick={handleSyncNow}
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">Sync Now</span>
+                <span className="sm:hidden">Sync</span>
+              </Button>
+              {getLastSyncedText() && (
+                <span className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Last synced: {getLastSyncedText()}
+                </span>
               )}
-              <span className="hidden sm:inline">Sync Now</span>
-              <span className="sm:hidden">Sync</span>
-            </Button>
+            </div>
           </div>
         </div>
 

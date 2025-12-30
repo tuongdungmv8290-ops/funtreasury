@@ -34,6 +34,12 @@ interface WalletData {
   name: string;
 }
 
+interface SyncState {
+  wallet_id: string;
+  last_block_synced: number;
+  last_sync_at: string | null;
+}
+
 // Map chain names to Moralis chain format
 function getMoralisChain(chain: string): string {
   const chainMap: Record<string, string> = {
@@ -157,12 +163,23 @@ serve(async (req) => {
         const moralisChain = getMoralisChain(wallet.chain);
         const nativeSymbol = getNativeSymbol(wallet.chain);
         
+        // Get last synced block for incremental sync
+        const { data: syncStateData } = await supabase
+          .from('sync_state')
+          .select('last_block_synced')
+          .eq('wallet_id', wallet.id)
+          .maybeSingle();
+        
+        const lastBlockSynced = syncStateData?.last_block_synced || 0;
+        console.log(`Last synced block for ${wallet.name}: ${lastBlockSynced}`);
+        
         const headers = new Headers();
         headers.set('X-API-Key', moralisApiKey.trim());
         headers.set('Accept', 'application/json');
 
-        // Fetch ERC20 token transfers
-        const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=100`;
+        // Fetch ERC20 token transfers with from_block for incremental sync
+        const fromBlockParam = lastBlockSynced > 0 ? `&from_block=${lastBlockSynced + 1}` : '';
+        const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=100${fromBlockParam}`;
         console.log(`Calling Moralis ERC20 API: ${transfersUrl}`);
         
         const response = await fetch(transfersUrl, {
@@ -180,8 +197,8 @@ serve(async (req) => {
           console.error(`Moralis ERC20 API error for ${wallet.name}:`, response.status, errorText);
         }
 
-        // Fetch native token (BNB/ETH) transfers - uses different endpoint
-        const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=100`;
+        // Fetch native token (BNB/ETH) transfers - uses different endpoint with from_block
+        const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=100${fromBlockParam}`;
         console.log(`Calling Moralis Native API: ${nativeUrl}`);
         
         const nativeResponse = await fetch(nativeUrl, {
@@ -321,26 +338,43 @@ serve(async (req) => {
         syncResults.push({ wallet: wallet.name, newTxCount });
         totalNewTransactions += newTxCount;
 
-        // 5. Update sync state
+        // 5. Update sync state with new max block
         const maxBlockNumber = Math.max(
           ...erc20Transfers.map(t => parseInt(t.block_number) || 0),
           ...nativeTransfers.map(t => parseInt(t.block_number) || 0),
-          0
+          lastBlockSynced // Keep existing block if no new transactions
         );
 
-        const { error: syncStateError } = await supabase
-          .from('sync_state')
-          .upsert({
-            wallet_id: wallet.id,
-            last_sync_at: new Date().toISOString(),
-            sync_status: 'idle',
-            last_block_synced: maxBlockNumber
-          }, {
-            onConflict: 'wallet_id'
-          });
+        // Only update if we have a higher block number
+        if (maxBlockNumber > lastBlockSynced) {
+          const { error: syncStateError } = await supabase
+            .from('sync_state')
+            .upsert({
+              wallet_id: wallet.id,
+              last_sync_at: new Date().toISOString(),
+              sync_status: 'idle',
+              last_block_synced: maxBlockNumber
+            }, {
+              onConflict: 'wallet_id'
+            });
 
-        if (syncStateError) {
-          console.error(`Error updating sync state for ${wallet.name}:`, syncStateError);
+          if (syncStateError) {
+            console.error(`Error updating sync state for ${wallet.name}:`, syncStateError);
+          } else {
+            console.log(`Updated last_block_synced for ${wallet.name}: ${lastBlockSynced} → ${maxBlockNumber}`);
+          }
+        } else {
+          // Just update last_sync_at
+          await supabase
+            .from('sync_state')
+            .upsert({
+              wallet_id: wallet.id,
+              last_sync_at: new Date().toISOString(),
+              sync_status: 'idle',
+              last_block_synced: lastBlockSynced
+            }, {
+              onConflict: 'wallet_id'
+            });
         }
 
       } catch (walletError) {
