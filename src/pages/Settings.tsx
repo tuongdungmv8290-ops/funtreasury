@@ -380,17 +380,13 @@ const Settings = () => {
                 <span className="w-2 h-2 rounded-full bg-primary"></span>
                 CAMLY COIN
               </Label>
-              <Input
+              <input
                 id="camlyCoin"
+                type="text"
                 value={camlyCoinAddress}
                 onChange={(e) => setCamlyCoinAddress(e.target.value)}
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const pastedText = e.clipboardData.getData('text');
-                  setCamlyCoinAddress(pastedText);
-                }}
                 placeholder="0x... (Contract address)"
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                className="flex h-10 w-full rounded-md border border-border bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               />
             </div>
 
@@ -400,17 +396,13 @@ const Settings = () => {
                 <span className="w-2 h-2 rounded-full bg-inflow"></span>
                 USDT (Tether)
               </Label>
-              <Input
+              <input
                 id="usdt"
+                type="text"
                 value={usdtAddress}
                 onChange={(e) => setUsdtAddress(e.target.value)}
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const pastedText = e.clipboardData.getData('text');
-                  setUsdtAddress(pastedText);
-                }}
                 placeholder="0x... (Contract address)"
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                className="flex h-10 w-full rounded-md border border-border bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               />
             </div>
 
@@ -420,17 +412,13 @@ const Settings = () => {
                 <span className="w-2 h-2 rounded-full bg-orange-500"></span>
                 BTCB (Bitcoin BEP20)
               </Label>
-              <Input
+              <input
                 id="btcb"
+                type="text"
                 value={btcbAddress}
                 onChange={(e) => setBtcbAddress(e.target.value)}
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const pastedText = e.clipboardData.getData('text');
-                  setBtcbAddress(pastedText);
-                }}
                 placeholder="0x... (Contract address)"
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                className="flex h-10 w-full rounded-md border border-border bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               />
             </div>
           </div>
@@ -525,18 +513,13 @@ const Settings = () => {
                 Moralis API Key <span className="text-outflow">*</span>
               </Label>
               <div className="relative">
-                <Input
+                <input
                   id="moralisApiKey"
                   type={showMoralisKey ? 'text' : 'password'}
                   value={moralisApiKey}
                   onChange={(e) => setMoralisApiKey(e.target.value)}
-                  onPaste={(e) => {
-                    e.preventDefault();
-                    const pastedText = e.clipboardData.getData('text');
-                    setMoralisApiKey(pastedText);
-                  }}
                   placeholder="Nhập Moralis API key miễn phí..."
-                  className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-base pr-12 font-mono"
+                  className="flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-base pr-12 font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 />
                 <button
                   type="button"
