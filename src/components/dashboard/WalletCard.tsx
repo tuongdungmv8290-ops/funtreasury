@@ -54,7 +54,9 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
                   )}
                 </button>
                 <a
-                  href={`https://bscscan.com/address/${wallet.address}`}
+                  href={wallet.chain === 'BTC' 
+                    ? `https://www.blockchain.com/btc/address/${wallet.address}`
+                    : `https://bscscan.com/address/${wallet.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-treasury-gold transition-colors"
@@ -75,10 +77,13 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
           <p className="stat-value-gold">{formatCurrency(wallet.totalBalance)}</p>
         </div>
 
-        {/* Token Balances - Only show 4 sacred tokens */}
+        {/* Token Balances - Only show sacred tokens based on chain */}
         {(() => {
-          const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTCB'];
-          const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTCB': 3 };
+          // BTC chain shows BTC, BNB chain shows CAMLY, BNB, USDT, BTCB
+          const ALLOWED_TOKENS = wallet.chain === 'BTC' 
+            ? ['BTC'] 
+            : ['CAMLY', 'BNB', 'USDT', 'BTCB'];
+          const TOKEN_ORDER: Record<string, number> = { 'BTC': 0, 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTCB': 3 };
           
           const filteredTokens = wallet.tokens
             .filter(token => ALLOWED_TOKENS.includes(token.symbol))

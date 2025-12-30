@@ -23,33 +23,43 @@ export function TokenBalancesCard() {
     }
   };
 
-  // Combine all tokens from all wallets
-  const allTokens = new Map<string, { symbol: string; name: string; totalBalance: number; wallets: string[] }>();
+  // Separate tokens by chain - BTC from Bitcoin wallet, BTCB from BNB chain
+  // Use unique key: symbol + chain to keep them separate
+  const allTokens = new Map<string, { symbol: string; name: string; totalBalance: number; wallets: string[]; chain: string; displaySymbol: string }>();
   
   if (balances) {
     for (const walletBalance of balances) {
+      // Determine chain from wallet name
+      const isBitcoinWallet = walletBalance.walletName.toLowerCase().includes('bitcoin');
+      
       for (const token of walletBalance.tokens) {
-        const existing = allTokens.get(token.symbol);
+        // Create unique key: BTC from Bitcoin wallet stays as BTC, BTCB from BNB chain stays as BTCB
+        const chain = isBitcoinWallet ? 'BTC' : 'BNB';
+        const uniqueKey = `${token.symbol}-${chain}`;
+        
+        const existing = allTokens.get(uniqueKey);
         if (existing) {
           existing.totalBalance += parseFloat(token.balance);
           if (!existing.wallets.includes(walletBalance.walletName)) {
             existing.wallets.push(walletBalance.walletName);
           }
         } else {
-          allTokens.set(token.symbol, {
+          allTokens.set(uniqueKey, {
             symbol: token.symbol,
+            displaySymbol: token.symbol === 'BTC' ? 'BTC' : token.symbol,
             name: token.name,
             totalBalance: parseFloat(token.balance),
-            wallets: [walletBalance.walletName]
+            wallets: [walletBalance.walletName],
+            chain
           });
         }
       }
     }
   }
 
-  // Only show these 4 main tokens, in specific order
-  const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTCB'];
-  const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTCB': 3 };
+  // Show these tokens, in specific order - BTC (native) and BTCB (BNB chain) are separate
+  const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTCB', 'BTC'];
+  const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTCB': 3, 'BTC': 4 };
   
   const tokenList = Array.from(allTokens.values())
     .filter(t => t.totalBalance > 0 && ALLOWED_TOKENS.includes(t.symbol))
@@ -60,12 +70,13 @@ export function TokenBalancesCard() {
     });
 
   // Get icon/color for each token
-  const getTokenColor = (symbol: string) => {
+  const getTokenColor = (symbol: string, chain?: string) => {
     const colors: Record<string, string> = {
       'BNB': 'from-yellow-400 to-yellow-600',
       'ETH': 'from-blue-400 to-blue-600',
       'USDT': 'from-green-400 to-green-600',
       'BTCB': 'from-orange-400 to-orange-600',
+      'BTC': 'from-amber-500 to-orange-700',
       'CAMLY': 'from-purple-400 to-pink-500',
       'FUN': 'from-primary to-primary/70',
       'USDC': 'from-blue-500 to-blue-700',
@@ -74,10 +85,12 @@ export function TokenBalancesCard() {
   };
 
   // Get display name for token
-  const getTokenDisplayName = (symbol: string, name: string) => {
+  const getTokenDisplayName = (symbol: string, name: string, chain?: string) => {
     const displayNames: Record<string, string> = {
       'CAMLY': 'CAMLY COIN',
       'FUN': 'FUN Token',
+      'BTC': 'Bitcoin (Native)',
+      'BTCB': 'Bitcoin BEP20',
     };
     return displayNames[symbol] || name;
   };
@@ -157,18 +170,18 @@ export function TokenBalancesCard() {
         <div className="space-y-3">
           {tokenList.map((token) => (
             <div
-              key={token.symbol}
+              key={`${token.symbol}-${token.chain}`}
               className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 hover:border-primary/30 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${getTokenColor(token.symbol)} flex items-center justify-center shadow-sm`}>
+                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${getTokenColor(token.symbol, token.chain)} flex items-center justify-center shadow-sm`}>
                   <span className="text-white font-bold text-xs">
                     {token.symbol.substring(0, 3)}
                   </span>
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">{token.symbol}</p>
-                  <p className="text-xs text-muted-foreground">{getTokenDisplayName(token.symbol, token.name)}</p>
+                  <p className="text-xs text-muted-foreground">{getTokenDisplayName(token.symbol, token.name, token.chain)}</p>
                 </div>
               </div>
               <div className="text-right">
