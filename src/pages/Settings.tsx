@@ -384,6 +384,11 @@ const Settings = () => {
                 id="camlyCoin"
                 value={camlyCoinAddress}
                 onChange={(e) => setCamlyCoinAddress(e.target.value)}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pastedText = e.clipboardData.getData('text');
+                  setCamlyCoinAddress(pastedText);
+                }}
                 placeholder="0x... (Contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
@@ -399,6 +404,11 @@ const Settings = () => {
                 id="usdt"
                 value={usdtAddress}
                 onChange={(e) => setUsdtAddress(e.target.value)}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pastedText = e.clipboardData.getData('text');
+                  setUsdtAddress(pastedText);
+                }}
                 placeholder="0x... (Contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
@@ -414,6 +424,11 @@ const Settings = () => {
                 id="btcb"
                 value={btcbAddress}
                 onChange={(e) => setBtcbAddress(e.target.value)}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pastedText = e.clipboardData.getData('text');
+                  setBtcbAddress(pastedText);
+                }}
                 placeholder="0x... (Contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
@@ -515,6 +530,11 @@ const Settings = () => {
                   type={showMoralisKey ? 'text' : 'password'}
                   value={moralisApiKey}
                   onChange={(e) => setMoralisApiKey(e.target.value)}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const pastedText = e.clipboardData.getData('text');
+                    setMoralisApiKey(pastedText);
+                  }}
                   placeholder="Nhập Moralis API key miễn phí..."
                   className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-base pr-12 font-mono"
                 />
