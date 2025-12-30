@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Clipboard, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
@@ -410,7 +410,7 @@ const Settings = () => {
 
           <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
             <span>💡</span>
-            Paste contract address trực tiếp (Ctrl+V) hoặc dùng nút Paste – dữ liệu lưu vĩnh viễn
+            Paste (Ctrl+V) hoặc click icon Paste – dữ liệu lưu vĩnh viễn!
           </p>
 
           <div className="space-y-4">
@@ -419,14 +419,65 @@ const Settings = () => {
               <Label htmlFor="camlyCoin" className="text-foreground font-medium">
                 CAMLY COIN
               </Label>
-              <Input
-                id="camlyCoin"
-                type="text"
-                value={camlyCoinAddress}
-                onChange={(e) => setCamlyCoinAddress(e.target.value)}
-                placeholder="0x..."
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
-              />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="camlyCoin"
+                    type="text"
+                    value={camlyCoinAddress}
+                    onChange={(e) => {
+                      setCamlyCoinAddress(e.target.value);
+                      if (e.target.value && e.target.value.startsWith('0x') && e.target.value.length === 42) {
+                        toast.success('✅ CAMLY contract hợp lệ!');
+                      }
+                    }}
+                    placeholder="0x..."
+                    className={`font-mono text-sm bg-secondary/30 shadow-sm pr-20 ${
+                      camlyCoinAddress && camlyCoinAddress.startsWith('0x') && camlyCoinAddress.length === 42
+                        ? 'border-inflow focus:border-inflow focus:ring-inflow/20'
+                        : 'border-border focus:border-primary focus:ring-primary/20'
+                    }`}
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const text = await navigator.clipboard.readText();
+                          setCamlyCoinAddress(text);
+                          if (text.startsWith('0x') && text.length === 42) {
+                            toast.success('✅ Đã paste CAMLY contract hợp lệ!');
+                          } else {
+                            toast.error('Contract phải bắt đầu 0x và 42 ký tự');
+                          }
+                        } catch { toast.error('Không thể paste từ clipboard'); }
+                      }}
+                      className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                      title="Paste"
+                    >
+                      <Clipboard className="w-4 h-4" />
+                    </button>
+                    {camlyCoinAddress && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(camlyCoinAddress);
+                          toast.success('Đã copy CAMLY contract!');
+                        }}
+                        className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                        title="Copy"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {camlyCoinAddress && camlyCoinAddress.startsWith('0x') && camlyCoinAddress.length === 42 && (
+                <p className="text-xs text-inflow flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> Hợp lệ
+                </p>
+              )}
             </div>
 
             {/* USDT */}
@@ -434,14 +485,65 @@ const Settings = () => {
               <Label htmlFor="usdt" className="text-foreground font-medium">
                 USDT (Tether)
               </Label>
-              <Input
-                id="usdt"
-                type="text"
-                value={usdtAddress}
-                onChange={(e) => setUsdtAddress(e.target.value)}
-                placeholder="0x..."
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
-              />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="usdt"
+                    type="text"
+                    value={usdtAddress}
+                    onChange={(e) => {
+                      setUsdtAddress(e.target.value);
+                      if (e.target.value && e.target.value.startsWith('0x') && e.target.value.length === 42) {
+                        toast.success('✅ USDT contract hợp lệ!');
+                      }
+                    }}
+                    placeholder="0x..."
+                    className={`font-mono text-sm bg-secondary/30 shadow-sm pr-20 ${
+                      usdtAddress && usdtAddress.startsWith('0x') && usdtAddress.length === 42
+                        ? 'border-inflow focus:border-inflow focus:ring-inflow/20'
+                        : 'border-border focus:border-primary focus:ring-primary/20'
+                    }`}
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const text = await navigator.clipboard.readText();
+                          setUsdtAddress(text);
+                          if (text.startsWith('0x') && text.length === 42) {
+                            toast.success('✅ Đã paste USDT contract hợp lệ!');
+                          } else {
+                            toast.error('Contract phải bắt đầu 0x và 42 ký tự');
+                          }
+                        } catch { toast.error('Không thể paste từ clipboard'); }
+                      }}
+                      className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                      title="Paste"
+                    >
+                      <Clipboard className="w-4 h-4" />
+                    </button>
+                    {usdtAddress && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(usdtAddress);
+                          toast.success('Đã copy USDT contract!');
+                        }}
+                        className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                        title="Copy"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {usdtAddress && usdtAddress.startsWith('0x') && usdtAddress.length === 42 && (
+                <p className="text-xs text-inflow flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> Hợp lệ
+                </p>
+              )}
             </div>
 
             {/* BTCB */}
@@ -449,14 +551,65 @@ const Settings = () => {
               <Label htmlFor="btcb" className="text-foreground font-medium">
                 BTCB (Bitcoin BEP20)
               </Label>
-              <Input
-                id="btcb"
-                type="text"
-                value={btcbAddress}
-                onChange={(e) => setBtcbAddress(e.target.value)}
-                placeholder="0x..."
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
-              />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="btcb"
+                    type="text"
+                    value={btcbAddress}
+                    onChange={(e) => {
+                      setBtcbAddress(e.target.value);
+                      if (e.target.value && e.target.value.startsWith('0x') && e.target.value.length === 42) {
+                        toast.success('✅ BTCB contract hợp lệ!');
+                      }
+                    }}
+                    placeholder="0x..."
+                    className={`font-mono text-sm bg-secondary/30 shadow-sm pr-20 ${
+                      btcbAddress && btcbAddress.startsWith('0x') && btcbAddress.length === 42
+                        ? 'border-inflow focus:border-inflow focus:ring-inflow/20'
+                        : 'border-border focus:border-primary focus:ring-primary/20'
+                    }`}
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const text = await navigator.clipboard.readText();
+                          setBtcbAddress(text);
+                          if (text.startsWith('0x') && text.length === 42) {
+                            toast.success('✅ Đã paste BTCB contract hợp lệ!');
+                          } else {
+                            toast.error('Contract phải bắt đầu 0x và 42 ký tự');
+                          }
+                        } catch { toast.error('Không thể paste từ clipboard'); }
+                      }}
+                      className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                      title="Paste"
+                    >
+                      <Clipboard className="w-4 h-4" />
+                    </button>
+                    {btcbAddress && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(btcbAddress);
+                          toast.success('Đã copy BTCB contract!');
+                        }}
+                        className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                        title="Copy"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {btcbAddress && btcbAddress.startsWith('0x') && btcbAddress.length === 42 && (
+                <p className="text-xs text-inflow flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> Hợp lệ
+                </p>
+              )}
             </div>
           </div>
 
@@ -554,30 +707,61 @@ const Settings = () => {
                   id="moralisApiKey"
                   type={showMoralisKey ? 'text' : 'password'}
                   value={moralisApiKey}
-                  onChange={(e) => setMoralisApiKey(e.target.value)}
+                  onChange={(e) => {
+                    setMoralisApiKey(e.target.value);
+                    if (e.target.value && e.target.value.length > 50) {
+                      toast.success('✅ API Key hợp lệ!');
+                    }
+                  }}
                   placeholder="Nhập Moralis API key..."
-                  className="bg-secondary/30 shadow-sm text-sm pr-12 font-mono border-border focus:border-primary focus:ring-primary/20"
+                  className={`bg-secondary/30 shadow-sm text-sm pr-24 font-mono ${
+                    moralisApiKey && moralisApiKey.length > 50
+                      ? 'border-inflow focus:border-inflow focus:ring-inflow/20'
+                      : 'border-border focus:border-primary focus:ring-primary/20'
+                  }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowMoralisKey(!showMoralisKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showMoralisKey ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        setMoralisApiKey(text);
+                        if (text.length > 50) {
+                          toast.success('✅ Đã paste API Key hợp lệ!');
+                        } else {
+                          toast.error('API Key phải có hơn 50 ký tự');
+                        }
+                      } catch { toast.error('Không thể paste từ clipboard'); }
+                    }}
+                    className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
+                    title="Paste"
+                  >
+                    <Clipboard className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMoralisKey(!showMoralisKey)}
+                    className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
+                    title={showMoralisKey ? 'Ẩn' : 'Hiện'}
+                  >
+                    {showMoralisKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
+              {moralisApiKey && moralisApiKey.length > 50 && (
+                <p className="text-xs text-inflow flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> API Key hợp lệ
+                </p>
+              )}
             </div>
 
-            {/* Save & Test Buttons */}
+            {/* Save & Test Buttons - Always visible */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={handleSaveMoralisKey}
-                disabled={isSavingApiKey || !moralisApiKey.trim()}
-                className="gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-6 py-5 text-base font-semibold disabled:opacity-50"
+                disabled={isSavingApiKey}
+                className="gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-6 py-5 text-base font-semibold"
               >
                 {isSavingApiKey ? (
                   <>
@@ -612,7 +796,7 @@ const Settings = () => {
             </div>
             <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
               <CheckCircle className="w-3 h-3 text-inflow" />
-              Dữ liệu sẽ được giữ lại khi reload trang
+              Paste (Ctrl+V) hoặc click icon Paste – lưu vĩnh viễn!
             </p>
 
             {/* Connection Status Display */}
