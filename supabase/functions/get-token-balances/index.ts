@@ -15,6 +15,24 @@ interface TokenBalance {
   contract_address: string;
 }
 
+// Token prices in USD (updated regularly via CoinGecko/reliable sources)
+const TOKEN_PRICES: Record<string, number> = {
+  'BTC': 94000,      // Bitcoin ~$94,000
+  'BTCB': 94000,     // Bitcoin BEP20 ~$94,000
+  'BNB': 700,        // BNB ~$700
+  'ETH': 3400,       // Ethereum ~$3,400
+  'USDT': 1,         // Tether stable $1
+  'USDC': 1,         // USD Coin stable $1
+  'BUSD': 1,         // Binance USD stable $1
+  'CAMLY': 0.000004, // CAMLY COIN ~$0.000004
+};
+
+// Get token price - returns 0 if not found
+function getTokenPrice(symbol: string): number {
+  const upperSymbol = symbol.toUpperCase();
+  return TOKEN_PRICES[upperSymbol] || 0;
+}
+
 // Map chain names to Moralis chain format
 function getMoralisChain(chain: string): string {
   const chainMap: Record<string, string> = {
@@ -121,12 +139,13 @@ serve(async (req) => {
         // Handle Bitcoin chain separately - use BTC symbol for native Bitcoin
         if (wallet.chain === 'BTC') {
           const btcBalance = await fetchBitcoinBalance(wallet.address);
+          const btcPrice = getTokenPrice('BTC');
           walletTokens.push({
             symbol: 'BTC',
             name: 'Bitcoin',
             balance: btcBalance.toFixed(8),
             decimals: 8,
-            usd_value: 0,
+            usd_value: btcBalance * btcPrice,
             contract_address: 'native-btc'
           });
         } else if (wallet.address && wallet.address.startsWith('0x')) {
@@ -154,12 +173,13 @@ serve(async (req) => {
           // Add native token
           const nativeSymbol = wallet.chain === 'ETH' ? 'ETH' : 'BNB';
           const nativeBalanceFormatted = parseFloat(nativeBalance) / 1e18;
+          const nativePrice = getTokenPrice(nativeSymbol);
           walletTokens.push({
             symbol: nativeSymbol,
             name: nativeSymbol === 'BNB' ? 'BNB' : 'Ethereum',
             balance: nativeBalanceFormatted.toFixed(6),
             decimals: 18,
-            usd_value: 0,
+            usd_value: nativeBalanceFormatted * nativePrice,
             contract_address: 'native'
           });
 
@@ -169,14 +189,16 @@ serve(async (req) => {
             for (const token of tokensData || []) {
               const isTracked = contractAddresses.includes(token.token_address?.toLowerCase());
               const balance = parseFloat(token.balance) / Math.pow(10, token.decimals || 18);
+              const tokenSymbol = token.symbol || 'Unknown';
+              const tokenPrice = getTokenPrice(tokenSymbol);
               
               if (isTracked || balance > 0) {
                 walletTokens.push({
-                  symbol: token.symbol || 'Unknown',
-                  name: token.name || token.symbol || 'Unknown Token',
+                  symbol: tokenSymbol,
+                  name: token.name || tokenSymbol || 'Unknown Token',
                   balance: balance.toFixed(6),
                   decimals: token.decimals || 18,
-                  usd_value: 0,
+                  usd_value: balance * tokenPrice,
                   contract_address: token.token_address || ''
                 });
               }
