@@ -5,10 +5,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import camlyLogo from '@/assets/camly-logo.jpeg';
 
-// Official token logos from CryptoLogos
+// Official token logos - CAMLY uses local asset
 const TOKEN_LOGOS: Record<string, string> = {
-  'CAMLY': 'https://cryptologos.cc/logos/camly-coin-camly-logo.png',
+  'CAMLY': camlyLogo,
   'BNB': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
   'USDT': 'https://cryptologos.cc/logos/tether-usdt-logo.png',
   'BTC': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',

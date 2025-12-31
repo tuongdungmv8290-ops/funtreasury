@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { formatCurrency, shortenAddress } from '@/lib/mockData';
 import type { Wallet } from '@/hooks/useWallets';
+import camlyLogo from '@/assets/camly-logo.jpeg';
 
-// Official token logos from CryptoLogos
+// Official token logos - CAMLY uses local asset
 const TOKEN_LOGOS: Record<string, string> = {
-  'CAMLY': 'https://cryptologos.cc/logos/camly-coin-camly-logo.png',
+  'CAMLY': camlyLogo,
   'BNB': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
   'USDT': 'https://cryptologos.cc/logos/tether-usdt-logo.png',
   'BTC': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
