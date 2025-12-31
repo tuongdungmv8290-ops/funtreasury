@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
@@ -528,7 +528,7 @@ const Settings = () => {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* CAMLY COIN */}
             <div className="space-y-2">
               <Label htmlFor="camlyCoin" className="text-foreground font-medium flex items-center gap-2">
@@ -542,6 +542,22 @@ const Settings = () => {
                 placeholder="0x... (paste contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
+              {camlyCoinAddress && (
+                <div className="flex items-center gap-2 mt-1 p-2 rounded-lg bg-primary/5 border border-primary/20">
+                  <code className="flex-1 text-xs font-mono text-foreground truncate">{camlyCoinAddress}</code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(camlyCoinAddress);
+                      toast.success('Đã copy CAMLY contract!');
+                    }}
+                    className="p-1.5 rounded-md hover:bg-primary/20 text-primary transition-colors"
+                    title="Copy contract address"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* USDT */}
@@ -557,6 +573,22 @@ const Settings = () => {
                 placeholder="0x... (paste contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
+              {usdtAddress && (
+                <div className="flex items-center gap-2 mt-1 p-2 rounded-lg bg-inflow/5 border border-inflow/20">
+                  <code className="flex-1 text-xs font-mono text-foreground truncate">{usdtAddress}</code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(usdtAddress);
+                      toast.success('Đã copy USDT contract!');
+                    }}
+                    className="p-1.5 rounded-md hover:bg-inflow/20 text-inflow transition-colors"
+                    title="Copy contract address"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* BTCB */}
@@ -572,6 +604,22 @@ const Settings = () => {
                 placeholder="0x... (paste contract address)"
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
               />
+              {btcbAddress && (
+                <div className="flex items-center gap-2 mt-1 p-2 rounded-lg bg-orange-500/5 border border-orange-500/20">
+                  <code className="flex-1 text-xs font-mono text-foreground truncate">{btcbAddress}</code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(btcbAddress);
+                      toast.success('Đã copy BTCB contract!');
+                    }}
+                    className="p-1.5 rounded-md hover:bg-orange-500/20 text-orange-500 transition-colors"
+                    title="Copy contract address"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
