@@ -118,11 +118,11 @@ serve(async (req) => {
       try {
         const walletTokens: TokenBalance[] = [];
 
-        // Handle Bitcoin chain separately
+        // Handle Bitcoin chain separately - use BTC symbol for native Bitcoin
         if (wallet.chain === 'BTC') {
           const btcBalance = await fetchBitcoinBalance(wallet.address);
           walletTokens.push({
-            symbol: 'BTCB',
+            symbol: 'BTC',
             name: 'Bitcoin',
             balance: btcBalance.toFixed(8),
             decimals: 8,
