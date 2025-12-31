@@ -528,98 +528,95 @@ const Settings = () => {
             </div>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {/* CAMLY COIN */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="camlyCoin" className="text-foreground font-medium flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></span>
                 CAMLY COIN
               </Label>
-              <InputWithPaste
-                id="camlyCoin"
-                value={camlyCoinAddress}
-                onChange={(e) => setCamlyCoinAddress(e.target.value)}
-                placeholder="0x... (paste contract address)"
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
-              />
-              {camlyCoinAddress && (
-                <div className="flex items-center gap-2 mt-1 p-2 rounded-lg bg-primary/5 border border-primary/20">
-                  <code className="flex-1 text-xs font-mono text-foreground truncate">{camlyCoinAddress}</code>
+              <div className="flex items-center gap-2">
+                <InputWithPaste
+                  id="camlyCoin"
+                  value={camlyCoinAddress}
+                  onChange={(e) => setCamlyCoinAddress(e.target.value)}
+                  placeholder="0x... (paste contract address)"
+                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                />
+                {camlyCoinAddress && (
                   <button
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(camlyCoinAddress);
                       toast.success('Đã copy CAMLY contract!');
                     }}
-                    className="p-1.5 rounded-md hover:bg-primary/20 text-primary transition-colors"
-                    title="Copy contract address"
+                    className="p-2.5 rounded-lg hover:bg-primary/20 text-primary transition-colors border border-primary/30"
+                    title="Copy"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* USDT */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="usdt" className="text-foreground font-medium flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 USDT (Tether)
               </Label>
-              <InputWithPaste
-                id="usdt"
-                value={usdtAddress}
-                onChange={(e) => setUsdtAddress(e.target.value)}
-                placeholder="0x... (paste contract address)"
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
-              />
-              {usdtAddress && (
-                <div className="flex items-center gap-2 mt-1 p-2 rounded-lg bg-inflow/5 border border-inflow/20">
-                  <code className="flex-1 text-xs font-mono text-foreground truncate">{usdtAddress}</code>
+              <div className="flex items-center gap-2">
+                <InputWithPaste
+                  id="usdt"
+                  value={usdtAddress}
+                  onChange={(e) => setUsdtAddress(e.target.value)}
+                  placeholder="0x... (paste contract address)"
+                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                />
+                {usdtAddress && (
                   <button
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(usdtAddress);
                       toast.success('Đã copy USDT contract!');
                     }}
-                    className="p-1.5 rounded-md hover:bg-inflow/20 text-inflow transition-colors"
-                    title="Copy contract address"
+                    className="p-2.5 rounded-lg hover:bg-green-500/20 text-green-600 transition-colors border border-green-500/30"
+                    title="Copy"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* BTCB */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="btcb" className="text-foreground font-medium flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-orange-500"></span>
                 BTCB (Bitcoin BEP20)
               </Label>
-              <InputWithPaste
-                id="btcb"
-                value={btcbAddress}
-                onChange={(e) => setBtcbAddress(e.target.value)}
-                placeholder="0x... (paste contract address)"
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
-              />
-              {btcbAddress && (
-                <div className="flex items-center gap-2 mt-1 p-2 rounded-lg bg-orange-500/5 border border-orange-500/20">
-                  <code className="flex-1 text-xs font-mono text-foreground truncate">{btcbAddress}</code>
+              <div className="flex items-center gap-2">
+                <InputWithPaste
+                  id="btcb"
+                  value={btcbAddress}
+                  onChange={(e) => setBtcbAddress(e.target.value)}
+                  placeholder="0x... (paste contract address)"
+                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                />
+                {btcbAddress && (
                   <button
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(btcbAddress);
                       toast.success('Đã copy BTCB contract!');
                     }}
-                    className="p-1.5 rounded-md hover:bg-orange-500/20 text-orange-500 transition-colors"
-                    title="Copy contract address"
+                    className="p-2.5 rounded-lg hover:bg-orange-500/20 text-orange-500 transition-colors border border-orange-500/30"
+                    title="Copy"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
