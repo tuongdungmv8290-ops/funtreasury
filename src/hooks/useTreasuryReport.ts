@@ -25,12 +25,21 @@ interface Transaction {
   to_address: string;
 }
 
+export interface ReportFilters {
+  startDate: string;
+  endDate: string;
+  tokenSymbol: string;
+  direction: 'ALL' | 'IN' | 'OUT';
+  limit: number;
+}
+
 export function useTreasuryReport() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateReport = async (
     pieChartRef?: React.RefObject<HTMLDivElement>,
-    flowChartRef?: React.RefObject<HTMLDivElement>
+    flowChartRef?: React.RefObject<HTMLDivElement>,
+    filters?: ReportFilters
   ) => {
     setIsGenerating(true);
 
@@ -38,15 +47,47 @@ export function useTreasuryReport() {
       // Fetch wallets
       const { data: wallets } = await supabase.from('wallets').select('*');
       
-      // Fetch recent transactions (20 most recent)
-      const { data: transactions } = await supabase
+      // Build transaction query with filters
+      let txQuery = supabase
         .from('transactions')
         .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(20);
+        .order('timestamp', { ascending: false });
+
+      if (filters) {
+        // Date range filter
+        if (filters.startDate) {
+          txQuery = txQuery.gte('timestamp', `${filters.startDate}T00:00:00`);
+        }
+        if (filters.endDate) {
+          txQuery = txQuery.lte('timestamp', `${filters.endDate}T23:59:59`);
+        }
+        // Token filter
+        if (filters.tokenSymbol && filters.tokenSymbol !== 'ALL') {
+          txQuery = txQuery.eq('token_symbol', filters.tokenSymbol);
+        }
+        // Direction filter
+        if (filters.direction && filters.direction !== 'ALL') {
+          txQuery = txQuery.eq('direction', filters.direction);
+        }
+        // Limit
+        txQuery = txQuery.limit(filters.limit || 50);
+      } else {
+        txQuery = txQuery.limit(20);
+      }
+
+      const { data: transactions } = await txQuery;
 
       // Fetch token balances from edge function
       const { data: tokenData } = await supabase.functions.invoke('get-token-balances');
+
+      // Generate filter description for PDF
+      const filterDesc = filters ? [
+        filters.startDate && filters.endDate 
+          ? `${format(new Date(filters.startDate), 'dd/MM/yyyy')} - ${format(new Date(filters.endDate), 'dd/MM/yyyy')}`
+          : null,
+        filters.tokenSymbol !== 'ALL' ? `Token: ${filters.tokenSymbol}` : null,
+        filters.direction !== 'ALL' ? `Loại: ${filters.direction}` : null,
+      ].filter(Boolean).join(' | ') : null;
       
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -62,21 +103,27 @@ export function useTreasuryReport() {
 
       // ========== HEADER ==========
       doc.setFillColor(...goldColor);
-      doc.rect(0, 0, pageWidth, 35, 'F');
+      doc.rect(0, 0, pageWidth, 40, 'F');
       
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
-      doc.text('FUN Treasury Report', margin, 22);
+      doc.text('FUN Treasury Report', margin, 20);
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text(
         `Ngày xuất: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: vi })}`,
         pageWidth - margin,
-        22,
+        20,
         { align: 'right' }
       );
+
+      // Filter description
+      if (filterDesc) {
+        doc.setFontSize(9);
+        doc.text(`Bộ lọc: ${filterDesc}`, margin, 32);
+      }
 
       yPos = 50;
 
@@ -181,10 +228,14 @@ export function useTreasuryReport() {
         yPos = 20;
       }
 
+      const txTitle = filters 
+        ? `Transactions (${transactions?.length || 0} kết quả)`
+        : 'Recent Transactions (20 Latest)';
+      
       doc.setTextColor(...darkText);
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Recent Transactions (20 Latest)', margin, yPos);
+      doc.text(txTitle, margin, yPos);
       yPos += 8;
 
       // Table header

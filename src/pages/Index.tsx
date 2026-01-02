@@ -5,7 +5,7 @@ import { TransactionChart } from '@/components/dashboard/TransactionChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { useWallets } from '@/hooks/useWallets';
-import { useTransactionStats } from '@/hooks/useTransactions';
+import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
 import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -16,12 +16,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useTransactionNotifications } from '@/hooks/useTransactionNotifications';
-import { useTreasuryReport } from '@/hooks/useTreasuryReport';
+import { useTreasuryReport, ReportFilters } from '@/hooks/useTreasuryReport';
+import { ReportFilterDialog } from '@/components/reports/ReportFilterDialog';
+
 const Index = () => {
   const [dateRange, setDateRange] = useState<7 | 30>(30);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const { data: wallets, isLoading: walletsLoading } = useWallets();
   const { data: stats, isLoading: statsLoading } = useTransactionStats(dateRange);
+  const { data: transactions } = useTransactions();
   
   // Realtime notifications
   useTransactionNotifications();
@@ -31,10 +35,14 @@ const Index = () => {
   const pieChartRef = useRef<HTMLDivElement>(null);
   const flowChartRef = useRef<HTMLDivElement>(null);
 
-  const handleExportPDF = async () => {
+  // Get unique tokens from transactions
+  const availableTokens = [...new Set(transactions?.map(tx => tx.token_symbol) || [])];
+
+  const handleExportPDF = async (filters: ReportFilters) => {
+    setShowReportDialog(false);
     toast.loading('📄 Đang tạo báo cáo PDF...', { id: 'pdf-toast' });
     try {
-      const result = await generateReport(pieChartRef, flowChartRef);
+      const result = await generateReport(pieChartRef, flowChartRef, filters);
       toast.success(`✅ Đã xuất ${result.fileName}`, { id: 'pdf-toast', duration: 5000 });
     } catch (error) {
       toast.error('❌ Lỗi tạo báo cáo PDF', { id: 'pdf-toast' });
@@ -158,7 +166,7 @@ const Index = () => {
               <Button 
                 variant="outline"
                 className="gap-2 border-treasury-gold/50 text-treasury-gold hover:bg-treasury-gold/10"
-                onClick={handleExportPDF}
+                onClick={() => setShowReportDialog(true)}
                 disabled={isGenerating}
               >
                 {isGenerating ? (
@@ -331,6 +339,15 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      {/* Report Filter Dialog */}
+      <ReportFilterDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        onGenerate={handleExportPDF}
+        isGenerating={isGenerating}
+        availableTokens={availableTokens}
+      />
     </div>
   );
 };
