@@ -28,8 +28,10 @@ const Settings = () => {
   // Local state for form
   const [wallet1Name, setWallet1Name] = useState('');
   const [wallet1Address, setWallet1Address] = useState('');
+  const [wallet1Chain, setWallet1Chain] = useState('BNB');
   const [wallet2Name, setWallet2Name] = useState('');
   const [wallet2Address, setWallet2Address] = useState('');
+  const [wallet2Chain, setWallet2Chain] = useState('BNB');
   const [chain, setChain] = useState('BNB');
   
   // Sync settings (for future use)
@@ -168,12 +170,13 @@ const Settings = () => {
       if (w1) {
         setWallet1Name(w1.name || 'Treasury Wallet 1');
         setWallet1Address(w1.address || '');
-        setChain(w1.chain || 'BNB');
+        setWallet1Chain(w1.chain || 'BNB');
       }
       
       if (w2) {
         setWallet2Name(w2.name || 'Treasury Wallet 2');
         setWallet2Address(w2.address || '');
+        setWallet2Chain(w2.chain || 'BNB');
       }
       setIsWalletsInitialized(true);
       console.log('Wallets initialized:', wallets);
@@ -221,13 +224,13 @@ const Settings = () => {
         id: wallets[0].id,
         name: wallet1Name,
         address: wallet1Address,
-        chain: chain,
+        chain: wallet1Chain,
       },
       {
         id: wallets[1].id,
         name: wallet2Name,
         address: wallet2Address,
-        chain: chain,
+        chain: wallet2Chain,
       },
     ];
 
@@ -386,17 +389,73 @@ const Settings = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="wallet1Name" className="text-foreground font-medium">
-                Wallet Name
-              </Label>
-              <Input
-                id="wallet1Name"
-                value={wallet1Name}
-                onChange={(e) => setWallet1Name(e.target.value)}
-                placeholder="Treasury Wallet 1"
-                className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-lg"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="wallet1Name" className="text-foreground font-medium">
+                  Wallet Name
+                </Label>
+                <Input
+                  id="wallet1Name"
+                  value={wallet1Name}
+                  onChange={(e) => setWallet1Name(e.target.value)}
+                  placeholder="Treasury Wallet 1"
+                  className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-lg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wallet1Chain" className="text-foreground font-medium">
+                  Blockchain Network
+                </Label>
+                <Select value={wallet1Chain} onValueChange={setWallet1Chain}>
+                  <SelectTrigger className="bg-white border-border hover:border-primary/50 transition-colors shadow-sm h-10">
+                    <SelectValue placeholder="Select chain" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border shadow-lg z-50">
+                    <SelectItem value="BNB">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        BNB Smart Chain
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ETH">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        Ethereum
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="POLYGON">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                        Polygon
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ARB">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                        Arbitrum
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="BASE">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Base
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="BTC">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                        Bitcoin
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="SOL">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-green-400"></span>
+                        Solana
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="wallet1Address" className="text-foreground font-medium">
@@ -426,17 +485,73 @@ const Settings = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="wallet2Name" className="text-foreground font-medium">
-                Wallet Name
-              </Label>
-              <Input
-                id="wallet2Name"
-                value={wallet2Name}
-                onChange={(e) => setWallet2Name(e.target.value)}
-                placeholder="Treasury Wallet 2"
-                className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-lg"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="wallet2Name" className="text-foreground font-medium">
+                  Wallet Name
+                </Label>
+                <Input
+                  id="wallet2Name"
+                  value={wallet2Name}
+                  onChange={(e) => setWallet2Name(e.target.value)}
+                  placeholder="Treasury Wallet 2"
+                  className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-lg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wallet2Chain" className="text-foreground font-medium">
+                  Blockchain Network
+                </Label>
+                <Select value={wallet2Chain} onValueChange={setWallet2Chain}>
+                  <SelectTrigger className="bg-white border-border hover:border-primary/50 transition-colors shadow-sm h-10">
+                    <SelectValue placeholder="Select chain" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border shadow-lg z-50">
+                    <SelectItem value="BNB">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        BNB Smart Chain
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ETH">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        Ethereum
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="POLYGON">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                        Polygon
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ARB">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                        Arbitrum
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="BASE">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Base
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="BTC">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                        Bitcoin
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="SOL">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-green-400"></span>
+                        Solana
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="wallet2Address" className="text-foreground font-medium">
@@ -453,68 +568,6 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* Blockchain Network */}
-        <div className="treasury-card mb-6 bg-white">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-inflow/20 to-inflow/10 border border-inflow/30 flex items-center justify-center shadow-sm">
-              <Wallet className="w-6 h-6 text-inflow" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground">Blockchain Network</h2>
-              <p className="text-sm text-muted-foreground">Chọn mạng blockchain cho cả 2 ví</p>
-            </div>
-          </div>
-
-          <Select value={chain} onValueChange={setChain}>
-            <SelectTrigger className="w-full md:w-[320px] bg-white border-border hover:border-primary/50 transition-colors shadow-sm h-12 text-base">
-              <SelectValue placeholder="Select blockchain" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-border shadow-lg z-50">
-              <SelectItem value="BNB" className="text-base py-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                  BNB Smart Chain
-                </div>
-              </SelectItem>
-              <SelectItem value="ETH" className="text-base py-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                  Ethereum
-                </div>
-              </SelectItem>
-              <SelectItem value="BTC" className="text-base py-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                  Bitcoin
-                </div>
-              </SelectItem>
-              <SelectItem value="SOL" className="text-base py-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-green-400"></span>
-                  Solana
-                </div>
-              </SelectItem>
-              <SelectItem value="POLYGON" className="text-base py-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                  Polygon
-                </div>
-              </SelectItem>
-              <SelectItem value="ARB" className="text-base py-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
-                  Arbitrum
-                </div>
-              </SelectItem>
-              <SelectItem value="BASE" className="text-base py-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                  Base
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
         {/* Token Contracts Card */}
         <div className="treasury-card mb-6 bg-white">
