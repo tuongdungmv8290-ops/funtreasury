@@ -21,6 +21,7 @@ const TOKEN_PRICES: Record<string, number> = {
   'BTCB': 94000,     // Bitcoin BEP20 ~$94,000
   'BNB': 700,        // BNB ~$700
   'ETH': 3400,       // Ethereum ~$3,400
+  'MATIC': 0.50,     // Polygon ~$0.50
   'USDT': 1,         // Tether stable $1
   'USDC': 1,         // USD Coin stable $1
   'BUSD': 1,         // Binance USD stable $1
@@ -170,13 +171,28 @@ serve(async (req) => {
           const tokensUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20?chain=${moralisChain}`;
           const tokensResponse = await fetch(tokensUrl, { method: 'GET', headers });
 
-          // Add native token
-          const nativeSymbol = wallet.chain === 'ETH' ? 'ETH' : 'BNB';
+          // Add native token based on chain
+          const nativeSymbolMap: Record<string, string> = {
+            'BNB': 'BNB',
+            'ETH': 'ETH',
+            'POLYGON': 'MATIC',
+            'ARB': 'ETH',
+            'BASE': 'ETH',
+          };
+          const nativeNameMap: Record<string, string> = {
+            'BNB': 'BNB',
+            'ETH': 'Ethereum',
+            'POLYGON': 'Polygon',
+            'ARB': 'Ethereum (Arbitrum)',
+            'BASE': 'Ethereum (Base)',
+          };
+          const nativeSymbol = nativeSymbolMap[wallet.chain] || 'ETH';
+          const nativeName = nativeNameMap[wallet.chain] || 'Native Token';
           const nativeBalanceFormatted = parseFloat(nativeBalance) / 1e18;
           const nativePrice = getTokenPrice(nativeSymbol);
           walletTokens.push({
             symbol: nativeSymbol,
-            name: nativeSymbol === 'BNB' ? 'BNB' : 'Ethereum',
+            name: nativeName,
             balance: nativeBalanceFormatted.toFixed(6),
             decimals: 18,
             usd_value: nativeBalanceFormatted * nativePrice,

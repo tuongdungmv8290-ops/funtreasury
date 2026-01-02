@@ -16,6 +16,41 @@ const TOKEN_LOGOS: Record<string, string> = {
   'USDC': 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
 };
 
+// Chain icons and info
+const CHAIN_INFO: Record<string, { name: string; color: string; logo: string }> = {
+  'BNB': { name: 'BNB Smart Chain', color: 'bg-yellow-500', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.png' },
+  'ETH': { name: 'Ethereum', color: 'bg-blue-500', logo: 'https://cryptologos.cc/logos/ethereum-eth-logo.png' },
+  'POLYGON': { name: 'Polygon', color: 'bg-purple-500', logo: 'https://cryptologos.cc/logos/polygon-matic-logo.png' },
+  'ARB': { name: 'Arbitrum', color: 'bg-cyan-500', logo: 'https://cryptologos.cc/logos/arbitrum-arb-logo.png' },
+  'BASE': { name: 'Base', color: 'bg-indigo-500', logo: 'https://avatars.githubusercontent.com/u/108554348' },
+  'BTC': { name: 'Bitcoin', color: 'bg-orange-500', logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png' },
+  'SOL': { name: 'Solana', color: 'bg-gradient-to-r from-purple-500 to-green-400', logo: 'https://cryptologos.cc/logos/solana-sol-logo.png' },
+};
+
+function ChainIcon({ chain, size = 18 }: { chain: string; size?: number }) {
+  const [hasError, setHasError] = useState(false);
+  const chainInfo = CHAIN_INFO[chain];
+
+  if (!chainInfo || hasError) {
+    return (
+      <span className={cn("rounded-full flex items-center justify-center text-white text-xs font-bold", chainInfo?.color || 'bg-gray-500')} style={{ width: size, height: size }}>
+        {chain?.substring(0, 1) || '?'}
+      </span>
+    );
+  }
+
+  return (
+    <img 
+      src={chainInfo.logo} 
+      alt={`${chainInfo.name} logo`}
+      className="rounded-full object-cover"
+      style={{ width: size, height: size }}
+      onError={() => setHasError(true)}
+      loading="lazy"
+    />
+  );
+}
+
 function TokenLogo({ symbol, size = 20 }: { symbol: string; size?: number }) {
   const [hasError, setHasError] = useState(false);
   const logoUrl = TOKEN_LOGOS[symbol];
@@ -102,9 +137,12 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
               </div>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-lg bg-treasury-gold/10 border border-treasury-gold/30 text-xs font-semibold text-treasury-gold">
-            {wallet.chain}
-          </span>
+          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-treasury-gold/10 border border-treasury-gold/30">
+            <ChainIcon chain={wallet.chain} size={16} />
+            <span className="text-xs font-semibold text-treasury-gold">
+              {CHAIN_INFO[wallet.chain]?.name || wallet.chain}
+            </span>
+          </div>
         </div>
 
         {/* Balance */}
