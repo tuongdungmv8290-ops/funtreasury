@@ -330,6 +330,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_duplicate_transactions: {
+        Args: never
+        Returns: {
+          count: number
+          tx_hash: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
