@@ -1,13 +1,13 @@
 import { useTokenBalances, WalletBalances } from '@/hooks/useTokenBalances';
-import { Loader2, Coins, RefreshCw, AlertCircle, Settings, History } from 'lucide-react';
+import { Loader2, Coins, RefreshCw, AlertCircle, Settings, History, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import camlyLogo from '@/assets/camly-logo.jpeg';
 import { TokenHistoryModal } from './TokenHistoryModal';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 // Official token logos - CAMLY uses local asset
 const TOKEN_LOGOS: Record<string, string> = {
@@ -30,8 +30,20 @@ const CHAIN_ICONS: Record<string, { icon: string; color: string; name: string }>
   'BASE': { icon: 'B', color: 'bg-blue-600', name: 'Base' },
 };
 
+// Pie chart colors matching token branding
+const TOKEN_COLORS: Record<string, string> = {
+  'CAMLY': '#C9A227',
+  'BNB': '#F3BA2F',
+  'USDT': '#26A17B',
+  'BTC': '#F7931A',
+  'BTCB': '#F7931A',
+};
+
 // Default coin icon for unknown tokens
 const DEFAULT_LOGO = 'https://cryptologos.cc/logos/cryptocom-chain-cro-logo.png';
+
+// LocalStorage key for 24h snapshot
+const PORTFOLIO_SNAPSHOT_KEY = 'treasury_portfolio_24h';
 
 function ChainBadge({ chain }: { chain: string }) {
   const chainInfo = CHAIN_ICONS[chain] || { icon: '?', color: 'bg-gray-500', name: chain };
@@ -174,11 +186,65 @@ export function TokenBalancesCard() {
       return aOrder - bOrder;
     });
 
-  // Calculate total USD value
-  const totalUsdValue = tokenList.reduce((sum, token) => {
-    const price = TOKEN_PRICES[token.symbol] || 0;
-    return sum + (token.totalBalance * price);
-  }, 0);
+  // Calculate total USD value and per-token USD values
+  const tokenListWithUsd = useMemo(() => tokenList.map(token => ({
+    ...token,
+    usdValue: token.totalBalance * (TOKEN_PRICES[token.symbol] || 0)
+  })), [tokenList]);
+
+  const totalUsdValue = useMemo(() => 
+    tokenListWithUsd.reduce((sum, token) => sum + token.usdValue, 0),
+    [tokenListWithUsd]
+  );
+
+  // Pie chart data
+  const pieData = useMemo(() => 
+    tokenListWithUsd
+      .filter(t => t.usdValue > 0)
+      .map(token => ({
+        name: token.symbol,
+        value: token.usdValue,
+        color: TOKEN_COLORS[token.symbol] || '#8884d8',
+        percentage: totalUsdValue > 0 ? (token.usdValue / totalUsdValue) * 100 : 0
+      })),
+    [tokenListWithUsd, totalUsdValue]
+  );
+
+  // 24h change tracking
+  const [change24h, setChange24h] = useState<{ value: number; percentage: number } | null>(null);
+
+  useEffect(() => {
+    if (totalUsdValue <= 0) return;
+
+    const stored = localStorage.getItem(PORTFOLIO_SNAPSHOT_KEY);
+    const now = Date.now();
+    
+    if (stored) {
+      const snapshot = JSON.parse(stored);
+      const age = now - snapshot.timestamp;
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      
+      // If snapshot is older than 24h, update it
+      if (age >= twentyFourHours) {
+        localStorage.setItem(PORTFOLIO_SNAPSHOT_KEY, JSON.stringify({
+          value: totalUsdValue,
+          timestamp: now
+        }));
+        setChange24h(null);
+      } else {
+        // Calculate change
+        const diff = totalUsdValue - snapshot.value;
+        const percentage = snapshot.value > 0 ? (diff / snapshot.value) * 100 : 0;
+        setChange24h({ value: diff, percentage });
+      }
+    } else {
+      // First time - save snapshot
+      localStorage.setItem(PORTFOLIO_SNAPSHOT_KEY, JSON.stringify({
+        value: totalUsdValue,
+        timestamp: now
+      }));
+    }
+  }, [totalUsdValue]);
 
   // Get display name for token
   const getTokenDisplayName = (symbol: string, name: string, chain?: string) => {
@@ -326,12 +392,78 @@ export function TokenBalancesCard() {
         </div>
       )}
 
+      {/* Pie Chart */}
+      {pieData.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-border/50">
+          <p className="text-xs text-muted-foreground mb-3">Phân bổ Portfolio</p>
+          <div className="flex items-center gap-4">
+            <div className="w-24 h-24">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={25}
+                    outerRadius={40}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: number) => [`$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, 'Giá trị']}
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex-1 grid grid-cols-2 gap-1">
+              {pieData.map(item => (
+                <div key={item.name} className="flex items-center gap-1.5">
+                  <div 
+                    className="w-2.5 h-2.5 rounded-full" 
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {item.name} <span className="font-mono">{item.percentage.toFixed(1)}%</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {balances && balances.length > 0 && (
         <div className="mt-4 pt-4 border-t border-border/50">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Tổng giá trị ({balances.length} ví)
-            </p>
+            <div>
+              <p className="text-xs text-muted-foreground">
+                Tổng giá trị ({balances.length} ví)
+              </p>
+              {change24h && (
+                <div className={`flex items-center gap-1 text-xs ${change24h.value >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {change24h.value >= 0 ? (
+                    <TrendingUp className="w-3 h-3" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3" />
+                  )}
+                  <span className="font-mono">
+                    {change24h.value >= 0 ? '+' : ''}${Math.abs(change24h.value).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    {' '}({change24h.percentage >= 0 ? '+' : ''}{change24h.percentage.toFixed(2)}%)
+                  </span>
+                  <span className="text-muted-foreground">24h</span>
+                </div>
+              )}
+            </div>
             <p className="font-mono font-bold text-lg text-primary">
               ${totalUsdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
