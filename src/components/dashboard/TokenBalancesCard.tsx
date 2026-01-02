@@ -1,11 +1,12 @@
 import { useTokenBalances, WalletBalances } from '@/hooks/useTokenBalances';
-import { Loader2, Coins, RefreshCw, AlertCircle, Settings } from 'lucide-react';
+import { Loader2, Coins, RefreshCw, AlertCircle, Settings, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import camlyLogo from '@/assets/camly-logo.jpeg';
+import { TokenHistoryModal } from './TokenHistoryModal';
 
 // Official token logos - CAMLY uses local asset
 const TOKEN_LOGOS: Record<string, string> = {
@@ -50,6 +51,7 @@ function TokenLogo({ symbol, size = 36 }: { symbol: string; size?: number }) {
 export function TokenBalancesCard() {
   const { data: balances, isLoading, error, refetch } = useTokenBalances();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [historyToken, setHistoryToken] = useState<{ symbol: string; name: string } | null>(null);
   const queryClient = useQueryClient();
 
   const handleRefresh = async () => {
@@ -206,15 +208,30 @@ export function TokenBalancesCard() {
                   <p className="text-xs text-muted-foreground">{getTokenDisplayName(token.symbol, token.name, token.chain)}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-mono font-semibold text-foreground">
-                  {token.totalBalance < 0.000001 
-                    ? token.totalBalance.toExponential(2)
-                    : token.totalBalance.toLocaleString(undefined, { maximumFractionDigits: 6 })}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {token.wallets.length} wallet{token.wallets.length > 1 ? 's' : ''}
-                </p>
+              <div className="flex items-center gap-3">
+                {/* View History Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setHistoryToken({ 
+                    symbol: token.symbol, 
+                    name: getTokenDisplayName(token.symbol, token.name, token.chain) 
+                  })}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary hover:bg-primary/10"
+                  title="Xem lịch sử giao dịch"
+                >
+                  <History className="w-4 h-4" />
+                </Button>
+                <div className="text-right">
+                  <p className="font-mono font-semibold text-foreground">
+                    {token.totalBalance < 0.000001 
+                      ? token.totalBalance.toExponential(2)
+                      : token.totalBalance.toLocaleString(undefined, { maximumFractionDigits: 6 })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {token.wallets.length} wallet{token.wallets.length > 1 ? 's' : ''}
+                  </p>
+                </div>
               </div>
             </div>
           ))}
@@ -227,6 +244,16 @@ export function TokenBalancesCard() {
             Cập nhật từ {balances.length} ví Treasury
           </p>
         </div>
+      )}
+
+      {/* Token History Modal */}
+      {historyToken && (
+        <TokenHistoryModal
+          open={!!historyToken}
+          onOpenChange={(open) => !open && setHistoryToken(null)}
+          tokenSymbol={historyToken.symbol}
+          tokenName={historyToken.name}
+        />
       )}
     </div>
   );
