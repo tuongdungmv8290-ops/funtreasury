@@ -18,12 +18,25 @@ import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
 import { useApiSettings } from '@/hooks/useApiSettings';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
+
+// Chain display names
+const CHAIN_NAMES: Record<string, string> = {
+  'BNB': 'BNB Smart Chain',
+  'ETH': 'Ethereum',
+  'POLYGON': 'Polygon',
+  'ARB': 'Arbitrum',
+  'BASE': 'Base',
+  'BTC': 'Bitcoin',
+  'SOL': 'Solana',
+};
 
 const Settings = () => {
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
   const { contracts, isLoading: isLoadingContracts, updateAllContracts, getContractBySymbol } = useTokenContracts();
   const { settings: apiSettings, isLoading: isLoadingApiSettings, updateSettingAsync, getSettingByKey } = useApiSettings();
+  const queryClient = useQueryClient();
   
   // Local state for form
   const [wallet1Name, setWallet1Name] = useState('');
@@ -33,6 +46,10 @@ const Settings = () => {
   const [wallet2Address, setWallet2Address] = useState('');
   const [wallet2Chain, setWallet2Chain] = useState('BNB');
   const [chain, setChain] = useState('BNB');
+  
+  // Track previous chain values for change detection
+  const [prevWallet1Chain, setPrevWallet1Chain] = useState('BNB');
+  const [prevWallet2Chain, setPrevWallet2Chain] = useState('BNB');
   
   // Sync settings (for future use)
   const [syncInterval, setSyncInterval] = useState('5');
@@ -171,12 +188,14 @@ const Settings = () => {
         setWallet1Name(w1.name || 'Treasury Wallet 1');
         setWallet1Address(w1.address || '');
         setWallet1Chain(w1.chain || 'BNB');
+        setPrevWallet1Chain(w1.chain || 'BNB');
       }
       
       if (w2) {
         setWallet2Name(w2.name || 'Treasury Wallet 2');
         setWallet2Address(w2.address || '');
         setWallet2Chain(w2.chain || 'BNB');
+        setPrevWallet2Chain(w2.chain || 'BNB');
       }
       setIsWalletsInitialized(true);
       console.log('Wallets initialized:', wallets);
@@ -212,12 +231,16 @@ const Settings = () => {
   const [isSavingContracts, setIsSavingContracts] = useState(false);
   const [isSavingApiKey, setIsSavingApiKey] = useState(false);
 
-  // Save only wallet settings
-  const handleSaveWallets = () => {
+  // Save only wallet settings with chain switch detection
+  const handleSaveWallets = async () => {
     if (wallets.length < 2) {
       toast.error('Không tìm thấy đủ ví trong database');
       return;
     }
+
+    const wallet1ChainChanged = wallet1Chain !== prevWallet1Chain;
+    const wallet2ChainChanged = wallet2Chain !== prevWallet2Chain;
+    const chainChanged = wallet1ChainChanged || wallet2ChainChanged;
 
     const updatedWallets = [
       {
@@ -235,6 +258,28 @@ const Settings = () => {
     ];
 
     updateWallets(updatedWallets);
+    
+    // Update previous chain values
+    setPrevWallet1Chain(wallet1Chain);
+    setPrevWallet2Chain(wallet2Chain);
+    
+    // If chain was changed, show toast and refresh balances
+    if (chainChanged) {
+      const changedChains: string[] = [];
+      if (wallet1ChainChanged) changedChains.push(CHAIN_NAMES[wallet1Chain] || wallet1Chain);
+      if (wallet2ChainChanged) changedChains.push(CHAIN_NAMES[wallet2Chain] || wallet2Chain);
+      
+      toast.success(`🔗 Đã chuyển sang ${changedChains.join(' & ')}`, {
+        description: 'Balance realtime đang cập nhật...'
+      });
+      
+      // Auto-sync balances after chain switch
+      setTimeout(async () => {
+        await queryClient.invalidateQueries({ queryKey: ['token-balances'] });
+        await queryClient.invalidateQueries({ queryKey: ['wallets'] });
+        toast.success('✨ Balance realtime đã cập nhật!');
+      }, 1000);
+    }
   };
 
   // Save only token contracts
