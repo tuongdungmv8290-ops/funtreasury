@@ -77,19 +77,25 @@ function TokenLogo({ symbol, size = 36, chain }: { symbol: string; size?: number
   );
 }
 
+function ShimmerSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={`animate-shimmer rounded-md ${className}`} />
+  );
+}
+
 function TokenSkeleton() {
   return (
-    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 animate-pulse">
+    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50">
       <div className="flex items-center gap-3">
-        <Skeleton className="w-9 h-9 rounded-full" />
+        <ShimmerSkeleton className="w-9 h-9 rounded-full" />
         <div className="space-y-2">
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-3 w-24" />
+          <ShimmerSkeleton className="h-4 w-16" />
+          <ShimmerSkeleton className="h-3 w-24" />
         </div>
       </div>
       <div className="text-right space-y-2">
-        <Skeleton className="h-4 w-20 ml-auto" />
-        <Skeleton className="h-3 w-12 ml-auto" />
+        <ShimmerSkeleton className="h-4 w-20 ml-auto" />
+        <ShimmerSkeleton className="h-3 w-12 ml-auto" />
       </div>
     </div>
   );
@@ -151,6 +157,15 @@ export function TokenBalancesCard() {
   const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB'];
   const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTC': 3, 'BTCB': 4 };
   
+  // Token prices for USD calculation (same as edge function)
+  const TOKEN_PRICES: Record<string, number> = {
+    'BTC': 94000,
+    'BTCB': 94000,
+    'BNB': 700,
+    'USDT': 1,
+    'CAMLY': 0.000004,
+  };
+  
   const tokenList = Array.from(allTokens.values())
     .filter(t => t.totalBalance > 0 && ALLOWED_TOKENS.includes(t.symbol))
     .sort((a, b) => {
@@ -158,6 +173,12 @@ export function TokenBalancesCard() {
       const bOrder = TOKEN_ORDER[b.symbol] ?? 100;
       return aOrder - bOrder;
     });
+
+  // Calculate total USD value
+  const totalUsdValue = tokenList.reduce((sum, token) => {
+    const price = TOKEN_PRICES[token.symbol] || 0;
+    return sum + (token.totalBalance * price);
+  }, 0);
 
   // Get display name for token
   const getTokenDisplayName = (symbol: string, name: string, chain?: string) => {
@@ -307,9 +328,14 @@ export function TokenBalancesCard() {
 
       {balances && balances.length > 0 && (
         <div className="mt-4 pt-4 border-t border-border/50">
-          <p className="text-xs text-muted-foreground text-center">
-            Cập nhật từ {balances.length} ví Treasury
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Tổng giá trị ({balances.length} ví)
+            </p>
+            <p className="font-mono font-bold text-lg text-primary">
+              ${totalUsdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+          </div>
         </div>
       )}
 
