@@ -153,13 +153,46 @@ serve(async (req) => {
     console.log(`Found ${wallets.length} wallets to sync`);
 
     let totalNewTransactions = 0;
-    const syncResults: { wallet: string; newTxCount: number; error?: string }[] = [];
+    let totalDuplicatesRemoved = 0;
+    const syncResults: { wallet: string; newTxCount: number; duplicatesRemoved: number; error?: string }[] = [];
+
+    // Check and remove duplicates first
+    console.log('Checking for duplicate transactions...');
+    const { data: duplicates, error: dupCheckError } = await supabase.rpc('find_duplicate_transactions');
+    
+    if (!dupCheckError && duplicates && duplicates.length > 0) {
+      console.log(`Found ${duplicates.length} duplicate transaction groups`);
+      
+      // For each duplicate group, keep the oldest and delete the rest
+      for (const dup of duplicates) {
+        const { data: dupTxs } = await supabase
+          .from('transactions')
+          .select('id, created_at')
+          .eq('tx_hash', dup.tx_hash)
+          .order('created_at', { ascending: true });
+        
+        if (dupTxs && dupTxs.length > 1) {
+          // Keep first (oldest), delete the rest
+          const idsToDelete = dupTxs.slice(1).map(t => t.id);
+          const { error: deleteError } = await supabase
+            .from('transactions')
+            .delete()
+            .in('id', idsToDelete);
+          
+          if (!deleteError) {
+            totalDuplicatesRemoved += idsToDelete.length;
+            console.log(`Removed ${idsToDelete.length} duplicates for tx_hash: ${dup.tx_hash}`);
+          }
+        }
+      }
+    }
+    console.log(`Total duplicates removed: ${totalDuplicatesRemoved}`);
 
     // 3. Sync each wallet
     for (const wallet of wallets as WalletData[]) {
       if (!wallet.address || !wallet.address.startsWith('0x')) {
         console.log(`Skipping wallet ${wallet.name}: invalid address`);
-        syncResults.push({ wallet: wallet.name, newTxCount: 0, error: 'Invalid address' });
+        syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0, error: 'Invalid address' });
         continue;
       }
 
@@ -252,7 +285,7 @@ serve(async (req) => {
 
         if (erc20Transfers.length === 0 && nativeTransfers.length === 0) {
           console.log(`No new transfers found for ${wallet.name}`);
-          syncResults.push({ wallet: wallet.name, newTxCount: 0 });
+          syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0 });
           continue;
         }
 
@@ -367,7 +400,7 @@ serve(async (req) => {
         }
 
         console.log(`Added ${newTxCount} new transactions for ${wallet.name}`);
-        syncResults.push({ wallet: wallet.name, newTxCount });
+        syncResults.push({ wallet: wallet.name, newTxCount, duplicatesRemoved: 0 });
         totalNewTransactions += newTxCount;
 
         // 5. Update sync state with new max block
@@ -414,19 +447,21 @@ serve(async (req) => {
         syncResults.push({ 
           wallet: wallet.name, 
           newTxCount: 0, 
+          duplicatesRemoved: 0,
           error: walletError instanceof Error ? walletError.message : 'Unknown error' 
         });
       }
     }
 
-    console.log(`=== Sync Complete: ${totalNewTransactions} new transactions ===`);
+    console.log(`=== Sync Complete: ${totalNewTransactions} new transactions, ${totalDuplicatesRemoved} duplicates removed ===`);
 
     return new Response(JSON.stringify({
       success: true,
-      message: totalNewTransactions > 0 
-        ? `Sync thành công! Đã thêm ${totalNewTransactions} giao dịch mới.`
+      message: totalNewTransactions > 0 || totalDuplicatesRemoved > 0
+        ? `Sync thành công! Đã thêm ${totalNewTransactions} tx mới, xóa ${totalDuplicatesRemoved} tx dư.`
         : 'Sync hoàn tất! Không có giao dịch mới.',
       totalNewTransactions,
+      totalDuplicatesRemoved,
       results: syncResults,
       syncTime: new Date().toISOString()
     }), {

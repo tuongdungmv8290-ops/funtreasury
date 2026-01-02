@@ -63,14 +63,17 @@ const Index = () => {
         toast.error('❌ Không thể sync transactions', { id: 'sync-toast' });
       } else if (data?.success) {
         const syncTime = new Date(data.syncTime).toLocaleTimeString('vi-VN');
-        if (data.totalNewTransactions > 0) {
+        const newTx = data.totalNewTransactions || 0;
+        const dupRemoved = data.totalDuplicatesRemoved || 0;
+        
+        if (newTx > 0 || dupRemoved > 0) {
           toast.success(
-            `🎉 Sync hoàn tất! Thêm ${data.totalNewTransactions} giao dịch mới – Dashboard cập nhật realtime!`,
+            `🎉 Kiểm tra hoàn tất – Đã thêm ${newTx} tx mới, xóa ${dupRemoved} tx dư`,
             { id: 'sync-toast', duration: 5000 }
           );
         } else {
           toast.success(
-            `✅ Sync hoàn tất lúc ${syncTime} – Không có giao dịch mới`,
+            `✅ Kiểm tra hoàn tất lúc ${syncTime} – Không có tx mới hoặc dư`,
             { id: 'sync-toast', duration: 3000 }
           );
         }
