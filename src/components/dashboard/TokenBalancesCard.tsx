@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import camlyLogo from '@/assets/camly-logo.jpeg';
 import { TokenHistoryModal } from './TokenHistoryModal';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Official token logos - CAMLY uses local asset
 const TOKEN_LOGOS: Record<string, string> = {
@@ -19,31 +20,77 @@ const TOKEN_LOGOS: Record<string, string> = {
   'USDC': 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
 };
 
+// Chain icons for distinguishing networks
+const CHAIN_ICONS: Record<string, { icon: string; color: string; name: string }> = {
+  'BTC': { icon: '₿', color: 'bg-orange-500', name: 'Bitcoin' },
+  'BNB': { icon: 'B', color: 'bg-yellow-500', name: 'BNB Chain' },
+  'ETH': { icon: 'Ξ', color: 'bg-blue-500', name: 'Ethereum' },
+  'POLYGON': { icon: 'P', color: 'bg-purple-500', name: 'Polygon' },
+  'ARB': { icon: 'A', color: 'bg-blue-400', name: 'Arbitrum' },
+  'BASE': { icon: 'B', color: 'bg-blue-600', name: 'Base' },
+};
+
 // Default coin icon for unknown tokens
 const DEFAULT_LOGO = 'https://cryptologos.cc/logos/cryptocom-chain-cro-logo.png';
 
-function TokenLogo({ symbol, size = 36 }: { symbol: string; size?: number }) {
+function ChainBadge({ chain }: { chain: string }) {
+  const chainInfo = CHAIN_ICONS[chain] || { icon: '?', color: 'bg-gray-500', name: chain };
+  
+  return (
+    <div 
+      className={`absolute -bottom-1 -right-1 w-4 h-4 ${chainInfo.color} rounded-full flex items-center justify-center text-[8px] font-bold text-white border-2 border-background shadow-sm`}
+      title={chainInfo.name}
+    >
+      {chainInfo.icon}
+    </div>
+  );
+}
+
+function TokenLogo({ symbol, size = 36, chain }: { symbol: string; size?: number; chain?: string }) {
   const [hasError, setHasError] = useState(false);
   const logoUrl = TOKEN_LOGOS[symbol] || DEFAULT_LOGO;
 
   return (
     <div 
-      className="relative rounded-full overflow-hidden bg-secondary border border-border/50 flex items-center justify-center transition-transform duration-200 hover:scale-110"
+      className="relative rounded-full overflow-visible flex items-center justify-center transition-transform duration-200 hover:scale-110"
       style={{ width: size, height: size }}
     >
-      {!hasError ? (
-        <img 
-          src={logoUrl} 
-          alt={`${symbol} logo`}
-          className="w-full h-full object-cover"
-          onError={() => setHasError(true)}
-          loading="lazy"
-        />
-      ) : (
-        <span className="text-xs font-bold text-muted-foreground">
-          {symbol.substring(0, 2)}
-        </span>
-      )}
+      <div 
+        className="w-full h-full rounded-full overflow-hidden bg-secondary border border-border/50 flex items-center justify-center"
+      >
+        {!hasError ? (
+          <img 
+            src={logoUrl} 
+            alt={`${symbol} logo`}
+            className="w-full h-full object-cover"
+            onError={() => setHasError(true)}
+            loading="lazy"
+          />
+        ) : (
+          <span className="text-xs font-bold text-muted-foreground">
+            {symbol.substring(0, 2)}
+          </span>
+        )}
+      </div>
+      {chain && <ChainBadge chain={chain} />}
+    </div>
+  );
+}
+
+function TokenSkeleton() {
+  return (
+    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 animate-pulse">
+      <div className="flex items-center gap-3">
+        <Skeleton className="w-9 h-9 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      </div>
+      <div className="text-right space-y-2">
+        <Skeleton className="h-4 w-20 ml-auto" />
+        <Skeleton className="h-3 w-12 ml-auto" />
+      </div>
     </div>
   );
 }
@@ -126,12 +173,31 @@ export function TokenBalancesCard() {
   // Check if error is due to missing API key
   const isApiKeyMissing = error?.message?.includes('API Key') || error?.message?.includes('Moralis');
 
-  if (isLoading) {
+  if (isLoading || isRefreshing) {
     return (
       <div className="treasury-card">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="ml-2 text-muted-foreground">Đang tải số dư...</span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
+              <Coins className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Token Balances</h3>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Đang cập nhật...
+              </p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" disabled className="text-muted-foreground">
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          </Button>
+        </div>
+        <div className="space-y-3">
+          <TokenSkeleton />
+          <TokenSkeleton />
+          <TokenSkeleton />
+          <TokenSkeleton />
         </div>
       </div>
     );
@@ -196,13 +262,14 @@ export function TokenBalancesCard() {
         </div>
       ) : (
         <div className="space-y-3">
-          {tokenList.map((token) => (
+          {tokenList.map((token, index) => (
             <div
               key={`${token.symbol}-${token.chain}`}
-              className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 hover:border-primary/30 transition-all duration-200 group"
+              className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 hover:border-primary/30 transition-all duration-200 group animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-center gap-3">
-                <TokenLogo symbol={token.symbol} size={36} />
+                <TokenLogo symbol={token.symbol} size={36} chain={token.chain} />
                 <div>
                   <p className="font-semibold text-foreground">{token.symbol}</p>
                   <p className="text-xs text-muted-foreground">{getTokenDisplayName(token.symbol, token.name, token.chain)}</p>
