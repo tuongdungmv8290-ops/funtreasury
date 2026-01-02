@@ -15,23 +15,104 @@ interface TokenBalance {
   contract_address: string;
 }
 
-// Token prices in USD (updated regularly via CoinGecko/reliable sources)
-const TOKEN_PRICES: Record<string, number> = {
-  'BTC': 94000,      // Bitcoin ~$94,000
-  'BTCB': 94000,     // Bitcoin BEP20 ~$94,000
-  'BNB': 700,        // BNB ~$700
-  'ETH': 3400,       // Ethereum ~$3,400
-  'MATIC': 0.50,     // Polygon ~$0.50
-  'USDT': 1,         // Tether stable $1
-  'USDC': 1,         // USD Coin stable $1
-  'BUSD': 1,         // Binance USD stable $1
-  'CAMLY': 0.000004, // CAMLY COIN ~$0.000004
+// Fallback prices if API fails
+const FALLBACK_PRICES: Record<string, number> = {
+  'BTC': 94000,
+  'BTCB': 94000,
+  'BNB': 700,
+  'ETH': 3400,
+  'MATIC': 0.50,
+  'USDT': 1,
+  'USDC': 1,
+  'BUSD': 1,
+  'CAMLY': 0.000023,
 };
 
-// Get token price - returns 0 if not found
-function getTokenPrice(symbol: string): number {
+// CoinGecko token IDs mapping
+const COINGECKO_IDS: Record<string, string> = {
+  'BTC': 'bitcoin',
+  'BTCB': 'bitcoin',
+  'BNB': 'binancecoin',
+  'ETH': 'ethereum',
+  'USDT': 'tether',
+  'USDC': 'usd-coin',
+  'BUSD': 'binance-usd',
+  'MATIC': 'matic-network',
+};
+
+// CAMLY contract address on BSC for price lookup
+const CAMLY_CONTRACT = '0xe8670901e86818745b28c8b30b17986958fce8cc';
+
+// Cache for prices (5 minutes TTL)
+let priceCache: { prices: Record<string, number>; timestamp: number } | null = null;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Fetch prices from CoinGecko
+async function fetchPricesFromCoinGecko(): Promise<Record<string, number>> {
+  // Check cache first
+  if (priceCache && (Date.now() - priceCache.timestamp) < CACHE_TTL) {
+    console.log('Using cached prices');
+    return priceCache.prices;
+  }
+
+  const prices: Record<string, number> = { ...FALLBACK_PRICES };
+
+  try {
+    // Fetch main token prices
+    const ids = Object.values(COINGECKO_IDS).join(',');
+    const mainPricesUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
+    console.log('Fetching prices from CoinGecko...');
+    
+    const mainResponse = await fetch(mainPricesUrl);
+    if (mainResponse.ok) {
+      const data = await mainResponse.json();
+      console.log('CoinGecko response:', JSON.stringify(data));
+      
+      // Map back to our symbols
+      for (const [symbol, geckoId] of Object.entries(COINGECKO_IDS)) {
+        if (data[geckoId]?.usd) {
+          prices[symbol] = data[geckoId].usd;
+        }
+      }
+    } else {
+      console.log(`CoinGecko main prices API error: ${mainResponse.status}`);
+    }
+
+    // Fetch CAMLY price from BSC contract
+    try {
+      const camlyUrl = `https://api.coingecko.com/api/v3/simple/token_price/binance-smart-chain?contract_addresses=${CAMLY_CONTRACT}&vs_currencies=usd`;
+      const camlyResponse = await fetch(camlyUrl);
+      
+      if (camlyResponse.ok) {
+        const camlyData = await camlyResponse.json();
+        console.log('CAMLY price response:', JSON.stringify(camlyData));
+        
+        const camlyAddress = CAMLY_CONTRACT.toLowerCase();
+        if (camlyData[camlyAddress]?.usd) {
+          prices['CAMLY'] = camlyData[camlyAddress].usd;
+        }
+      } else {
+        console.log(`CoinGecko CAMLY API error: ${camlyResponse.status}`);
+      }
+    } catch (camlyError) {
+      console.log('Error fetching CAMLY price:', camlyError);
+    }
+
+    // Update cache
+    priceCache = { prices, timestamp: Date.now() };
+    console.log('Prices updated:', JSON.stringify(prices));
+    
+  } catch (error) {
+    console.error('Error fetching prices from CoinGecko:', error);
+  }
+
+  return prices;
+}
+
+// Get token price
+async function getTokenPrice(symbol: string, prices: Record<string, number>): Promise<number> {
   const upperSymbol = symbol.toUpperCase();
-  return TOKEN_PRICES[upperSymbol] || 0;
+  return prices[upperSymbol] || 0;
 }
 
 // Map chain names to Moralis chain format
@@ -58,7 +139,7 @@ async function fetchBitcoinBalance(address: string): Promise<number> {
     }
     
     const satoshis = await response.text();
-    const btcBalance = parseInt(satoshis) / 100000000; // Convert satoshis to BTC
+    const btcBalance = parseInt(satoshis) / 100000000;
     console.log(`Bitcoin balance for ${address}: ${btcBalance} BTC`);
     return btcBalance;
   } catch (error) {
@@ -75,11 +156,14 @@ serve(async (req) => {
   try {
     console.log('=== Fetching Token Balances ===');
 
+    // Fetch prices first
+    const prices = await fetchPricesFromCoinGecko();
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get Moralis API key - prioritize env variable, fallback to database
+    // Get Moralis API key
     let moralisApiKey = Deno.env.get('MORALIS_API_KEY');
     
     if (!moralisApiKey) {
@@ -137,10 +221,9 @@ serve(async (req) => {
       try {
         const walletTokens: TokenBalance[] = [];
 
-        // Handle Bitcoin chain separately - use BTC symbol for native Bitcoin
         if (wallet.chain === 'BTC') {
           const btcBalance = await fetchBitcoinBalance(wallet.address);
-          const btcPrice = getTokenPrice('BTC');
+          const btcPrice = await getTokenPrice('BTC', prices);
           walletTokens.push({
             symbol: 'BTC',
             name: 'Bitcoin',
@@ -150,7 +233,6 @@ serve(async (req) => {
             contract_address: 'native-btc'
           });
         } else if (wallet.address && wallet.address.startsWith('0x')) {
-          // Handle EVM chains (BNB, ETH, etc.)
           const moralisChain = getMoralisChain(wallet.chain);
           
           const headers = new Headers();
@@ -171,7 +253,6 @@ serve(async (req) => {
           const tokensUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20?chain=${moralisChain}`;
           const tokensResponse = await fetch(tokensUrl, { method: 'GET', headers });
 
-          // Add native token based on chain
           const nativeSymbolMap: Record<string, string> = {
             'BNB': 'BNB',
             'ETH': 'ETH',
@@ -189,7 +270,7 @@ serve(async (req) => {
           const nativeSymbol = nativeSymbolMap[wallet.chain] || 'ETH';
           const nativeName = nativeNameMap[wallet.chain] || 'Native Token';
           const nativeBalanceFormatted = parseFloat(nativeBalance) / 1e18;
-          const nativePrice = getTokenPrice(nativeSymbol);
+          const nativePrice = await getTokenPrice(nativeSymbol, prices);
           walletTokens.push({
             symbol: nativeSymbol,
             name: nativeName,
@@ -206,7 +287,7 @@ serve(async (req) => {
               const isTracked = contractAddresses.includes(token.token_address?.toLowerCase());
               const balance = parseFloat(token.balance) / Math.pow(10, token.decimals || 18);
               const tokenSymbol = token.symbol || 'Unknown';
-              const tokenPrice = getTokenPrice(tokenSymbol);
+              const tokenPrice = await getTokenPrice(tokenSymbol, prices);
               
               if (isTracked || balance > 0) {
                 walletTokens.push({
@@ -256,11 +337,13 @@ serve(async (req) => {
     }
 
     console.log('=== Token Balances Fetched ===');
+    console.log('Final prices used:', JSON.stringify(prices));
 
     return new Response(JSON.stringify({
       success: true,
       balances: allBalances,
-      trackedTokens: tokenContracts?.map(t => t.symbol) || []
+      trackedTokens: tokenContracts?.map(t => t.symbol) || [],
+      prices: prices
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

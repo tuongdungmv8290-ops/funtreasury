@@ -9,6 +9,7 @@ import camlyLogo from '@/assets/camly-logo.jpeg';
 import { TokenHistoryModal } from './TokenHistoryModal';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
+import { formatTokenAmount, formatUSD, formatNumber, formatPercentage } from '@/lib/formatNumber';
 
 // Official token logos - CAMLY uses local asset
 const TOKEN_LOGOS: Record<string, string> = {
@@ -141,12 +142,31 @@ function TokenSkeleton() {
   );
 }
 
+// Fallback prices (used when API returns prices or as backup)
+const FALLBACK_PRICES: Record<string, number> = {
+  'BTC': 94000,
+  'BTCB': 94000,
+  'BNB': 700,
+  'USDT': 1,
+  'CAMLY': 0.000023,
+};
+
 export function TokenBalancesCard() {
   const { data: balances, isLoading, error, refetch } = useTokenBalances();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [historyToken, setHistoryToken] = useState<{ symbol: string; name: string } | null>(null);
+  const [historyToken, setHistoryToken] = useState<{ symbol: string; name: string; price: number } | null>(null);
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
+  const [tokenPrices, setTokenPrices] = useState<Record<string, number>>(FALLBACK_PRICES);
   const queryClient = useQueryClient();
+
+  // Extract prices from balance response when available
+  useEffect(() => {
+    // @ts-ignore - prices may be returned from edge function
+    if (balances && (balances as any).prices) {
+      // @ts-ignore
+      setTokenPrices((balances as any).prices);
+    }
+  }, [balances]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -160,17 +180,14 @@ export function TokenBalancesCard() {
     }
   };
 
-  // Separate tokens by chain - BTC from Bitcoin wallet, BTCB from BNB chain
-  // Use unique key: symbol + chain to keep them separate
+  // Separate tokens by chain
   const allTokens = new Map<string, { symbol: string; name: string; totalBalance: number; wallets: string[]; chain: string; displaySymbol: string }>();
   
   if (balances) {
     for (const walletBalance of balances) {
-      // Determine chain from wallet name
       const isBitcoinWallet = walletBalance.walletName.toLowerCase().includes('bitcoin');
       
       for (const token of walletBalance.tokens) {
-        // Create unique key: BTC from Bitcoin wallet stays as BTC, BTCB from BNB chain stays as BTCB
         const chain = isBitcoinWallet ? 'BTC' : 'BNB';
         const uniqueKey = `${token.symbol}-${chain}`;
         
@@ -194,18 +211,8 @@ export function TokenBalancesCard() {
     }
   }
 
-  // Show these tokens, in specific order - BTC (native) and BTCB (BNB chain) are separate
   const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB'];
   const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTC': 3, 'BTCB': 4 };
-  
-  // Token prices for USD calculation (same as edge function)
-  const TOKEN_PRICES: Record<string, number> = {
-    'BTC': 94000,
-    'BTCB': 94000,
-    'BNB': 700,
-    'USDT': 1,
-    'CAMLY': 0.000004,
-  };
   
   const tokenList = Array.from(allTokens.values())
     .filter(t => t.totalBalance > 0 && ALLOWED_TOKENS.includes(t.symbol))
@@ -215,11 +222,12 @@ export function TokenBalancesCard() {
       return aOrder - bOrder;
     });
 
-  // Calculate total USD value and per-token USD values
+  // Calculate USD values using dynamic prices
   const tokenListWithUsd = useMemo(() => tokenList.map(token => ({
     ...token,
-    usdValue: token.totalBalance * (TOKEN_PRICES[token.symbol] || 0)
-  })), [tokenList]);
+    usdValue: token.totalBalance * (tokenPrices[token.symbol] || 0),
+    price: tokenPrices[token.symbol] || 0
+  })), [tokenList, tokenPrices]);
 
   const totalUsdValue = useMemo(() => 
     tokenListWithUsd.reduce((sum, token) => sum + token.usdValue, 0),
@@ -258,7 +266,7 @@ export function TokenBalancesCard() {
       }
       return data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   // Mutation to save new snapshot
@@ -280,7 +288,7 @@ export function TokenBalancesCard() {
     }
   });
 
-  // Save snapshot every hour (if value changed significantly)
+  // Save snapshot every hour
   useEffect(() => {
     if (totalUsdValue <= 0) return;
     
@@ -295,7 +303,7 @@ export function TokenBalancesCard() {
     }
   }, [totalUsdValue]);
 
-  // Calculate 24h change from database snapshot
+  // Calculate 24h change
   const change24h = useMemo(() => {
     if (!snapshot24h || totalUsdValue <= 0) return null;
     
@@ -307,11 +315,9 @@ export function TokenBalancesCard() {
     return { value: diff, percentage };
   }, [snapshot24h, totalUsdValue]);
 
-  // Pie chart hover handlers
   const onPieEnter = (_: any, index: number) => setActiveIndex(index);
   const onPieLeave = () => setActiveIndex(undefined);
 
-  // Get display name for token
   const getTokenDisplayName = (symbol: string, name: string, chain?: string) => {
     const displayNames: Record<string, string> = {
       'CAMLY': 'CAMLY COIN',
@@ -322,7 +328,6 @@ export function TokenBalancesCard() {
     return displayNames[symbol] || name;
   };
 
-  // Check if error is due to missing API key
   const isApiKeyMissing = error?.message?.includes('API Key') || error?.message?.includes('Moralis');
 
   if (isLoading || isRefreshing) {
@@ -393,7 +398,7 @@ export function TokenBalancesCard() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground">Token Balances</h3>
-            <p className="text-xs text-muted-foreground">Realtime từ blockchain</p>
+            <p className="text-xs text-muted-foreground">Realtime từ CoinGecko</p>
           </div>
         </div>
         <Button
@@ -414,7 +419,7 @@ export function TokenBalancesCard() {
         </div>
       ) : (
         <div className="space-y-3">
-          {tokenList.map((token, index) => (
+          {tokenListWithUsd.map((token, index) => (
             <div
               key={`${token.symbol}-${token.chain}`}
               className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 hover:border-primary/30 transition-all duration-200 group animate-fade-in"
@@ -434,7 +439,8 @@ export function TokenBalancesCard() {
                   size="sm"
                   onClick={() => setHistoryToken({ 
                     symbol: token.symbol, 
-                    name: getTokenDisplayName(token.symbol, token.name, token.chain) 
+                    name: getTokenDisplayName(token.symbol, token.name, token.chain),
+                    price: token.price
                   })}
                   className="opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary hover:bg-primary/10"
                   title="Xem lịch sử giao dịch"
@@ -443,12 +449,10 @@ export function TokenBalancesCard() {
                 </Button>
                 <div className="text-right">
                   <p className="font-mono font-semibold text-foreground">
-                    {token.totalBalance < 0.000001 
-                      ? token.totalBalance.toExponential(2)
-                      : token.totalBalance.toLocaleString(undefined, { maximumFractionDigits: 6 })}
+                    {formatTokenAmount(token.totalBalance, token.symbol)}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    {token.wallets.length} wallet{token.wallets.length > 1 ? 's' : ''}
+                  <p className="text-xs font-mono text-green-500">
+                    {formatUSD(token.usdValue)}
                   </p>
                 </div>
               </div>
@@ -494,7 +498,7 @@ export function TokenBalancesCard() {
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number) => [`$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`, 'Giá trị']}
+                    formatter={(value: number) => [formatUSD(value), 'Giá trị']}
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--card))', 
                       border: '1px solid hsl(var(--border))',
@@ -522,7 +526,7 @@ export function TokenBalancesCard() {
                     }}
                   />
                   <span className="text-xs text-muted-foreground">
-                    {item.name} <span className="font-mono font-medium">{item.percentage.toFixed(1)}%</span>
+                    {item.name} <span className="font-mono font-medium">{formatNumber(item.percentage, { minDecimals: 1, maxDecimals: 1 })}%</span>
                   </span>
                 </div>
               ))}
@@ -546,15 +550,16 @@ export function TokenBalancesCard() {
                     <TrendingDown className="w-3 h-3" />
                   )}
                   <span className="font-mono">
-                    {change24h.value >= 0 ? '+' : ''}${Math.abs(change24h.value).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                    {' '}({change24h.percentage >= 0 ? '+' : ''}{change24h.percentage.toFixed(2)}%)
+                    {change24h.value >= 0 ? '+' : ''}{formatUSD(Math.abs(change24h.value))}
+                    {' '}({formatPercentage(change24h.percentage)})
                   </span>
                   <span className="text-muted-foreground">24h</span>
                 </div>
               )}
             </div>
-            <p className="font-mono font-bold text-lg text-primary">
-              ${totalUsdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {/* Total Balance - Gold color, large font */}
+            <p className="font-mono font-bold text-2xl" style={{ color: '#C9A227' }}>
+              {formatUSD(totalUsdValue)}
             </p>
           </div>
         </div>
@@ -567,6 +572,7 @@ export function TokenBalancesCard() {
           onOpenChange={(open) => !open && setHistoryToken(null)}
           tokenSymbol={historyToken.symbol}
           tokenName={historyToken.name}
+          tokenPrice={historyToken.price}
         />
       )}
     </div>
