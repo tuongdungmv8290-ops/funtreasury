@@ -7,19 +7,39 @@ import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
-import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { useTransactionNotifications } from '@/hooks/useTransactionNotifications';
+import { useTreasuryReport } from '@/hooks/useTreasuryReport';
 const Index = () => {
   const [dateRange, setDateRange] = useState<7 | 30>(30);
   const [isSyncing, setIsSyncing] = useState(false);
   const { data: wallets, isLoading: walletsLoading } = useWallets();
   const { data: stats, isLoading: statsLoading } = useTransactionStats(dateRange);
+  
+  // Realtime notifications
+  useTransactionNotifications();
+  
+  // PDF Report
+  const { generateReport, isGenerating } = useTreasuryReport();
+  const pieChartRef = useRef<HTMLDivElement>(null);
+  const flowChartRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPDF = async () => {
+    toast.loading('📄 Đang tạo báo cáo PDF...', { id: 'pdf-toast' });
+    try {
+      const result = await generateReport(pieChartRef, flowChartRef);
+      toast.success(`✅ Đã xuất ${result.fileName}`, { id: 'pdf-toast', duration: 5000 });
+    } catch (error) {
+      toast.error('❌ Lỗi tạo báo cáo PDF', { id: 'pdf-toast' });
+    }
+  };
   
   // Fetch last sync time from sync_state
   const { data: lastSyncTime, refetch: refetchSyncTime } = useQuery({
@@ -134,26 +154,41 @@ const Index = () => {
                 30 Days
               </button>
             </div>
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2">
               <Button 
-                className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg hover:shadow-xl transition-all px-4 md:px-6"
-                onClick={handleSyncNow}
-                disabled={isSyncing}
+                variant="outline"
+                className="gap-2 border-treasury-gold/50 text-treasury-gold hover:bg-treasury-gold/10"
+                onClick={handleExportPDF}
+                disabled={isGenerating}
               >
-                {isSyncing ? (
+                {isGenerating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <RefreshCw className="w-4 h-4" />
+                  <FileDown className="w-4 h-4" />
                 )}
-                <span className="hidden sm:inline">Sync Now</span>
-                <span className="sm:hidden">Sync</span>
+                <span className="hidden sm:inline">Export PDF</span>
               </Button>
-              {getLastSyncedText() && (
-                <span className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Last synced: {getLastSyncedText()}
-                </span>
-              )}
+              <div className="flex flex-col items-end gap-1">
+                <Button 
+                  className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg hover:shadow-xl transition-all px-4 md:px-6"
+                  onClick={handleSyncNow}
+                  disabled={isSyncing}
+                >
+                  {isSyncing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline">Sync Now</span>
+                  <span className="sm:hidden">Sync</span>
+                </Button>
+                {getLastSyncedText() && (
+                  <span className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    Last synced: {getLastSyncedText()}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -275,8 +310,12 @@ const Index = () => {
 
         {/* Charts, Token Balances and Recent Transactions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <TransactionChart />
-          <TokenBalancesCard />
+          <div ref={flowChartRef}>
+            <TransactionChart />
+          </div>
+          <div ref={pieChartRef}>
+            <TokenBalancesCard />
+          </div>
           <RecentTransactions />
         </div>
       </main>
