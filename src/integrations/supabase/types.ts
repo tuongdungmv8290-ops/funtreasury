@@ -38,6 +38,27 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          token_breakdown: Json | null
+          total_usd_value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          token_breakdown?: Json | null
+          total_usd_value?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          token_breakdown?: Json | null
+          total_usd_value?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

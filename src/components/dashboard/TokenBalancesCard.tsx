@@ -1,13 +1,14 @@
 import { useTokenBalances, WalletBalances } from '@/hooks/useTokenBalances';
-import { Loader2, Coins, RefreshCw, AlertCircle, Settings, History, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Loader2, Coins, RefreshCw, AlertCircle, Settings, History, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import camlyLogo from '@/assets/camly-logo.jpeg';
 import { TokenHistoryModal } from './TokenHistoryModal';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
+import { supabase } from '@/integrations/supabase/client';
 
 // Official token logos - CAMLY uses local asset
 const TOKEN_LOGOS: Record<string, string> = {
@@ -42,8 +43,35 @@ const TOKEN_COLORS: Record<string, string> = {
 // Default coin icon for unknown tokens
 const DEFAULT_LOGO = 'https://cryptologos.cc/logos/cryptocom-chain-cro-logo.png';
 
-// LocalStorage key for 24h snapshot
-const PORTFOLIO_SNAPSHOT_KEY = 'treasury_portfolio_24h';
+// Active shape renderer for pie chart hover effect
+const renderActiveShape = (props: any) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius - 2}
+        outerRadius={outerRadius + 6}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        style={{ filter: 'drop-shadow(0 0 8px rgba(0,0,0,0.3))' }}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius - 2}
+        outerRadius={outerRadius + 6}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        opacity={0.3}
+      />
+    </g>
+  );
+};
 
 function ChainBadge({ chain }: { chain: string }) {
   const chainInfo = CHAIN_ICONS[chain] || { icon: '?', color: 'bg-gray-500', name: chain };
@@ -117,6 +145,7 @@ export function TokenBalancesCard() {
   const { data: balances, isLoading, error, refetch } = useTokenBalances();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [historyToken, setHistoryToken] = useState<{ symbol: string; name: string } | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
   const queryClient = useQueryClient();
 
   const handleRefresh = async () => {
@@ -210,41 +239,77 @@ export function TokenBalancesCard() {
     [tokenListWithUsd, totalUsdValue]
   );
 
-  // 24h change tracking
-  const [change24h, setChange24h] = useState<{ value: number; percentage: number } | null>(null);
+  // Fetch 24h snapshot from database
+  const { data: snapshot24h } = useQuery({
+    queryKey: ['portfolio-snapshot-24h'],
+    queryFn: async () => {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from('portfolio_snapshots')
+        .select('total_usd_value, created_at')
+        .lte('created_at', twentyFourHoursAgo)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching snapshot:', error);
+        return null;
+      }
+      return data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
+  // Mutation to save new snapshot
+  const saveSnapshot = useMutation({
+    mutationFn: async (value: number) => {
+      const tokenBreakdown = tokenListWithUsd.reduce((acc, t) => {
+        acc[t.symbol] = { balance: t.totalBalance, usdValue: t.usdValue };
+        return acc;
+      }, {} as Record<string, { balance: number; usdValue: number }>);
+
+      const { error } = await supabase
+        .from('portfolio_snapshots')
+        .insert({ 
+          total_usd_value: value,
+          token_breakdown: tokenBreakdown
+        });
+      
+      if (error) console.error('Error saving snapshot:', error);
+    }
+  });
+
+  // Save snapshot every hour (if value changed significantly)
   useEffect(() => {
     if (totalUsdValue <= 0) return;
-
-    const stored = localStorage.getItem(PORTFOLIO_SNAPSHOT_KEY);
-    const now = Date.now();
     
-    if (stored) {
-      const snapshot = JSON.parse(stored);
-      const age = now - snapshot.timestamp;
-      const twentyFourHours = 24 * 60 * 60 * 1000;
-      
-      // If snapshot is older than 24h, update it
-      if (age >= twentyFourHours) {
-        localStorage.setItem(PORTFOLIO_SNAPSHOT_KEY, JSON.stringify({
-          value: totalUsdValue,
-          timestamp: now
-        }));
-        setChange24h(null);
-      } else {
-        // Calculate change
-        const diff = totalUsdValue - snapshot.value;
-        const percentage = snapshot.value > 0 ? (diff / snapshot.value) * 100 : 0;
-        setChange24h({ value: diff, percentage });
-      }
-    } else {
-      // First time - save snapshot
-      localStorage.setItem(PORTFOLIO_SNAPSHOT_KEY, JSON.stringify({
-        value: totalUsdValue,
-        timestamp: now
-      }));
+    const lastSaveKey = 'treasury_last_snapshot_save';
+    const lastSave = localStorage.getItem(lastSaveKey);
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    
+    if (!lastSave || (now - parseInt(lastSave)) >= oneHour) {
+      saveSnapshot.mutate(totalUsdValue);
+      localStorage.setItem(lastSaveKey, now.toString());
     }
   }, [totalUsdValue]);
+
+  // Calculate 24h change from database snapshot
+  const change24h = useMemo(() => {
+    if (!snapshot24h || totalUsdValue <= 0) return null;
+    
+    const diff = totalUsdValue - Number(snapshot24h.total_usd_value);
+    const percentage = Number(snapshot24h.total_usd_value) > 0 
+      ? (diff / Number(snapshot24h.total_usd_value)) * 100 
+      : 0;
+    
+    return { value: diff, percentage };
+  }, [snapshot24h, totalUsdValue]);
+
+  // Pie chart hover handlers
+  const onPieEnter = (_: any, index: number) => setActiveIndex(index);
+  const onPieLeave = () => setActiveIndex(undefined);
 
   // Get display name for token
   const getTokenDisplayName = (symbol: string, name: string, chain?: string) => {
@@ -392,25 +457,40 @@ export function TokenBalancesCard() {
         </div>
       )}
 
-      {/* Pie Chart */}
+      {/* Pie Chart with Animation */}
       {pieData.length > 0 && (
         <div className="mt-4 pt-4 border-t border-border/50">
           <p className="text-xs text-muted-foreground mb-3">Phân bổ Portfolio</p>
           <div className="flex items-center gap-4">
-            <div className="w-24 h-24">
+            <div className="w-28 h-28">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={pieData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={25}
-                    outerRadius={40}
+                    innerRadius={28}
+                    outerRadius={45}
                     paddingAngle={2}
                     dataKey="value"
+                    activeIndex={activeIndex}
+                    activeShape={renderActiveShape}
+                    onMouseEnter={onPieEnter}
+                    onMouseLeave={onPieLeave}
+                    animationBegin={0}
+                    animationDuration={800}
+                    animationEasing="ease-out"
                   >
                     {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color}
+                        className="transition-all duration-200 cursor-pointer"
+                        style={{ 
+                          filter: activeIndex === index ? 'brightness(1.2)' : 'brightness(1)',
+                          transition: 'filter 0.2s ease'
+                        }}
+                      />
                     ))}
                   </Pie>
                   <Tooltip 
@@ -419,21 +499,30 @@ export function TokenBalancesCard() {
                       backgroundColor: 'hsl(var(--card))', 
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
-                      fontSize: '12px'
+                      fontSize: '12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                     }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex-1 grid grid-cols-2 gap-1">
-              {pieData.map(item => (
-                <div key={item.name} className="flex items-center gap-1.5">
+            <div className="flex-1 grid grid-cols-2 gap-1.5">
+              {pieData.map((item, index) => (
+                <div 
+                  key={item.name} 
+                  className={`flex items-center gap-1.5 p-1 rounded transition-all duration-200 cursor-pointer ${activeIndex === index ? 'bg-secondary/80 scale-105' : 'hover:bg-secondary/50'}`}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onMouseLeave={() => setActiveIndex(undefined)}
+                >
                   <div 
-                    className="w-2.5 h-2.5 rounded-full" 
-                    style={{ backgroundColor: item.color }}
+                    className="w-3 h-3 rounded-full transition-transform duration-200"
+                    style={{ 
+                      backgroundColor: item.color,
+                      transform: activeIndex === index ? 'scale(1.3)' : 'scale(1)'
+                    }}
                   />
                   <span className="text-xs text-muted-foreground">
-                    {item.name} <span className="font-mono">{item.percentage.toFixed(1)}%</span>
+                    {item.name} <span className="font-mono font-medium">{item.percentage.toFixed(1)}%</span>
                   </span>
                 </div>
               ))}
