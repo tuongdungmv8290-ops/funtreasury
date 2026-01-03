@@ -4,6 +4,7 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { TransactionChart } from '@/components/dashboard/TransactionChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
+import { PortfolioHistoryChart } from '@/components/dashboard/PortfolioHistoryChart';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
@@ -314,6 +315,11 @@ const Index = () => {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Portfolio History Chart */}
+        <div className="mb-6 md:mb-8">
+          <PortfolioHistoryChart />
         </div>
 
         {/* Charts, Token Balances and Recent Transactions */}
