@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { NotificationCenter } from './NotificationCenter';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -22,7 +23,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-border shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
@@ -62,6 +63,9 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+          
           {/* Notification Center */}
           {user && <NotificationCenter />}
           
