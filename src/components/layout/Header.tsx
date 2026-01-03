@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { NotificationCenter } from './NotificationCenter';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -61,6 +62,9 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* Notification Center */}
+          {user && <NotificationCenter />}
+          
           {/* User info & Logout */}
           {user && (
             <div className="hidden sm:flex items-center gap-3">
