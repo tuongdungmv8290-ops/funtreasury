@@ -119,6 +119,36 @@ export type Database = {
         }
         Relationships: []
       }
+      report_schedules: {
+        Row: {
+          created_at: string
+          day_of_week: string
+          email: string
+          enabled: boolean
+          id: string
+          last_sent_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week?: string
+          email: string
+          enabled?: boolean
+          id?: string
+          last_sent_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: string
+          email?: string
+          enabled?: boolean
+          id?: string
+          last_sent_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sync_state: {
         Row: {
           created_at: string
