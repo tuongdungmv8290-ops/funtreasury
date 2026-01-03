@@ -18,6 +18,34 @@ interface TransactionPayload {
   timestamp: string;
 }
 
+interface AlertConfig {
+  enabled: boolean;
+  threshold_usd: number;
+  direction: string;
+  token_symbol: string | null;
+}
+
+// Check if transaction should trigger special alert
+function shouldTriggerAlert(alertConfig: AlertConfig | null, tx: TransactionPayload): boolean {
+  if (!alertConfig?.enabled) return false;
+  
+  // Check direction
+  if (alertConfig.direction !== 'all') {
+    if (alertConfig.direction === 'in' && tx.direction !== 'IN') return false;
+    if (alertConfig.direction === 'out' && tx.direction !== 'OUT') return false;
+  }
+  
+  // Check token filter
+  if (alertConfig.token_symbol && alertConfig.token_symbol !== tx.token_symbol) {
+    return false;
+  }
+  
+  // Check threshold
+  if (tx.usd_value < alertConfig.threshold_usd) return false;
+  
+  return true;
+}
+
 export function useTransactionNotifications() {
   const queryClient = useQueryClient();
 
@@ -37,52 +65,85 @@ export function useTransactionNotifications() {
           const tx = payload.new as TransactionPayload;
           console.log('📨 New transaction received:', tx);
           
-          // Fetch wallet name for better notification
-          const { data: wallet } = await supabase
-            .from('wallets')
-            .select('name')
-            .eq('id', tx.wallet_id)
-            .single();
+          // Fetch wallet name and alert config in parallel
+          const [walletResult, alertResult] = await Promise.all([
+            supabase
+              .from('wallets')
+              .select('name')
+              .eq('id', tx.wallet_id)
+              .single(),
+            supabase
+              .from('transaction_alerts')
+              .select('*')
+              .limit(1)
+              .single()
+          ]);
           
-          const walletName = wallet?.name || 'Treasury Wallet';
+          const walletName = walletResult.data?.name || 'Treasury Wallet';
+          const alertConfig = alertResult.data as AlertConfig | null;
           const amountFormatted = formatTokenAmount(tx.amount, tx.token_symbol);
           const usdFormatted = formatUSD(tx.usd_value);
           
+          // Check if this is a large transaction that should trigger special alert
+          const isLargeTx = shouldTriggerAlert(alertConfig, tx);
+          
           if (tx.direction === 'IN') {
-            const title = `💰 Nhận ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`;
+            const title = isLargeTx 
+              ? `🚨 GIAO DỊCH LỚN: Nhận ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`
+              : `💰 Nhận ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`;
             const description = `Vào ${walletName}`;
             
-            toast.success(title, {
-              description,
-              duration: 6000,
-              icon: '📥',
-            });
+            if (isLargeTx) {
+              toast.warning(title, {
+                description,
+                duration: 10000,
+                icon: '🚨',
+              });
+            } else {
+              toast.success(title, {
+                description,
+                duration: 6000,
+                icon: '📥',
+              });
+            }
             
             // Save to notifications DB
-            await saveNotification(title, description, 'success', {
+            await saveNotification(title, description, isLargeTx ? 'warning' : 'success', {
               tx_hash: tx.tx_hash,
               direction: tx.direction,
               token_symbol: tx.token_symbol,
               amount: tx.amount,
-              usd_value: tx.usd_value
+              usd_value: tx.usd_value,
+              is_large_tx: isLargeTx
             });
           } else {
-            const title = `📤 Chuyển ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`;
+            const title = isLargeTx
+              ? `🚨 GIAO DỊCH LỚN: Chuyển ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`
+              : `📤 Chuyển ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`;
             const description = `Từ ${walletName}`;
             
-            toast.info(title, {
-              description,
-              duration: 6000,
-              icon: '📤',
-            });
+            if (isLargeTx) {
+              toast.warning(title, {
+                description,
+                duration: 10000,
+                icon: '🚨',
+              });
+            } else {
+              toast.info(title, {
+                description,
+                duration: 6000,
+                icon: '📤',
+              });
+            }
             
             // Save to notifications DB
-            await saveNotification(title, description, 'info', {
+            await saveNotification(title, description, isLargeTx ? 'warning' : 'info', {
               tx_hash: tx.tx_hash,
               direction: tx.direction,
               token_symbol: tx.token_symbol,
               amount: tx.amount,
-              usd_value: tx.usd_value
+              usd_value: tx.usd_value,
+              is_large_tx: isLargeTx
             });
           }
           
