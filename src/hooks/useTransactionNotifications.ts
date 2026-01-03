@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { formatTokenAmount, formatUSD } from '@/lib/formatNumber';
+import { saveNotification } from '@/hooks/useNotifications';
 
 interface TransactionPayload {
   id: string;
@@ -49,23 +49,41 @@ export function useTransactionNotifications() {
           const usdFormatted = formatUSD(tx.usd_value);
           
           if (tx.direction === 'IN') {
-            toast.success(
-              `💰 Nhận ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`,
-              {
-                description: `Vào ${walletName}`,
-                duration: 6000,
-                icon: '📥',
-              }
-            );
+            const title = `💰 Nhận ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`;
+            const description = `Vào ${walletName}`;
+            
+            toast.success(title, {
+              description,
+              duration: 6000,
+              icon: '📥',
+            });
+            
+            // Save to notifications DB
+            await saveNotification(title, description, 'success', {
+              tx_hash: tx.tx_hash,
+              direction: tx.direction,
+              token_symbol: tx.token_symbol,
+              amount: tx.amount,
+              usd_value: tx.usd_value
+            });
           } else {
-            toast.info(
-              `📤 Chuyển ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`,
-              {
-                description: `Từ ${walletName}`,
-                duration: 6000,
-                icon: '📤',
-              }
-            );
+            const title = `📤 Chuyển ${amountFormatted} ${tx.token_symbol} (${usdFormatted})`;
+            const description = `Từ ${walletName}`;
+            
+            toast.info(title, {
+              description,
+              duration: 6000,
+              icon: '📤',
+            });
+            
+            // Save to notifications DB
+            await saveNotification(title, description, 'info', {
+              tx_hash: tx.tx_hash,
+              direction: tx.direction,
+              token_symbol: tx.token_symbol,
+              amount: tx.amount,
+              usd_value: tx.usd_value
+            });
           }
           
           // Invalidate queries to refresh data
