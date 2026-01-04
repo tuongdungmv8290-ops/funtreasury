@@ -109,7 +109,7 @@ const Index = () => {
         }
         
         // Auto refresh all data after successful sync
-        queryClient.invalidateQueries({ queryKey: ['token-balances'] });
+        queryClient.invalidateQueries({ queryKey: ['token-balances-db'] });
         queryClient.invalidateQueries({ queryKey: ['wallets'] });
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
         queryClient.invalidateQueries({ queryKey: ['transaction-stats'] });
