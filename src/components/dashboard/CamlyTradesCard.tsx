@@ -76,7 +76,7 @@ export function CamlyTradesCard() {
           </Button>
         </div>
 
-        <Tabs defaultValue="holders" className="w-full">
+        <Tabs defaultValue="trades" className="w-full">
           <TabsList className="grid w-full grid-cols-2 h-8 bg-treasury-gold/10 border border-treasury-gold/20">
             <TabsTrigger 
               value="holders" 
@@ -109,10 +109,11 @@ export function CamlyTradesCard() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-treasury-gold/20 hover:bg-transparent">
-                      <TableHead className="text-[10px] text-treasury-gold font-bold w-10">Rank</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold w-8">#</TableHead>
                       <TableHead className="text-[10px] text-treasury-gold font-bold">Address</TableHead>
-                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">Quantity</TableHead>
-                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right w-16">%</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">CAMLY</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">USD</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right w-14">%</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -146,6 +147,11 @@ export function CamlyTradesCard() {
                         <TableCell className="py-2 text-right">
                           <span className="text-[11px] font-medium">
                             {formatNumber(holder.balance, { compact: true })}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-2 text-right">
+                          <span className="text-[11px] font-medium text-emerald-600">
+                            {formatUSD(holder.valueUsd)}
                           </span>
                         </TableCell>
                         <TableCell className="py-2 text-right">
@@ -189,9 +195,9 @@ export function CamlyTradesCard() {
                   <TableHeader>
                     <TableRow className="border-treasury-gold/20 hover:bg-transparent">
                       <TableHead className="text-[10px] text-treasury-gold font-bold">Date</TableHead>
-                      <TableHead className="text-[10px] text-treasury-gold font-bold">Type</TableHead>
-                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">Amount</TableHead>
-                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">Value</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-center">Type</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">CAMLY</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">USDT</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -207,10 +213,10 @@ export function CamlyTradesCard() {
                         </TableCell>
                         <TableCell className="py-2">
                           <div className={cn(
-                            "flex items-center gap-1 px-1.5 py-0.5 rounded-full w-fit",
+                            "flex items-center justify-center gap-1 px-2 py-0.5 rounded-full w-fit mx-auto",
                             trade.type === 'buy' 
-                              ? "bg-emerald-500/15 text-emerald-500" 
-                              : "bg-red-500/15 text-red-500"
+                              ? "bg-emerald-500/20 text-emerald-600" 
+                              : "bg-red-500/20 text-red-500"
                           )}>
                             {trade.type === 'buy' ? (
                               <TrendingUp className="w-3 h-3" />
@@ -223,12 +229,12 @@ export function CamlyTradesCard() {
                           </div>
                         </TableCell>
                         <TableCell className="py-2 text-right">
-                          <span className="text-[11px] font-medium">
+                          <span className="text-[11px] font-semibold">
                             {formatNumber(trade.amount, { compact: true })}
                           </span>
                         </TableCell>
                         <TableCell className="py-2 text-right">
-                          <span className="text-[11px] font-semibold text-treasury-gold">
+                          <span className="text-[11px] font-bold text-treasury-gold">
                             {formatUSD(trade.valueUsd)}
                           </span>
                         </TableCell>
