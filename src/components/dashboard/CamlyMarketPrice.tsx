@@ -363,10 +363,10 @@ export function CamlyMarketPrice() {
               </div>
               
               {/* Main Chart with Price on Right */}
-              <div className="h-40 relative">
+              <div className="h-40">
                 <ResponsiveContainer width="100%" height="100%">
                   {chartType === 'line' ? (
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 70, bottom: 0, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 5, bottom: 0, left: 5 }}>
                       <defs>
                         <linearGradient id="camlyPriceGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.6} />
@@ -377,19 +377,14 @@ export function CamlyMarketPrice() {
                       </defs>
                       <XAxis 
                         dataKey="timeLabel" 
-                        tick={{ fontSize: 9, fill: '#888' }} 
+                        tick={{ fontSize: 9, fill: '#888' }}
                         tickLine={false} 
                         axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} 
                         interval="preserveStartEnd"
                       />
                       <YAxis 
                         domain={['dataMin', 'dataMax']} 
-                        orientation="right"
-                        tick={{ fontSize: 9, fill: '#C9A227', fontWeight: 'bold' }} 
-                        tickFormatter={(v) => `$${v.toFixed(8)}`} 
-                        tickLine={false} 
-                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} 
-                        width={65}
+                        hide
                         padding={{ top: 15, bottom: 15 }}
                       />
                       <Tooltip content={<CustomCandleTooltip />} />
@@ -397,7 +392,7 @@ export function CamlyMarketPrice() {
                       <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={2.5} fill="url(#camlyPriceGrad)" dot={false} activeDot={{ r: 6, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={1000} style={{ filter: 'url(#lineGlow)' }} />
                     </ComposedChart>
                   ) : (
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 70, bottom: 0, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 5, bottom: 0, left: 5 }}>
                       <defs>
                         <linearGradient id="candleGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                         <linearGradient id="candleRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
@@ -411,12 +406,7 @@ export function CamlyMarketPrice() {
                       />
                       <YAxis 
                         domain={[minPrice * 0.998, maxPrice * 1.002]} 
-                        orientation="right"
-                        tick={{ fontSize: 9, fill: '#C9A227', fontWeight: 'bold' }} 
-                        tickFormatter={(v) => `$${v.toFixed(8)}`} 
-                        tickLine={false} 
-                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} 
-                        width={65}
+                        hide
                       />
                       <Tooltip content={<CustomCandleTooltip />} />
                       {indicator === 'boll' && (<><Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" dot={false} /><Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={1.5} dot={false} /><Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" dot={false} /></>)}
@@ -455,18 +445,19 @@ export function CamlyMarketPrice() {
                     </ComposedChart>
                   )}
                 </ResponsiveContainer>
-                
-                {/* Current Price Label on Right */}
+              </div>
+              
+              {/* Current Price Badge - Below Chart */}
+              <div className="flex items-center justify-end mt-1">
                 <div 
                   className={cn(
-                    "absolute right-0 px-2 py-1 rounded-l-lg text-[10px] font-black shadow-lg",
+                    "px-3 py-1 rounded-lg text-xs font-black shadow-lg",
                     isPositiveChange 
                       ? "bg-emerald-500 text-white" 
                       : "bg-rose-500 text-white"
                   )}
-                  style={{ top: '50%', transform: 'translateY(-50%)' }}
                 >
-                  ${currentPrice.toFixed(8)}
+                  Giá hiện tại: <span className="ml-1">${currentPrice.toFixed(8)}</span>
                 </div>
               </div>
 
