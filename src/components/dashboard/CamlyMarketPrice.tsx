@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ExternalLink, TrendingUp, TrendingDown, RefreshCw, Loader2, CandlestickChart, LineChart, Activity, Radio, Maximize2, X } from 'lucide-react';
+import { ExternalLink, TrendingUp, TrendingDown, RefreshCw, Loader2, CandlestickChart, LineChart, Radio, Maximize2, X, Zap, Wallet } from 'lucide-react';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
 import { cn } from '@/lib/utils';
 import { useState, useMemo } from 'react';
@@ -11,7 +11,7 @@ import { Area, ResponsiveContainer, Tooltip, YAxis, XAxis, ComposedChart, Bar, L
 import camlyLogo from '@/assets/camly-coin-logo.png';
 
 type ChartType = 'line' | 'candle';
-type IndicatorType = 'none' | 'macd' | 'rsi' | 'boll';
+type IndicatorType = 'vol' | 'ma' | 'boll' | 'macd' | 'kdj' | 'rsi' | 'wr';
 type TimeRange = '5m' | '15m' | '1H' | '4H' | '1D' | '1W' | '1M';
 
 const TIME_RANGE_CONFIG: Record<TimeRange, { label: string; minutes: number; candles: number }> = {
@@ -22,6 +22,16 @@ const TIME_RANGE_CONFIG: Record<TimeRange, { label: string; minutes: number; can
   '1D': { label: '1 ngày', minutes: 1440, candles: 30 },
   '1W': { label: 'Tuần', minutes: 10080, candles: 52 },
   '1M': { label: 'Tháng', minutes: 43200, candles: 30 },
+};
+
+const INDICATOR_CONFIG: Record<IndicatorType, { label: string; color: string }> = {
+  vol: { label: 'Vol', color: '#C9A227' },
+  ma: { label: 'MA', color: '#3b82f6' },
+  boll: { label: 'BOLL', color: '#a855f7' },
+  macd: { label: 'MACD', color: '#f97316' },
+  kdj: { label: 'KDJ', color: '#22d3ee' },
+  rsi: { label: 'RSI', color: '#ec4899' },
+  wr: { label: 'WR', color: '#84cc16' },
 };
 
 const generateCandlestickData = (timeRange: TimeRange, basePrice: number, change24h: number) => {
@@ -36,6 +46,8 @@ const generateCandlestickData = (timeRange: TimeRange, basePrice: number, change
   const seed = basePrice * 10000000;
   let noiseValue = seed;
   const closePrices: number[] = [];
+  const highPrices: number[] = [];
+  const lowPrices: number[] = [];
   
   for (let i = 0; i < totalCandles; i++) {
     noiseValue = (noiseValue * 9301 + 49297) % 233280;
@@ -62,7 +74,6 @@ const generateCandlestickData = (timeRange: TimeRange, basePrice: number, change
     currentPrice = close;
     currentPrice = Math.max(basePrice * 0.88, Math.min(basePrice * 1.12, currentPrice));
     
-    // Calculate time based on candle interval
     const minutesBack = (totalCandles - i) * config.minutes;
     const date = new Date();
     date.setMinutes(date.getMinutes() - minutesBack);
@@ -71,26 +82,22 @@ const generateCandlestickData = (timeRange: TimeRange, basePrice: number, change
     const volume = (800 + random2 * 2000) * volumeSpike;
     
     closePrices.push(close);
+    highPrices.push(high);
+    lowPrices.push(low);
     
-    // Format time label based on interval
     let timeLabel = '';
-    let dateLabel = '';
     if (config.minutes <= 60) {
       timeLabel = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-      dateLabel = date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' });
     } else if (config.minutes <= 1440) {
       timeLabel = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-      dateLabel = date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' });
     } else {
       timeLabel = date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' });
-      dateLabel = date.toLocaleDateString('vi-VN', { year: 'numeric' });
     }
     
     data.push({ 
       time: i,
       timeLabel,
-      dateLabel,
-      fullDateTime: `${date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' })}, ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`,
+      fullDateTime: `${date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' })}, ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`,
       open, high, low, close,
       price: close,
       volume,
@@ -98,7 +105,6 @@ const generateCandlestickData = (timeRange: TimeRange, basePrice: number, change
     });
   }
   
-  // Smooth transition to current price
   const smoothPoints = 3;
   for (let i = 0; i < smoothPoints; i++) {
     const idx = data.length - smoothPoints + i;
@@ -109,16 +115,18 @@ const generateCandlestickData = (timeRange: TimeRange, basePrice: number, change
     data[idx].low = Math.min(data[idx].open, data[idx].close) * 0.999;
   }
   
-  return calculateIndicators(data, closePrices);
+  return calculateIndicators(data, closePrices, highPrices, lowPrices);
 };
 
-const calculateIndicators = (data: any[], closePrices: number[]) => {
+const calculateIndicators = (data: any[], closePrices: number[], highPrices: number[], lowPrices: number[]) => {
   const period = 14;
   const macdFast = 12;
   const macdSlow = 26;
   const macdSignal = 9;
   const bollPeriod = 20;
+  const kdjPeriod = 9;
   
+  // RSI
   const gains: number[] = [];
   const losses: number[] = [];
   
@@ -142,6 +150,20 @@ const calculateIndicators = (data: any[], closePrices: number[]) => {
     data[i].rsi = 100 - (100 / (1 + rs));
   }
   
+  // WR (Williams %R)
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      data[i].wr = -50;
+    } else {
+      const highSlice = highPrices.slice(i - period + 1, i + 1);
+      const lowSlice = lowPrices.slice(i - period + 1, i + 1);
+      const highestHigh = Math.max(...highSlice);
+      const lowestLow = Math.min(...lowSlice);
+      data[i].wr = ((highestHigh - closePrices[i]) / (highestHigh - lowestLow)) * -100;
+    }
+  }
+  
+  // EMA helper
   const calcEMA = (prices: number[], p: number): number[] => {
     const k = 2 / (p + 1);
     const ema: number[] = [prices[0]];
@@ -151,6 +173,18 @@ const calculateIndicators = (data: any[], closePrices: number[]) => {
     return ema;
   };
   
+  // MA
+  const ma5 = calcEMA(closePrices, 5);
+  const ma10 = calcEMA(closePrices, 10);
+  const ma20 = calcEMA(closePrices, 20);
+  
+  for (let i = 0; i < data.length; i++) {
+    data[i].ma5 = ma5[i];
+    data[i].ma10 = ma10[i];
+    data[i].ma20 = ma20[i];
+  }
+  
+  // MACD
   const emaFast = calcEMA(closePrices, macdFast);
   const emaSlow = calcEMA(closePrices, macdSlow);
   const macdLine = emaFast.map((v, i) => v - emaSlow[i]);
@@ -162,6 +196,7 @@ const calculateIndicators = (data: any[], closePrices: number[]) => {
     data[i].macdHist = macdLine[i] - signalLine[i];
   }
   
+  // Bollinger Bands
   for (let i = 0; i < data.length; i++) {
     if (i < bollPeriod - 1) {
       data[i].bollMid = closePrices[i];
@@ -175,6 +210,28 @@ const calculateIndicators = (data: any[], closePrices: number[]) => {
       data[i].bollMid = sma;
       data[i].bollUpper = sma + stdDev * 2;
       data[i].bollLower = sma - stdDev * 2;
+    }
+  }
+  
+  // KDJ
+  for (let i = 0; i < data.length; i++) {
+    if (i < kdjPeriod - 1) {
+      data[i].k = 50;
+      data[i].d = 50;
+      data[i].j = 50;
+    } else {
+      const highSlice = highPrices.slice(i - kdjPeriod + 1, i + 1);
+      const lowSlice = lowPrices.slice(i - kdjPeriod + 1, i + 1);
+      const highestHigh = Math.max(...highSlice);
+      const lowestLow = Math.min(...lowSlice);
+      const rsv = ((closePrices[i] - lowestLow) / (highestHigh - lowestLow)) * 100;
+      
+      const prevK = i > 0 ? data[i - 1].k : 50;
+      const prevD = i > 0 ? data[i - 1].d : 50;
+      
+      data[i].k = (2 / 3) * prevK + (1 / 3) * rsv;
+      data[i].d = (2 / 3) * prevD + (1 / 3) * data[i].k;
+      data[i].j = 3 * data[i].k - 2 * data[i].d;
     }
   }
   
@@ -229,7 +286,7 @@ export function CamlyMarketPrice() {
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const [chartRange, setChartRange] = useState<TimeRange>('1H');
   const [chartType, setChartType] = useState<ChartType>('candle');
-  const [indicator, setIndicator] = useState<IndicatorType>('none');
+  const [activeIndicators, setActiveIndicators] = useState<IndicatorType[]>(['vol']);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -249,6 +306,12 @@ export function CamlyMarketPrice() {
     }
   };
 
+  const toggleIndicator = (ind: IndicatorType) => {
+    setActiveIndicators(prev => 
+      prev.includes(ind) ? prev.filter(i => i !== ind) : [...prev, ind]
+    );
+  };
+
   const isPositiveChange = (priceData?.change_24h || 0) >= 0;
   const chartData = useMemo(() => 
     generateCandlestickData(chartRange, priceData?.price_usd || 0.00002247, priceData?.change_24h || 0),
@@ -260,9 +323,73 @@ export function CamlyMarketPrice() {
   const priceRange = maxPrice - minPrice;
   const currentPrice = priceData?.price_usd || 0.00002247;
 
-  // Time range buttons for compact view
   const compactRanges: TimeRange[] = ['5m', '15m', '1H', '4H', '1D'];
   const allRanges: TimeRange[] = ['5m', '15m', '1H', '4H', '1D', '1W', '1M'];
+  const allIndicators: IndicatorType[] = ['vol', 'ma', 'boll', 'macd', 'kdj', 'rsi', 'wr'];
+
+  // Render indicator panel based on active indicators
+  const renderIndicatorPanel = (height: string, isFullscreenMode: boolean = false) => {
+    const hasSubIndicator = activeIndicators.some(ind => ['macd', 'kdj', 'rsi', 'wr'].includes(ind));
+    if (!hasSubIndicator) return null;
+
+    return (
+      <div className={cn("border-t border-treasury-gold/30 pt-1", height)}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={chartData} margin={{ top: 5, right: isFullscreenMode ? 60 : 55, bottom: 0, left: 5 }}>
+            <YAxis 
+              domain={activeIndicators.includes('rsi') || activeIndicators.includes('wr') ? [0, 100] : ['auto', 'auto']} 
+              orientation="right"
+              tick={{ fontSize: isFullscreenMode ? 10 : 8, fill: '#888' }}
+              tickFormatter={(v) => v.toFixed(0)}
+              tickLine={false}
+              axisLine={false}
+              width={isFullscreenMode ? 50 : 45}
+              tickCount={3}
+            />
+            
+            {activeIndicators.includes('rsi') && (
+              <>
+                <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
+                <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={1} />
+                <Area type="monotone" dataKey="rsi" stroke="#ec4899" strokeWidth={1.5} fill="rgba(236, 72, 153, 0.15)" dot={false} />
+              </>
+            )}
+            
+            {activeIndicators.includes('wr') && (
+              <>
+                <ReferenceLine y={-20} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
+                <ReferenceLine y={-80} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={1} />
+                <Line type="monotone" dataKey="wr" stroke="#84cc16" strokeWidth={1.5} dot={false} />
+              </>
+            )}
+            
+            {activeIndicators.includes('macd') && (
+              <>
+                <ReferenceLine y={0} stroke="#666" strokeWidth={0.5} />
+                <Bar dataKey="macdHist">
+                  {chartData.map((entry, index) => (
+                    <Cell key={index} fill={entry.macdHist >= 0 ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)'} />
+                  ))}
+                </Bar>
+                <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="macdSignal" stroke="#f97316" strokeWidth={1.5} dot={false} />
+              </>
+            )}
+            
+            {activeIndicators.includes('kdj') && (
+              <>
+                <ReferenceLine y={80} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
+                <ReferenceLine y={20} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={1} />
+                <Line type="monotone" dataKey="k" stroke="#22d3ee" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="d" stroke="#f97316" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="j" stroke="#a855f7" strokeWidth={1.5} dot={false} />
+              </>
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  };
 
   return (
     <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-orange-50/50 dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/30 shadow-2xl">
@@ -294,9 +421,11 @@ export function CamlyMarketPrice() {
               </div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-treasury-gold/15 hover:bg-treasury-gold/30 text-treasury-gold border border-treasury-gold/40 shadow-md" onClick={handleRefresh} disabled={isRefetching || isManualRefresh}>
-            {(isRefetching || isManualRefresh) ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-treasury-gold/15 hover:bg-treasury-gold/30 text-treasury-gold border border-treasury-gold/40 shadow-md" onClick={handleRefresh} disabled={isRefetching || isManualRefresh}>
+              {(isRefetching || isManualRefresh) ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -306,15 +435,38 @@ export function CamlyMarketPrice() {
           </div>
         ) : (
           <>
-            {/* Price Display */}
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <p className="text-4xl font-black bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-sm">
-                ${currentPrice.toFixed(8)}
-              </p>
-              <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold shadow-md", isPositiveChange ? "bg-gradient-to-r from-emerald-500/25 to-emerald-400/15 text-emerald-500 border border-emerald-500/30" : "bg-gradient-to-r from-rose-500/25 to-rose-400/15 text-rose-500 border border-rose-500/30")}>
-                {isPositiveChange ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                {isPositiveChange ? '+' : ''}{formatNumber(priceData?.change_24h || 0, { minDecimals: 2, maxDecimals: 2 })}%
-                <span className="text-[10px] font-semibold opacity-70">(24h)</span>
+            {/* Price Display - Large Bold */}
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-baseline gap-3">
+                <p className="text-4xl font-black bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-sm">
+                  ${currentPrice.toFixed(8)}
+                </p>
+                <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold shadow-md", isPositiveChange ? "bg-gradient-to-r from-emerald-500/25 to-emerald-400/15 text-emerald-500 border border-emerald-500/30" : "bg-gradient-to-r from-rose-500/25 to-rose-400/15 text-rose-500 border border-rose-500/30")}>
+                  {isPositiveChange ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                  {isPositiveChange ? '+' : ''}{formatNumber(priceData?.change_24h || 0, { minDecimals: 2, maxDecimals: 2 })}%
+                  <span className="text-[10px] font-semibold opacity-70">(24h)</span>
+                </div>
+              </div>
+              
+              {/* Action Buttons - Bitget Style */}
+              <div className="flex items-center gap-2">
+                <Button 
+                  size="sm" 
+                  className="bg-gradient-to-r from-treasury-gold via-amber-500 to-yellow-500 hover:from-treasury-gold/90 hover:to-yellow-500/90 text-black font-bold shadow-lg shadow-treasury-gold/30 border-0 gap-1.5"
+                  onClick={() => window.open('https://www.bitget.com/vi/spot/CAMLYUSDT', '_blank')}
+                >
+                  <Wallet className="w-4 h-4" />
+                  Giao dịch
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-treasury-gold/50 text-treasury-gold hover:bg-treasury-gold/10 font-bold gap-1.5"
+                  onClick={() => window.open('https://dexscreener.com/bsc/0x0910320181889fefde0bb1ca63962b0a8882e413', '_blank')}
+                >
+                  <Zap className="w-4 h-4" />
+                  Chế độ tức thì
+                </Button>
               </div>
             </div>
 
@@ -342,7 +494,7 @@ export function CamlyMarketPrice() {
             {/* Chart Section - Bitget Style */}
             <div className="bg-gradient-to-br from-background/70 to-background/50 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/30 shadow-lg">
               {/* Chart Controls */}
-              <div className="flex items-center justify-between mb-2 gap-2">
+              <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                 {/* Time Range - Bitget Style */}
                 <div className="flex items-center gap-1 text-[10px]">
                   {compactRanges.map((range) => (
@@ -377,11 +529,29 @@ export function CamlyMarketPrice() {
                 </div>
               </div>
               
+              {/* Indicator Toggle - Bitget Style */}
+              <div className="flex items-center gap-1 mb-2 flex-wrap">
+                {allIndicators.map((ind) => (
+                  <button
+                    key={ind}
+                    onClick={() => toggleIndicator(ind)}
+                    className={cn(
+                      "px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all duration-200 border",
+                      activeIndicators.includes(ind)
+                        ? "bg-treasury-gold/20 text-treasury-gold border-treasury-gold/50"
+                        : "text-muted-foreground border-transparent hover:bg-muted/50"
+                    )}
+                  >
+                    {INDICATOR_CONFIG[ind].label}
+                  </button>
+                ))}
+              </div>
+              
               {/* Main Chart - Bitget Style with Y-axis prices */}
-              <div className={cn("h-44 transition-all duration-300 ease-out relative", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
+              <div className={cn("h-40 transition-all duration-300 ease-out relative", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
                 <ResponsiveContainer width="100%" height="100%">
                   {chartType === 'line' ? (
-                    <ComposedChart data={chartData} margin={{ top: 5, right: 60, bottom: 0, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 55, bottom: 0, left: 5 }}>
                       <defs>
                         <linearGradient id="camlyPriceGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.4} />
@@ -402,16 +572,34 @@ export function CamlyMarketPrice() {
                         tickFormatter={(value) => value.toFixed(8)}
                         tickLine={false}
                         axisLine={false}
-                        width={55}
+                        width={50}
                         tickCount={5}
                       />
                       <Tooltip content={<CustomCandleTooltip />} />
-                      {/* Current Price Line */}
-                      <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} label={{ value: currentPrice.toFixed(8), position: 'right', fontSize: 8, fill: isPositiveChange ? '#22c55e' : '#ef4444', fontWeight: 'bold' }} />
+                      <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} />
+                      
+                      {/* MA Lines */}
+                      {activeIndicators.includes('ma') && (
+                        <>
+                          <Line type="monotone" dataKey="ma5" stroke="#3b82f6" strokeWidth={1} dot={false} />
+                          <Line type="monotone" dataKey="ma10" stroke="#f97316" strokeWidth={1} dot={false} />
+                          <Line type="monotone" dataKey="ma20" stroke="#a855f7" strokeWidth={1} dot={false} />
+                        </>
+                      )}
+                      
+                      {/* Bollinger Bands */}
+                      {activeIndicators.includes('boll') && (
+                        <>
+                          <Area type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="3 3" fill="none" dot={false} />
+                          <Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={1.5} dot={false} />
+                          <Area type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="3 3" fill="none" dot={false} />
+                        </>
+                      )}
+                      
                       <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={2} fill="url(#camlyPriceGrad)" dot={false} activeDot={{ r: 4, fill: '#C9A227', stroke: '#fff', strokeWidth: 2 }} animationDuration={600} />
                     </ComposedChart>
                   ) : (
-                    <ComposedChart data={chartData} margin={{ top: 5, right: 60, bottom: 0, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 55, bottom: 0, left: 5 }}>
                       <defs>
                         <linearGradient id="candleGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                         <linearGradient id="candleRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
@@ -430,12 +618,30 @@ export function CamlyMarketPrice() {
                         tickFormatter={(value) => value.toFixed(8)}
                         tickLine={false}
                         axisLine={false}
-                        width={55}
+                        width={50}
                         tickCount={5}
                       />
                       <Tooltip content={<CustomCandleTooltip />} />
-                      {/* Current Price Line */}
                       <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} />
+                      
+                      {/* MA Lines */}
+                      {activeIndicators.includes('ma') && (
+                        <>
+                          <Line type="monotone" dataKey="ma5" stroke="#3b82f6" strokeWidth={1} dot={false} />
+                          <Line type="monotone" dataKey="ma10" stroke="#f97316" strokeWidth={1} dot={false} />
+                          <Line type="monotone" dataKey="ma20" stroke="#a855f7" strokeWidth={1} dot={false} />
+                        </>
+                      )}
+                      
+                      {/* Bollinger Bands */}
+                      {activeIndicators.includes('boll') && (
+                        <>
+                          <Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="3 3" dot={false} />
+                          <Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={1.5} dot={false} />
+                          <Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="3 3" dot={false} />
+                        </>
+                      )}
+                      
                       <Bar dataKey="close" shape={() => null} animationDuration={500} />
                       {chartData.map((entry, index) => {
                         const barWidth = 100 / chartData.length;
@@ -444,7 +650,6 @@ export function CamlyMarketPrice() {
                         const toY = (price: number) => ((maxPrice * 1.002 - price) / yRange) * 100;
                         return (
                           <g key={index}>
-                            {/* Wick */}
                             <line 
                               x1={`${x + barWidth / 2}%`} 
                               y1={`${toY(entry.high)}%`} 
@@ -453,7 +658,6 @@ export function CamlyMarketPrice() {
                               stroke={entry.isUp ? '#22c55e' : '#ef4444'} 
                               strokeWidth={1} 
                             />
-                            {/* Candle Body */}
                             <rect 
                               x={`${x + barWidth * 0.2}%`} 
                               y={`${toY(Math.max(entry.open, entry.close))}%`} 
@@ -481,26 +685,40 @@ export function CamlyMarketPrice() {
                 </div>
               </div>
               
-              {/* Volume Bars - Bitget Style */}
-              <div className="h-10 mt-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={chartData} margin={{ top: 0, right: 60, bottom: 0, left: 5 }}>
-                    <XAxis dataKey="timeLabel" hide />
-                    <YAxis domain={[0, 'dataMax']} hide />
-                    <Bar dataKey="volume" animationDuration={400}>
-                      {chartData.map((entry, index) => (
-                        <Cell 
-                          key={index} 
-                          fill={entry.isUp ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)'} 
-                        />
-                      ))}
-                    </Bar>
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
+              {/* Volume Bars - Separate Section */}
+              {activeIndicators.includes('vol') && (
+                <div className="h-12 mt-1 border-t border-treasury-gold/20 pt-1">
+                  <div className="text-[9px] text-muted-foreground mb-0.5 flex items-center gap-1">
+                    <span className="font-bold text-treasury-gold">Vol</span>
+                  </div>
+                  <ResponsiveContainer width="100%" height="85%">
+                    <ComposedChart data={chartData} margin={{ top: 0, right: 55, bottom: 0, left: 5 }}>
+                      <XAxis dataKey="timeLabel" hide />
+                      <YAxis 
+                        domain={[0, 'dataMax']} 
+                        orientation="right"
+                        tick={{ fontSize: 7, fill: '#888' }}
+                        tickFormatter={(v) => formatNumber(v, { compact: true })}
+                        tickLine={false}
+                        axisLine={false}
+                        width={50}
+                        tickCount={2}
+                      />
+                      <Bar dataKey="volume" animationDuration={400}>
+                        {chartData.map((entry, index) => (
+                          <Cell 
+                            key={index} 
+                            fill={entry.isUp ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)'} 
+                          />
+                        ))}
+                      </Bar>
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
               
-              {/* Vol Label */}
-              <div className="text-[9px] text-muted-foreground mt-0.5">Vol</div>
+              {/* Indicator Panel */}
+              {renderIndicatorPanel("h-16 mt-1")}
             </div>
 
             {/* Footer Status */}
@@ -523,7 +741,7 @@ export function CamlyMarketPrice() {
           <div className="relative h-full flex flex-col">
             {/* Fullscreen Header */}
             <DialogHeader className="p-4 border-b border-treasury-gold/30 bg-gradient-to-r from-amber-50/50 to-orange-50/30 dark:from-amber-950/30 dark:to-orange-950/20">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-treasury-gold/50 rounded-full blur-md animate-pulse" />
@@ -552,30 +770,47 @@ export function CamlyMarketPrice() {
                 </div>
                 
                 {/* Fullscreen Controls */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 bg-treasury-gold/10 rounded-lg p-1 border border-treasury-gold/30">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Chart Type */}
+                  <div className="flex items-center gap-0.5 bg-treasury-gold/10 rounded-lg p-1 border border-treasury-gold/30">
                     <button onClick={() => setChartType('line')} className={cn("p-2 rounded-md transition-all", chartType === 'line' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}><LineChart className="w-4 h-4" /></button>
                     <button onClick={() => setChartType('candle')} className={cn("p-2 rounded-md transition-all", chartType === 'candle' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}><CandlestickChart className="w-4 h-4" /></button>
                   </div>
-                  <div className="flex items-center gap-0.5 bg-treasury-gold/10 rounded-lg p-1 border border-treasury-gold/30">
-                    {(['none', 'boll', 'macd', 'rsi'] as const).map((ind) => (
-                      <button key={ind} onClick={() => setIndicator(ind)} className={cn("px-3 py-1.5 rounded-md text-xs font-bold uppercase", indicator === ind ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}>{ind === 'none' ? '—' : ind}</button>
-                    ))}
-                  </div>
+                  
+                  {/* Time Range */}
                   <div className="flex bg-treasury-gold/10 rounded-lg p-1 border border-treasury-gold/30">
                     {allRanges.map((range) => (
-                      <button key={range} onClick={() => handleRangeChange(range)} className={cn("px-2.5 py-1.5 rounded-md text-xs font-bold transition-all duration-200", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}>{range}</button>
+                      <button key={range} onClick={() => handleRangeChange(range)} className={cn("px-2 py-1 rounded-md text-xs font-bold transition-all duration-200", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}>{TIME_RANGE_CONFIG[range].label}</button>
                     ))}
                   </div>
+                  
                   <button onClick={() => setIsFullscreen(false)} className="p-2 rounded-full bg-muted hover:bg-muted/80 text-muted-foreground"><X className="w-5 h-5" /></button>
                 </div>
+              </div>
+              
+              {/* Fullscreen Indicator Toggle */}
+              <div className="flex items-center gap-1 mt-3 flex-wrap">
+                {allIndicators.map((ind) => (
+                  <button
+                    key={ind}
+                    onClick={() => toggleIndicator(ind)}
+                    className={cn(
+                      "px-3 py-1 rounded-md text-xs font-bold uppercase transition-all duration-200 border",
+                      activeIndicators.includes(ind)
+                        ? "bg-treasury-gold/25 text-treasury-gold border-treasury-gold/50 shadow-sm"
+                        : "text-muted-foreground border-muted/30 hover:bg-muted/50"
+                    )}
+                  >
+                    {INDICATOR_CONFIG[ind].label}
+                  </button>
+                ))}
               </div>
             </DialogHeader>
 
             {/* Fullscreen Chart Area */}
-            <div className="flex-1 p-4">
-              <div className="h-full bg-gradient-to-br from-background/80 to-background/60 rounded-xl border border-treasury-gold/30 p-4 relative">
-                {/* Min/Max Legend for Fullscreen */}
+            <div className="flex-1 p-4 overflow-hidden">
+              <div className="h-full bg-gradient-to-br from-background/80 to-background/60 rounded-xl border border-treasury-gold/30 p-4 relative flex flex-col">
+                {/* Min/Max Legend */}
                 <div className="absolute top-2 right-4 flex items-center gap-4 text-xs z-10">
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/15 rounded-lg border border-emerald-500/30">
                     <div className="w-5 h-0.5" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #22c55e 0, #22c55e 4px, transparent 4px, transparent 8px)' }} />
@@ -587,10 +822,11 @@ export function CamlyMarketPrice() {
                   </div>
                 </div>
                 
-                <div className={cn("h-full transition-all duration-300 ease-out", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
-                  <ResponsiveContainer width="100%" height={indicator !== 'none' && indicator !== 'boll' ? '80%' : '90%'}>
+                {/* Main Chart */}
+                <div className={cn("flex-1 transition-all duration-300 ease-out", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
+                  <ResponsiveContainer width="100%" height="100%">
                     {chartType === 'line' ? (
-                      <ComposedChart data={chartData} margin={{ top: 30, right: 20, bottom: 20, left: 20 }}>
+                      <ComposedChart data={chartData} margin={{ top: 30, right: 70, bottom: 20, left: 20 }}>
                         <defs>
                           <linearGradient id="camlyPriceGradFull" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.5} />
@@ -600,27 +836,81 @@ export function CamlyMarketPrice() {
                           <filter id="lineGlowFull"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                         </defs>
                         <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
-                        <YAxis domain={['dataMin', 'dataMax']} hide padding={{ top: 20, bottom: 20 }} />
+                        <YAxis 
+                          domain={[minPrice * 0.998, maxPrice * 1.002]} 
+                          orientation="right"
+                          tick={{ fontSize: 10, fill: '#888' }}
+                          tickFormatter={(value) => value.toFixed(8)}
+                          tickLine={false}
+                          axisLine={false}
+                          width={65}
+                          tickCount={7}
+                        />
                         <Tooltip content={<CustomCandleTooltip />} />
-                        {/* Min/Max Price Lines */}
-                        <ReferenceLine y={maxPrice} stroke="#22c55e" strokeDasharray="8 4" strokeWidth={2} />
-                        <ReferenceLine y={minPrice} stroke="#ef4444" strokeDasharray="8 4" strokeWidth={2} />
-                        {indicator === 'boll' && (<><Area type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} /><Area type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} fill="none" dot={false} /><Area type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} /></>)}
+                        <ReferenceLine y={maxPrice} stroke="#22c55e" strokeDasharray="8 4" strokeWidth={1.5} />
+                        <ReferenceLine y={minPrice} stroke="#ef4444" strokeDasharray="8 4" strokeWidth={1.5} />
+                        <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={2} />
+                        
+                        {/* MA Lines */}
+                        {activeIndicators.includes('ma') && (
+                          <>
+                            <Line type="monotone" dataKey="ma5" stroke="#3b82f6" strokeWidth={1.5} dot={false} name="MA5" />
+                            <Line type="monotone" dataKey="ma10" stroke="#f97316" strokeWidth={1.5} dot={false} name="MA10" />
+                            <Line type="monotone" dataKey="ma20" stroke="#a855f7" strokeWidth={1.5} dot={false} name="MA20" />
+                          </>
+                        )}
+                        
+                        {/* Bollinger Bands */}
+                        {activeIndicators.includes('boll') && (
+                          <>
+                            <Area type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} />
+                            <Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} dot={false} />
+                            <Area type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} />
+                          </>
+                        )}
+                        
                         <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={3} fill="url(#camlyPriceGradFull)" dot={false} activeDot={{ r: 8, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={800} animationEasing="ease-out" style={{ filter: 'url(#lineGlowFull)' }} />
                       </ComposedChart>
                     ) : (
-                      <ComposedChart data={chartData} margin={{ top: 30, right: 20, bottom: 20, left: 20 }}>
+                      <ComposedChart data={chartData} margin={{ top: 30, right: 70, bottom: 20, left: 20 }}>
                         <defs>
                           <linearGradient id="candleGreenFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                           <linearGradient id="candleRedFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
                         </defs>
                         <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
-                        <YAxis domain={[minPrice * 0.997, maxPrice * 1.003]} hide />
+                        <YAxis 
+                          domain={[minPrice * 0.997, maxPrice * 1.003]} 
+                          orientation="right"
+                          tick={{ fontSize: 10, fill: '#888' }}
+                          tickFormatter={(value) => value.toFixed(8)}
+                          tickLine={false}
+                          axisLine={false}
+                          width={65}
+                          tickCount={7}
+                        />
                         <Tooltip content={<CustomCandleTooltip />} />
-                        {/* Min/Max Price Lines */}
-                        <ReferenceLine y={maxPrice} stroke="#22c55e" strokeDasharray="8 4" strokeWidth={2} />
-                        <ReferenceLine y={minPrice} stroke="#ef4444" strokeDasharray="8 4" strokeWidth={2} />
-                        {indicator === 'boll' && (<><Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} /><Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} dot={false} /><Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} /></>)}
+                        <ReferenceLine y={maxPrice} stroke="#22c55e" strokeDasharray="8 4" strokeWidth={1.5} />
+                        <ReferenceLine y={minPrice} stroke="#ef4444" strokeDasharray="8 4" strokeWidth={1.5} />
+                        <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={2} />
+                        
+                        {/* MA Lines */}
+                        {activeIndicators.includes('ma') && (
+                          <>
+                            <Line type="monotone" dataKey="ma5" stroke="#3b82f6" strokeWidth={1.5} dot={false} />
+                            <Line type="monotone" dataKey="ma10" stroke="#f97316" strokeWidth={1.5} dot={false} />
+                            <Line type="monotone" dataKey="ma20" stroke="#a855f7" strokeWidth={1.5} dot={false} />
+                          </>
+                        )}
+                        
+                        {/* Bollinger Bands */}
+                        {activeIndicators.includes('boll') && (
+                          <>
+                            <Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} />
+                            <Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} />
+                          </>
+                        )}
+                        
                         <Bar dataKey="close" shape={() => null} animationDuration={600} animationEasing="ease-out" />
                         {chartData.map((entry, index) => {
                           const barWidth = 100 / chartData.length;
@@ -638,31 +928,41 @@ export function CamlyMarketPrice() {
                     )}
                   </ResponsiveContainer>
                 </div>
-
-                {/* Fullscreen Indicator Panel - Simplified */}
-                {indicator !== 'none' && indicator !== 'boll' && (
-                  <div className="h-[10%] border-t border-treasury-gold/30 pt-2 mt-2">
-                    <ResponsiveContainer width="100%" height="100%">
-                      {indicator === 'rsi' ? (
-                        <ComposedChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 20 }}>
-                          <defs><linearGradient id="rsiGradFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} /><stop offset="100%" stopColor="#a855f7" stopOpacity={0.05} /></linearGradient></defs>
-                          <YAxis domain={[0, 100]} hide />
-                          <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
-                          <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={1} />
-                          <Area type="monotone" dataKey="rsi" stroke="#a855f7" strokeWidth={2} fill="url(#rsiGradFull)" dot={false} />
-                        </ComposedChart>
-                      ) : (
-                        <ComposedChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 20 }}>
-                          <YAxis domain={['auto', 'auto']} hide />
-                          <ReferenceLine y={0} stroke="#666" strokeWidth={0.5} />
-                          <Bar dataKey="macdHist">{chartData.map((entry, index) => (<Cell key={index} fill={entry.macdHist >= 0 ? '#22c55e' : '#ef4444'} opacity={0.7} />))}</Bar>
-                          <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                          <Line type="monotone" dataKey="macdSignal" stroke="#f97316" strokeWidth={2} dot={false} />
-                        </ComposedChart>
-                      )}
+                
+                {/* Fullscreen Volume Bars */}
+                {activeIndicators.includes('vol') && (
+                  <div className="h-20 border-t border-treasury-gold/30 pt-2 mt-2">
+                    <div className="text-xs text-muted-foreground mb-1 flex items-center gap-2">
+                      <span className="font-bold text-treasury-gold">Volume</span>
+                    </div>
+                    <ResponsiveContainer width="100%" height="80%">
+                      <ComposedChart data={chartData} margin={{ top: 0, right: 70, bottom: 0, left: 20 }}>
+                        <XAxis dataKey="timeLabel" hide />
+                        <YAxis 
+                          domain={[0, 'dataMax']} 
+                          orientation="right"
+                          tick={{ fontSize: 9, fill: '#888' }}
+                          tickFormatter={(v) => formatNumber(v, { compact: true })}
+                          tickLine={false}
+                          axisLine={false}
+                          width={55}
+                          tickCount={3}
+                        />
+                        <Bar dataKey="volume" animationDuration={400}>
+                          {chartData.map((entry, index) => (
+                            <Cell 
+                              key={index} 
+                              fill={entry.isUp ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)'} 
+                            />
+                          ))}
+                        </Bar>
+                      </ComposedChart>
                     </ResponsiveContainer>
                   </div>
                 )}
+                
+                {/* Fullscreen Indicator Panel */}
+                {renderIndicatorPanel("h-24", true)}
               </div>
             </div>
           </div>
