@@ -27,8 +27,8 @@ export function useCamlyPrice() {
       
       return data.data;
     },
-    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
-    staleTime: 4 * 60 * 1000, // Consider stale after 4 minutes
+    refetchInterval: 1 * 60 * 1000, // Refresh every 1 minute
+    staleTime: 50 * 1000, // Consider stale after 50 seconds
     retry: 2,
   });
 
