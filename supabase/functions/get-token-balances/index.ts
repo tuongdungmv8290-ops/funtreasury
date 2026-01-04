@@ -15,17 +15,17 @@ interface TokenBalance {
   contract_address: string;
 }
 
-// Fallback prices if API fails
+// Fallback prices if API fails - CAMLY price ~$0.000022 as of Jan 2026
 const FALLBACK_PRICES: Record<string, number> = {
-  'BTC': 94000,
-  'BTCB': 94000,
-  'BNB': 700,
-  'ETH': 3400,
+  'BTC': 97000,
+  'BTCB': 97000,
+  'BNB': 710,
+  'ETH': 3500,
   'MATIC': 0.50,
   'USDT': 1,
   'USDC': 1,
   'BUSD': 1,
-  'CAMLY': 0.000023,
+  'CAMLY': 0.000022,
 };
 
 // CoinGecko token IDs mapping

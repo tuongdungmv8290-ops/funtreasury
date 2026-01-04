@@ -50,9 +50,9 @@ export function formatTokenAmount(value: number, symbol?: string): string {
     return formatNumber(value, { minDecimals: 2, maxDecimals: 2 });
   }
   
-  // Token lớn (> 1M) hiển thị 2 decimals
+  // Token lớn (> 1M) - sử dụng compact format
   if (value >= 1_000_000) {
-    return formatNumber(value, { minDecimals: 2, maxDecimals: 2 });
+    return formatNumber(value, { minDecimals: 2, maxDecimals: 2, compact: true });
   }
   
   // Token nhỏ hơn 1 hiển thị nhiều decimals hơn

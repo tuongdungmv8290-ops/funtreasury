@@ -33,6 +33,25 @@ export interface TransactionFilters {
   days?: number;
 }
 
+// List of valid tokens to show in transaction history
+const VALID_TOKEN_SYMBOLS = ['CAMLY', 'BNB', 'USDT', 'USDC', 'BTC', 'BTCB', 'ETH', 'MATIC'];
+
+// Detect spam/scam token symbols (Unicode tricks, special characters)
+function isValidTokenSymbol(symbol: string): boolean {
+  if (!symbol) return false;
+  const upperSymbol = symbol.toUpperCase().trim();
+  
+  // Only allow known tokens
+  if (VALID_TOKEN_SYMBOLS.includes(upperSymbol)) return true;
+  
+  // Filter out fake tokens with Unicode tricks (e.g., ꓴꓢꓓꓔ)
+  // Valid symbols should only contain A-Z, 0-9
+  const validPattern = /^[A-Z0-9]{1,10}$/;
+  if (!validPattern.test(upperSymbol)) return false;
+  
+  return false; // Only show known tokens for now
+}
+
 export function useTransactions(filters?: TransactionFilters) {
   return useQuery({
     queryKey: ['transactions', filters],
@@ -64,27 +83,30 @@ export function useTransactions(filters?: TransactionFilters) {
 
       if (error) throw error;
 
-      let transactions = (data || []).map(tx => ({
-        id: tx.id,
-        wallet_id: tx.wallet_id,
-        tx_hash: tx.tx_hash,
-        block_number: tx.block_number,
-        timestamp: new Date(tx.timestamp),
-        from_address: tx.from_address,
-        to_address: tx.to_address,
-        direction: tx.direction as 'IN' | 'OUT',
-        token_address: tx.token_address,
-        token_symbol: tx.token_symbol,
-        amount: Number(tx.amount),
-        usd_value: Number(tx.usd_value),
-        gas_fee: Number(tx.gas_fee),
-        status: tx.status,
-        metadata: tx.tx_metadata ? {
-          category: tx.tx_metadata.category,
-          note: tx.tx_metadata.note,
-          tags: tx.tx_metadata.tags,
-        } : undefined,
-      }));
+      let transactions = (data || [])
+        // Filter out spam/scam tokens
+        .filter(tx => isValidTokenSymbol(tx.token_symbol))
+        .map(tx => ({
+          id: tx.id,
+          wallet_id: tx.wallet_id,
+          tx_hash: tx.tx_hash,
+          block_number: tx.block_number,
+          timestamp: new Date(tx.timestamp),
+          from_address: tx.from_address,
+          to_address: tx.to_address,
+          direction: tx.direction as 'IN' | 'OUT',
+          token_address: tx.token_address,
+          token_symbol: tx.token_symbol,
+          amount: Number(tx.amount),
+          usd_value: Number(tx.usd_value),
+          gas_fee: Number(tx.gas_fee),
+          status: tx.status,
+          metadata: tx.tx_metadata ? {
+            category: tx.tx_metadata.category,
+            note: tx.tx_metadata.note,
+            tags: tx.tx_metadata.tags,
+          } : undefined,
+        }));
 
       // Client-side search filter
       if (filters?.search) {
