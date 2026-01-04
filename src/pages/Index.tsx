@@ -6,6 +6,7 @@ import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { PortfolioHistoryChart } from '@/components/dashboard/PortfolioHistoryChart';
 import { BulkTransferSection } from '@/components/dashboard/BulkTransferSection';
+import { CamlyMarketPrice } from '@/components/dashboard/CamlyMarketPrice';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
@@ -337,6 +338,13 @@ const Index = () => {
             <TokenBalancesCard />
           </div>
           <RecentTransactions />
+        </div>
+
+        {/* CAMLY Market Price Section */}
+        <div className="mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-1">
+            <CamlyMarketPrice />
+          </div>
         </div>
       </main>
 
