@@ -37,8 +37,8 @@ export function useCamlyTrades() {
       
       return data.data;
     },
-    refetchInterval: 2 * 60 * 1000, // Refresh every 2 minutes
-    staleTime: 1 * 60 * 1000,
+    refetchInterval: 30 * 1000, // Refresh every 30 seconds
+    staleTime: 15 * 1000,
     retry: 2,
   });
 }
