@@ -43,7 +43,7 @@ import type { Transaction } from '@/hooks/useTransactions';
 
 const ITEMS_PER_PAGE = 10;
 
-// Format date as DD/MM/YYYY HH:mm
+// Format date as DD/MM/YYYY HH:mm for CSV
 const formatDateCSV = (date: Date): string => {
   const day = date.getDate().toString().padStart(2, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -73,12 +73,35 @@ const formatUSDValue = (value: number): string => {
   }).format(value);
 };
 
-// Escape CSV values properly
-const escapeCSV = (value: string): string => {
-  if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
-    return `"${value.replace(/"/g, '""')}"`;
+// Format token amount with proper decimals
+const formatTokenAmountCSV = (amount: number, symbol: string): string => {
+  if (symbol === 'CAMLY' || amount >= 1000000) {
+    return new Intl.NumberFormat('en-US', {
+      maximumFractionDigits: 0,
+    }).format(amount);
   }
-  return value;
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+  }).format(amount);
+};
+
+// Shorten address for CSV display
+const shortenAddressCSV = (address: string): string => {
+  if (!address || address.length < 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
+// Get BSCScan explorer link for tx hash
+const getExplorerLink = (txHash: string): string => {
+  return `https://bscscan.com/tx/${txHash}`;
+};
+
+// Escape CSV values properly (with double quotes for Excel)
+const escapeCSV = (value: string): string => {
+  if (!value) return '';
+  // Always wrap in quotes for Excel compatibility
+  return `"${value.replace(/"/g, '""')}"`;
 };
 
 // Get current date formatted for filename
@@ -159,17 +182,21 @@ const Transactions = () => {
     return wallet?.name?.replace('Treasury Wallet ', 'W') || 'Unknown';
   };
 
-  // Generate CSV content from transactions
+  // Generate CSV content from transactions - Excel-friendly format
   const generateCSV = (txList: Transaction[]): string => {
+    // Headers with clear labels for Excel
     const headers = [
       'Date',
-      'Wallet',
+      'Wallet Name',
       'Direction',
       'Token',
       'Amount',
       'USD Value',
-      'From',
-      'To',
+      'From (Short)',
+      'To (Short)',
+      'From (Full)',
+      'To (Full)',
+      'Explorer Link',
       'Tx Hash',
       'Status',
       'Category',
@@ -178,15 +205,18 @@ const Transactions = () => {
     ];
     
     const rows = txList.map((tx) => [
-      formatDateCSV(tx.timestamp),
+      escapeCSV(formatDateCSV(tx.timestamp)),
       escapeCSV(getWalletName(tx.wallet_id)),
       tx.direction,
       tx.token_symbol,
-      tx.amount.toString(),
+      formatTokenAmountCSV(tx.amount, tx.token_symbol),
       formatUSDValue(tx.usd_value),
-      tx.from_address,
-      tx.to_address,
-      tx.tx_hash,
+      shortenAddressCSV(tx.from_address),
+      shortenAddressCSV(tx.to_address),
+      escapeCSV(tx.from_address),
+      escapeCSV(tx.to_address),
+      escapeCSV(getExplorerLink(tx.tx_hash)),
+      escapeCSV(tx.tx_hash),
       tx.status,
       escapeCSV(tx.metadata?.category || ''),
       escapeCSV(tx.metadata?.note || ''),
@@ -196,19 +226,21 @@ const Transactions = () => {
     return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
   };
 
-  // Download CSV file
+  // Download CSV file with BOM for Excel UTF-8 support
   const downloadCSV = (content: string, count: number) => {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    // Add BOM (Byte Order Mark) for Excel to recognize UTF-8
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `treasury-transactions-${getFileNameDate()}.csv`;
+    a.download = `FUN-Treasury-Transactions-${getFileNameDate()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     
     toast({
-      title: "Export thành công",
-      description: `Đã export ${count} transactions ra file CSV`,
+      title: "✅ Export CSV thành công!",
+      description: `Đã export ${count} transactions từ 3 ví Treasury`,
     });
   };
 
