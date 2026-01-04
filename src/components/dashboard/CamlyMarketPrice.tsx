@@ -461,26 +461,21 @@ export function CamlyMarketPrice() {
                 </div>
               </div>
 
-              {/* Indicator Panel */}
+              {/* Indicator Panel - Only show when indicator is selected */}
               {indicator !== 'none' && indicator !== 'boll' && (
-                <div className="h-14 mt-2 border-t border-treasury-gold/30 pt-2">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Activity className="w-3 h-3 text-treasury-gold" />
-                    <span className="text-[9px] font-bold text-treasury-gold uppercase">{indicator}</span>
-                    {indicator === 'rsi' && <span className="text-[8px] text-muted-foreground">(70=Overbought, 30=Oversold)</span>}
-                  </div>
-                  <ResponsiveContainer width="100%" height={35}>
+                <div className="h-12 mt-2 border-t border-treasury-gold/30 pt-2">
+                  <ResponsiveContainer width="100%" height="100%">
                     {indicator === 'rsi' ? (
-                      <ComposedChart data={chartData} margin={{ top: 2, right: 70, bottom: 0, left: 5 }}>
+                      <ComposedChart data={chartData} margin={{ top: 2, right: 5, bottom: 0, left: 5 }}>
                         <defs><linearGradient id="rsiGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} /><stop offset="100%" stopColor="#a855f7" stopOpacity={0.05} /></linearGradient></defs>
-                        <YAxis domain={[0, 100]} orientation="right" tick={{ fontSize: 8, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
+                        <YAxis domain={[0, 100]} hide />
                         <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={0.8} />
                         <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={0.8} />
                         <Area type="monotone" dataKey="rsi" stroke="#a855f7" strokeWidth={1.5} fill="url(#rsiGrad)" dot={false} />
                       </ComposedChart>
                     ) : (
-                      <ComposedChart data={chartData} margin={{ top: 2, right: 70, bottom: 0, left: 5 }}>
-                        <YAxis domain={['auto', 'auto']} orientation="right" tick={{ fontSize: 8, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
+                      <ComposedChart data={chartData} margin={{ top: 2, right: 5, bottom: 0, left: 5 }}>
+                        <YAxis domain={['auto', 'auto']} hide />
                         <ReferenceLine y={0} stroke="#666" strokeWidth={0.5} />
                         <Bar dataKey="macdHist">{chartData.map((entry, index) => (<Cell key={index} fill={entry.macdHist >= 0 ? '#22c55e' : '#ef4444'} opacity={0.7} />))}</Bar>
                         <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={1.5} dot={false} />
@@ -490,15 +485,6 @@ export function CamlyMarketPrice() {
                   </ResponsiveContainer>
                 </div>
               )}
-
-              {/* Volume Bars */}
-              <div className="h-10 mt-2 flex items-end gap-0.5 border-t border-treasury-gold/20 pt-2">
-                {chartData.filter((_, i) => i % Math.max(1, Math.floor(chartData.length / 50)) === 0).map((d, i, arr) => {
-                  const maxVolume = Math.max(...arr.map(x => x.volume));
-                  const heightPercent = (d.volume / maxVolume) * 100;
-                  return (<div key={i} className={cn("flex-1 rounded-t transition-all duration-300", d.isUp ? "bg-emerald-500/70 hover:bg-emerald-500" : "bg-rose-500/70 hover:bg-rose-500")} style={{ height: `${Math.max(heightPercent, 10)}%` }} />);
-                })}
-              </div>
             </div>
 
             {/* CoinGecko Button */}
@@ -580,9 +566,9 @@ export function CamlyMarketPrice() {
             {/* Fullscreen Chart Area */}
             <div className="flex-1 p-4">
               <div className="h-full bg-gradient-to-br from-background/80 to-background/60 rounded-xl border border-treasury-gold/30 p-4 relative">
-                <ResponsiveContainer width="100%" height={indicator !== 'none' && indicator !== 'boll' ? '75%' : '85%'}>
+                <ResponsiveContainer width="100%" height={indicator !== 'none' && indicator !== 'boll' ? '80%' : '90%'}>
                   {chartType === 'line' ? (
-                    <ComposedChart data={chartData} margin={{ top: 20, right: 90, bottom: 20, left: 20 }}>
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                       <defs>
                         <linearGradient id="camlyPriceGradFull" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.5} />
@@ -592,19 +578,19 @@ export function CamlyMarketPrice() {
                         <filter id="lineGlowFull"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                       </defs>
                       <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
-                      <YAxis domain={['dataMin', 'dataMax']} orientation="right" tick={{ fontSize: 11, fill: '#C9A227', fontWeight: 'bold' }} tickFormatter={(v) => `$${v.toFixed(8)}`} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} width={85} padding={{ top: 20, bottom: 20 }} />
+                      <YAxis domain={['dataMin', 'dataMax']} hide padding={{ top: 20, bottom: 20 }} />
                       <Tooltip content={<CustomCandleTooltip />} />
                       {indicator === 'boll' && (<><Area type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} /><Area type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} fill="none" dot={false} /><Area type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} /></>)}
                       <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={3} fill="url(#camlyPriceGradFull)" dot={false} activeDot={{ r: 8, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={1000} style={{ filter: 'url(#lineGlowFull)' }} />
                     </ComposedChart>
                   ) : (
-                    <ComposedChart data={chartData} margin={{ top: 20, right: 90, bottom: 20, left: 20 }}>
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                       <defs>
                         <linearGradient id="candleGreenFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                         <linearGradient id="candleRedFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
                       </defs>
                       <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
-                      <YAxis domain={[minPrice * 0.997, maxPrice * 1.003]} orientation="right" tick={{ fontSize: 11, fill: '#C9A227', fontWeight: 'bold' }} tickFormatter={(v) => `$${v.toFixed(8)}`} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} width={85} />
+                      <YAxis domain={[minPrice * 0.997, maxPrice * 1.003]} hide />
                       <Tooltip content={<CustomCandleTooltip />} />
                       {indicator === 'boll' && (<><Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} /><Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} dot={false} /><Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} /></>)}
                       <Bar dataKey="close" shape={() => null} />
@@ -624,40 +610,21 @@ export function CamlyMarketPrice() {
                   )}
                 </ResponsiveContainer>
 
-                {/* Current Price Label - Fullscreen */}
-                <div 
-                  className={cn(
-                    "absolute right-4 px-3 py-2 rounded-lg text-sm font-black shadow-xl",
-                    isPositiveChange 
-                      ? "bg-emerald-500 text-white" 
-                      : "bg-rose-500 text-white"
-                  )}
-                  style={{ top: '40%', transform: 'translateY(-50%)' }}
-                >
-                  ${currentPrice.toFixed(8)}
-                </div>
-
-                {/* Fullscreen Indicator Panel */}
+                {/* Fullscreen Indicator Panel - Simplified */}
                 {indicator !== 'none' && indicator !== 'boll' && (
-                  <div className="h-[15%] border-t border-treasury-gold/30 pt-3 mt-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Activity className="w-4 h-4 text-treasury-gold" />
-                      <span className="text-sm font-bold text-treasury-gold uppercase">{indicator}</span>
-                      {indicator === 'rsi' && <span className="text-xs text-muted-foreground">(70=Overbought, 30=Oversold)</span>}
-                      {indicator === 'macd' && <span className="text-xs text-muted-foreground">(Blue=MACD, Orange=Signal)</span>}
-                    </div>
-                    <ResponsiveContainer width="100%" height="70%">
+                  <div className="h-[10%] border-t border-treasury-gold/30 pt-2 mt-2">
+                    <ResponsiveContainer width="100%" height="100%">
                       {indicator === 'rsi' ? (
-                        <ComposedChart data={chartData} margin={{ top: 5, right: 90, bottom: 5, left: 20 }}>
+                        <ComposedChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 20 }}>
                           <defs><linearGradient id="rsiGradFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} /><stop offset="100%" stopColor="#a855f7" stopOpacity={0.05} /></linearGradient></defs>
-                          <YAxis domain={[0, 100]} orientation="right" tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
+                          <YAxis domain={[0, 100]} hide />
                           <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
                           <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={1} />
                           <Area type="monotone" dataKey="rsi" stroke="#a855f7" strokeWidth={2} fill="url(#rsiGradFull)" dot={false} />
                         </ComposedChart>
                       ) : (
-                        <ComposedChart data={chartData} margin={{ top: 5, right: 90, bottom: 5, left: 20 }}>
-                          <YAxis domain={['auto', 'auto']} orientation="right" tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
+                        <ComposedChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 20 }}>
+                          <YAxis domain={['auto', 'auto']} hide />
                           <ReferenceLine y={0} stroke="#666" strokeWidth={0.5} />
                           <Bar dataKey="macdHist">{chartData.map((entry, index) => (<Cell key={index} fill={entry.macdHist >= 0 ? '#22c55e' : '#ef4444'} opacity={0.7} />))}</Bar>
                           <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={2} dot={false} />
@@ -667,15 +634,6 @@ export function CamlyMarketPrice() {
                     </ResponsiveContainer>
                   </div>
                 )}
-
-                {/* Fullscreen Volume Bars */}
-                <div className="h-16 mt-2 flex items-end gap-0.5 border-t border-treasury-gold/20 pt-2">
-                  {chartData.filter((_, i) => i % Math.max(1, Math.floor(chartData.length / 80)) === 0).map((d, i, arr) => {
-                    const maxVolume = Math.max(...arr.map(x => x.volume));
-                    const heightPercent = (d.volume / maxVolume) * 100;
-                    return (<div key={i} className={cn("flex-1 rounded-t transition-all duration-300", d.isUp ? "bg-emerald-500/70 hover:bg-emerald-500" : "bg-rose-500/70 hover:bg-rose-500")} style={{ height: `${Math.max(heightPercent, 8)}%` }} />);
-                  })}
-                </div>
               </div>
             </div>
           </div>
