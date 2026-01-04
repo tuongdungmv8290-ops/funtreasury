@@ -204,6 +204,11 @@ const Index = () => {
           </div>
         </div>
 
+        {/* CAMLY Market Price Section - TOP */}
+        <div className="mb-6 md:mb-8">
+          <CamlyMarketPrice />
+        </div>
+
         {/* Balance Hero Card */}
         <div className="mb-6 md:mb-8">
           <div className="relative overflow-hidden rounded-2xl border border-treasury-gold/30 bg-gradient-to-br from-treasury-gold/10 via-background to-treasury-gold/5 p-6 md:p-8 shadow-xl">
@@ -338,13 +343,6 @@ const Index = () => {
             <TokenBalancesCard />
           </div>
           <RecentTransactions />
-        </div>
-
-        {/* CAMLY Market Price Section */}
-        <div className="mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-1">
-            <CamlyMarketPrice />
-          </div>
         </div>
       </main>
 
