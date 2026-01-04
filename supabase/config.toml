@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.get-token-balances]
 verify_jwt = false
+
+[functions.get-camly-price]
+verify_jwt = false
