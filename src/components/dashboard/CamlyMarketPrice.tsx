@@ -1,30 +1,25 @@
 import { useCamlyPrice } from '@/hooks/useCamlyPrice';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ExternalLink, TrendingUp, TrendingDown, RefreshCw, BarChart3, Loader2, Crown } from 'lucide-react';
+import { ExternalLink, TrendingUp, TrendingDown, RefreshCw, Loader2 } from 'lucide-react';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-import { LineChart, Line, ResponsiveContainer, Tooltip, Area, AreaChart } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
 import camlyLogo from '@/assets/camly-coin-logo.png';
 
-// Generate mock sparkline data (in real scenario, this would come from API)
+// Generate smooth sparkline data
 const generateSparklineData = (days: number, basePrice: number, change24h: number) => {
   const data = [];
-  const volatility = 0.12;
-  
-  for (let i = days; i >= 0; i--) {
-    const dayVariation = (Math.random() - 0.5) * volatility;
-    const trendFactor = (days - i) / days;
-    const price = basePrice * (1 - change24h / 100 * (1 - trendFactor) + dayVariation * (1 - trendFactor));
-    
-    data.push({
-      day: `Day ${days - i + 1}`,
-      price: Math.max(price, basePrice * 0.5),
-    });
+  for (let i = 0; i <= days; i++) {
+    const progress = i / days;
+    const wave = Math.sin(progress * Math.PI * 2) * 0.05;
+    const trend = change24h / 100 * progress;
+    const noise = (Math.random() - 0.5) * 0.03;
+    const price = basePrice * (1 - change24h / 100 + trend + wave + noise);
+    data.push({ day: i, price: Math.max(price, basePrice * 0.8) });
   }
-  
   data[data.length - 1].price = basePrice;
   return data;
 };
@@ -41,241 +36,154 @@ export function CamlyMarketPrice() {
   };
 
   const isPositiveChange = (priceData?.change_24h || 0) >= 0;
-  
-  const sparklineData = generateSparklineData(
-    chartRange, 
-    priceData?.price_usd || 0.00002272, 
-    priceData?.change_24h || 0
-  );
+  const sparklineData = generateSparklineData(chartRange, priceData?.price_usd || 0.00002272, priceData?.change_24h || 0);
 
   return (
-    <Card className="relative overflow-hidden border-0 shadow-2xl">
-      {/* Premium Gold Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 via-yellow-500/15 to-orange-500/20" />
-      <div className="absolute inset-0 bg-gradient-to-tr from-treasury-gold/30 via-transparent to-amber-400/20" />
+    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/30 shadow-lg">
+      {/* Subtle gold border */}
+      <div className="absolute inset-0 rounded-xl border border-treasury-gold/30" />
       
-      {/* Animated Glow Effects */}
-      <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full bg-gradient-to-br from-treasury-gold/40 to-amber-500/30 blur-3xl animate-pulse" />
-      <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-gradient-to-tr from-yellow-500/30 to-treasury-gold/40 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-treasury-gold/10 blur-3xl" />
-      
-      {/* Gold Border Glow */}
-      <div className="absolute inset-0 rounded-xl border-2 border-treasury-gold/50 shadow-[inset_0_0_20px_rgba(218,165,32,0.1)]" />
-
-      <div className="relative p-6 space-y-5">
-        {/* Header */}
+      <div className="relative p-4 space-y-3">
+        {/* Header Row - Compact */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Logo with Premium Ring */}
-            <div className="relative">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-treasury-gold via-amber-400 to-yellow-500 animate-spin-slow opacity-75 blur-sm" style={{ animationDuration: '8s' }} />
-              <div className="relative w-14 h-14 rounded-full overflow-hidden ring-3 ring-treasury-gold/60 shadow-xl">
-                <img 
-                  src={camlyLogo} 
-                  alt="CAMLY Coin" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <Crown className="absolute -top-2 -right-2 w-5 h-5 text-treasury-gold drop-shadow-lg" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-treasury-gold/50 shadow-md">
+              <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
             </div>
-            
             <div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent">
-                CAMLY
-              </h3>
-              <p className="text-xs text-muted-foreground font-medium">Giá Thị Trường Realtime</p>
+              <h3 className="text-base font-bold text-treasury-gold">CAMLY</h3>
+              <p className="text-[10px] text-muted-foreground">Giá Thị Trường</p>
             </div>
           </div>
-          
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-full bg-treasury-gold/10 hover:bg-treasury-gold/20 text-treasury-gold border border-treasury-gold/30"
+            className="h-8 w-8 rounded-full bg-treasury-gold/10 hover:bg-treasury-gold/20 text-treasury-gold"
             onClick={handleRefresh}
             disabled={isRefetching || isManualRefresh}
           >
-            {(isRefetching || isManualRefresh) ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <RefreshCw className="w-5 h-5" />
-            )}
+            {(isRefetching || isManualRefresh) ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           </Button>
         </div>
 
         {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-14 w-48 bg-treasury-gold/10" />
-            <Skeleton className="h-8 w-32 bg-treasury-gold/10" />
-            <Skeleton className="h-24 w-full bg-treasury-gold/10" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-36 bg-treasury-gold/10" />
+            <Skeleton className="h-16 w-full bg-treasury-gold/10" />
           </div>
         ) : (
           <>
-            {/* Main Price Display */}
-            <div className="flex items-end justify-between gap-4 flex-wrap">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Giá USD</p>
-                <p className="text-4xl md:text-5xl font-black bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent tracking-tight drop-shadow-sm">
-                  ${priceData?.price_usd.toFixed(8) || '0.00000000'}
-                </p>
-              </div>
-              
-              {/* 24h Change Badge - Premium Style */}
+            {/* Price + Change Row */}
+            <div className="flex items-center justify-between">
+              <p className="text-2xl font-black text-treasury-gold">
+                ${priceData?.price_usd.toFixed(8) || '0.00000000'}
+              </p>
               <div className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-base shadow-lg",
+                "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold",
                 isPositiveChange 
-                  ? "bg-gradient-to-r from-emerald-500/20 to-green-500/30 text-emerald-400 border border-emerald-500/30" 
-                  : "bg-gradient-to-r from-red-500/20 to-rose-500/30 text-red-400 border border-red-500/30"
+                  ? "bg-emerald-500/15 text-emerald-500" 
+                  : "bg-red-500/15 text-red-500"
               )}>
-                {isPositiveChange ? (
-                  <TrendingUp className="w-5 h-5" />
-                ) : (
-                  <TrendingDown className="w-5 h-5" />
-                )}
-                <span>{isPositiveChange ? '+' : ''}{formatNumber(priceData?.change_24h || 0, { minDecimals: 2, maxDecimals: 2 })}%</span>
-                <span className="text-xs opacity-70">24h</span>
+                {isPositiveChange ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {isPositiveChange ? '+' : ''}{formatNumber(priceData?.change_24h || 0, { minDecimals: 2, maxDecimals: 2 })}%
               </div>
             </div>
 
-            {/* Stats Row - Premium Cards */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-background/50 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/20">
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Volume 24h</p>
-                <p className="text-lg font-bold text-foreground">
-                  {priceData?.volume_24h && priceData.volume_24h > 0 
-                    ? formatUSD(priceData.volume_24h)
-                    : '—'
-                  }
-                </p>
+            {/* Mini Stats Row */}
+            <div className="flex gap-3 text-xs">
+              <div className="flex-1 bg-background/60 rounded-lg p-2 border border-treasury-gold/10">
+                <p className="text-[9px] text-muted-foreground uppercase">Vol 24h</p>
+                <p className="font-semibold">{priceData?.volume_24h && priceData.volume_24h > 0 ? formatUSD(priceData.volume_24h) : '—'}</p>
               </div>
-              <div className="bg-background/50 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/20">
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Market Cap</p>
-                <p className="text-lg font-bold text-foreground">
-                  {priceData?.market_cap && priceData.market_cap > 0 
-                    ? formatUSD(priceData.market_cap)
-                    : '—'
-                  }
-                </p>
+              <div className="flex-1 bg-background/60 rounded-lg p-2 border border-treasury-gold/10">
+                <p className="text-[9px] text-muted-foreground uppercase">MCap</p>
+                <p className="font-semibold">{priceData?.market_cap && priceData.market_cap > 0 ? formatUSD(priceData.market_cap) : '—'}</p>
               </div>
             </div>
 
-            {/* Premium Sparkline Chart */}
-            <div className="bg-background/40 backdrop-blur-sm rounded-xl p-4 border border-treasury-gold/20">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-muted-foreground font-semibold flex items-center gap-2 uppercase tracking-wider">
-                  <BarChart3 className="w-4 h-4 text-treasury-gold" />
-                  Biểu đồ giá
-                </p>
-                <div className="flex items-center bg-background/80 border border-treasury-gold/30 rounded-lg p-0.5">
-                  <button
-                    onClick={() => setChartRange(7)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-md text-xs font-bold transition-all",
-                      chartRange === 7
-                        ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-lg"
-                        : "text-muted-foreground hover:text-treasury-gold"
-                    )}
-                  >
-                    7D
-                  </button>
-                  <button
-                    onClick={() => setChartRange(30)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-md text-xs font-bold transition-all",
-                      chartRange === 30
-                        ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-lg"
-                        : "text-muted-foreground hover:text-treasury-gold"
-                    )}
-                  >
-                    30D
-                  </button>
+            {/* Compact Chart */}
+            <div className="bg-background/50 rounded-lg p-2 border border-treasury-gold/10">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[9px] text-muted-foreground uppercase font-medium">Biểu đồ giá</p>
+                <div className="flex bg-muted/50 rounded p-0.5">
+                  {[7, 30].map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setChartRange(range as 7 | 30)}
+                      className={cn(
+                        "px-2 py-0.5 rounded text-[9px] font-bold transition-all",
+                        chartRange === range
+                          ? "bg-treasury-gold text-white"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {range}D
+                    </button>
+                  ))}
                 </div>
               </div>
-              
-              <div className="h-24 w-full">
+              <div className="h-14">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={sparklineData}>
                     <defs>
-                      <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop 
-                          offset="5%" 
-                          stopColor={isPositiveChange ? '#10b981' : '#ef4444'} 
-                          stopOpacity={0.4}
-                        />
-                        <stop 
-                          offset="95%" 
-                          stopColor={isPositiveChange ? '#10b981' : '#ef4444'} 
-                          stopOpacity={0}
-                        />
+                      <linearGradient id="camlyGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#ef4444'} stopOpacity={0.4} />
+                        <stop offset="100%" stopColor={isPositiveChange ? '#10b981' : '#ef4444'} stopOpacity={0.05} />
                       </linearGradient>
                     </defs>
                     <Tooltip
                       contentStyle={{
                         backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--treasury-gold) / 0.3)',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        padding: '8px 12px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        fontSize: '10px',
+                        padding: '4px 8px',
                       }}
-                      formatter={(value: number) => [`$${value.toFixed(8)}`, 'Giá']}
-                      labelFormatter={(label) => label}
+                      formatter={(value: number) => [`$${value.toFixed(8)}`, '']}
+                      labelFormatter={() => ''}
                     />
                     <Area
                       type="monotone"
                       dataKey="price"
                       stroke={isPositiveChange ? '#10b981' : '#ef4444'}
-                      strokeWidth={2.5}
-                      fill="url(#priceGradient)"
+                      strokeWidth={2}
+                      fill="url(#camlyGradient)"
                       dot={false}
-                      activeDot={{ 
-                        r: 6, 
-                        fill: isPositiveChange ? '#10b981' : '#ef4444',
-                        stroke: '#fff',
-                        strokeWidth: 2
-                      }}
+                      activeDot={{ r: 3, fill: isPositiveChange ? '#10b981' : '#ef4444' }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            {/* CoinMarketCap Link - Premium Button */}
+            {/* CoinGecko Link (CMC blocked) */}
             <Button
-              className="w-full gap-2 bg-gradient-to-r from-treasury-gold via-amber-500 to-yellow-500 hover:from-amber-500 hover:via-yellow-500 hover:to-treasury-gold text-white font-bold text-base py-6 shadow-lg hover:shadow-xl transition-all"
+              className="w-full gap-2 bg-gradient-to-r from-treasury-gold to-amber-500 hover:from-amber-500 hover:to-treasury-gold text-white font-semibold text-sm py-2 h-9"
               asChild
             >
               <a 
-                href="https://coinmarketcap.com/currencies/camly-coin/" 
+                href="https://www.coingecko.com/en/coins/camly-coin" 
                 target="_blank" 
                 rel="noopener noreferrer"
               >
-                <ExternalLink className="w-5 h-5" />
-                Xem chi tiết trên CoinMarketCap
+                <ExternalLink className="w-4 h-4" />
+                Xem trên CoinGecko
               </a>
             </Button>
 
-            {/* Status Footer */}
-            <div className="flex items-center justify-between text-xs pt-2">
-              <span className="text-muted-foreground">
-                Cập nhật: {priceData?.last_updated 
-                  ? new Date(priceData.last_updated).toLocaleTimeString('vi-VN')
-                  : '—'
-                }
+            {/* Footer */}
+            <div className="flex items-center justify-between text-[9px] text-muted-foreground">
+              <span>
+                {priceData?.last_updated ? new Date(priceData.last_updated).toLocaleTimeString('vi-VN') : '—'}
               </span>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-[10px]">Auto refresh: 1 phút</span>
-                <span className={cn(
-                  "px-2 py-1 rounded-full text-[10px] font-bold uppercase",
-                  priceData?.source === 'fallback' || priceData?.source === 'error_fallback' 
-                    ? "bg-yellow-500/20 text-yellow-500 border border-yellow-500/30" 
-                    : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                )}>
-                  {priceData?.source === 'fallback' || priceData?.source === 'error_fallback' 
-                    ? '⚡ Offline' 
-                    : '🔴 Live'
-                  }
-                </span>
-              </div>
+              <span className={cn(
+                "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase",
+                priceData?.source === 'fallback' || priceData?.source === 'error_fallback' 
+                  ? "bg-yellow-500/20 text-yellow-600" 
+                  : "bg-emerald-500/20 text-emerald-500"
+              )}>
+                {priceData?.source === 'fallback' || priceData?.source === 'error_fallback' ? 'Offline' : 'Live'}
+              </span>
             </div>
           </>
         )}
