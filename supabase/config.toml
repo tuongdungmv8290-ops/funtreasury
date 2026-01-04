@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.get-camly-price]
 verify_jwt = false
+
+[functions.get-camly-trades]
+verify_jwt = false
