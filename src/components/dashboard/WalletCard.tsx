@@ -1,9 +1,13 @@
-import { Wallet as WalletIcon, Copy, ExternalLink, CheckCircle } from 'lucide-react';
+import { Wallet as WalletIcon, Copy, ExternalLink, CheckCircle, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { formatCurrency, shortenAddress } from '@/lib/mockData';
 import type { Wallet } from '@/hooks/useWallets';
 import camlyLogo from '@/assets/camly-logo.jpeg';
+import { WalletDetailModal } from './WalletDetailModal';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Official token logos - CAMLY uses local asset
 const TOKEN_LOGOS: Record<string, string> = {
@@ -82,26 +86,61 @@ interface WalletCardProps {
 
 export function WalletCard({ wallet, index }: WalletCardProps) {
   const [copied, setCopied] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const queryClient = useQueryClient();
 
-  const copyAddress = async () => {
+  const copyAddress = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     await navigator.clipboard.writeText(wallet.address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
-    <div 
-      className={cn(
-        "treasury-card-gold group relative overflow-hidden",
-        "animate-fade-in"
-      )}
-      style={{ animationDelay: `${index * 100}ms` }}
-    >
-      {/* Decorative background orbs */}
-      <div className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-to-br from-treasury-gold/15 to-transparent rounded-full blur-3xl" />
-      <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-tr from-treasury-gold/10 to-transparent rounded-full blur-2xl" />
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-transactions');
+      if (error) throw error;
       
-      <div className="relative">
+      toast.success(`Đã sync ${data?.newTxCount || 0} giao dịch mới!`);
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['token-balances'] });
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+    } catch (err) {
+      toast.error('Không thể sync. Vui lòng thử lại.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleCardClick = () => {
+    setShowModal(true);
+  };
+
+  return (
+    <>
+      <div 
+        onClick={handleCardClick}
+        className={cn(
+          "treasury-card-gold group relative overflow-hidden cursor-pointer",
+          "animate-fade-in hover:scale-[1.02] transition-transform duration-200"
+        )}
+        style={{ animationDelay: `${index * 100}ms` }}
+      >
+        {/* Click indicator */}
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-treasury-gold/20 text-treasury-gold text-xs font-medium">
+            <Eye className="w-3 h-3" />
+            Chi tiết
+          </div>
+        </div>
+        
+        {/* Decorative background orbs */}
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-to-br from-treasury-gold/15 to-transparent rounded-full blur-3xl" />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-tr from-treasury-gold/10 to-transparent rounded-full blur-2xl" />
+        
+        <div className="relative">
         {/* Header */}
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-3">
@@ -198,7 +237,17 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
             </div>
           );
         })()}
+        </div>
       </div>
-    </div>
+      
+      {/* Wallet Detail Modal */}
+      <WalletDetailModal
+        open={showModal}
+        onOpenChange={setShowModal}
+        wallet={wallet}
+        onSync={handleSync}
+        isSyncing={isSyncing}
+      />
+    </>
   );
 }
