@@ -76,17 +76,6 @@ export function CamlyTradesCard() {
             </div>
           </div>
           
-          {/* View All Button */}
-          <Button
-            size="sm"
-            className="bg-gradient-to-r from-treasury-gold to-amber-500 hover:from-amber-600 hover:to-treasury-gold text-white text-xs font-bold shadow-md transition-all hover:scale-[1.02] gap-1.5"
-            onClick={() => window.open(DEXSCREENER_TRADES_URL, '_blank')}
-            title="Xem lịch sử mua bán realtime"
-          >
-            <Activity className="w-3.5 h-3.5" />
-            View All on DexScreener
-            <ExternalLink className="w-3 h-3" />
-          </Button>
         </div>
 
         {/* Recent Trades Title */}

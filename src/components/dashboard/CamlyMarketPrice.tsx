@@ -448,26 +448,6 @@ export function CamlyMarketPrice() {
                 </div>
               </div>
               
-              {/* Action Buttons - Bitget Style */}
-              <div className="flex items-center gap-2">
-                <Button 
-                  size="sm" 
-                  className="bg-gradient-to-r from-treasury-gold via-amber-500 to-yellow-500 hover:from-treasury-gold/90 hover:to-yellow-500/90 text-black font-bold shadow-lg shadow-treasury-gold/30 border-0 gap-1.5"
-                  onClick={() => window.open('https://www.bitget.com/vi/spot/CAMLYUSDT', '_blank')}
-                >
-                  <Wallet className="w-4 h-4" />
-                  Giao dịch
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="border-treasury-gold/50 text-treasury-gold hover:bg-treasury-gold/10 font-bold gap-1.5"
-                  onClick={() => window.open('https://dexscreener.com/bsc/0x0910320181889fefde0bb1ca63962b0a8882e413', '_blank')}
-                >
-                  <Zap className="w-4 h-4" />
-                  Chế độ tức thì
-                </Button>
-              </div>
             </div>
 
             {/* Price Range Bar */}
@@ -551,7 +531,7 @@ export function CamlyMarketPrice() {
               <div className={cn("h-40 transition-all duration-300 ease-out relative", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
                 <ResponsiveContainer width="100%" height="100%">
                   {chartType === 'line' ? (
-                    <ComposedChart data={chartData} margin={{ top: 5, right: 55, bottom: 0, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 70, bottom: 5, left: 5 }}>
                       <defs>
                         <linearGradient id="camlyPriceGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.4} />
@@ -566,14 +546,14 @@ export function CamlyMarketPrice() {
                         interval="preserveStartEnd"
                       />
                       <YAxis 
-                        domain={[minPrice * 0.999, maxPrice * 1.001]} 
+                        domain={[minPrice * 0.996, maxPrice * 1.004]} 
                         orientation="right"
                         tick={{ fontSize: 8, fill: '#888' }}
                         tickFormatter={(value) => value.toFixed(8)}
                         tickLine={false}
                         axisLine={false}
-                        width={50}
-                        tickCount={5}
+                        width={65}
+                        tickCount={4}
                       />
                       <Tooltip content={<CustomCandleTooltip />} />
                       <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} />
@@ -599,7 +579,7 @@ export function CamlyMarketPrice() {
                       <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={2} fill="url(#camlyPriceGrad)" dot={false} activeDot={{ r: 4, fill: '#C9A227', stroke: '#fff', strokeWidth: 2 }} animationDuration={600} />
                     </ComposedChart>
                   ) : (
-                    <ComposedChart data={chartData} margin={{ top: 5, right: 55, bottom: 0, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 70, bottom: 5, left: 5 }}>
                       <defs>
                         <linearGradient id="candleGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                         <linearGradient id="candleRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
@@ -612,14 +592,14 @@ export function CamlyMarketPrice() {
                         interval="preserveStartEnd"
                       />
                       <YAxis 
-                        domain={[minPrice * 0.998, maxPrice * 1.002]} 
+                        domain={[minPrice * 0.994, maxPrice * 1.006]} 
                         orientation="right"
                         tick={{ fontSize: 8, fill: '#888' }}
                         tickFormatter={(value) => value.toFixed(8)}
                         tickLine={false}
                         axisLine={false}
-                        width={50}
-                        tickCount={5}
+                        width={65}
+                        tickCount={4}
                       />
                       <Tooltip content={<CustomCandleTooltip />} />
                       <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} />
