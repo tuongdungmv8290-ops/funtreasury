@@ -105,7 +105,7 @@ export function CamlyTradesCard() {
             ) : !data?.topHolders || data.topHolders.length === 0 ? (
               <EmptyState />
             ) : (
-              <ScrollArea className="h-[220px]">
+              <ScrollArea className="h-[180px]">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-treasury-gold/20 hover:bg-transparent">
@@ -117,7 +117,7 @@ export function CamlyTradesCard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.topHolders.slice(0, 10).map((holder, i) => (
+                    {data.topHolders.slice(0, 5).map((holder, i) => (
                       <TableRow 
                         key={i} 
                         className="border-treasury-gold/10 hover:bg-treasury-gold/5 transition-colors"
@@ -190,7 +190,7 @@ export function CamlyTradesCard() {
             ) : !data?.recentTrades || data.recentTrades.length === 0 ? (
               <EmptyState />
             ) : (
-              <ScrollArea className="h-[220px]">
+              <ScrollArea className="h-[180px]">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-treasury-gold/20 hover:bg-transparent">
@@ -201,7 +201,7 @@ export function CamlyTradesCard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.recentTrades.slice(0, 10).map((trade, i) => (
+                    {data.recentTrades.slice(0, 5).map((trade, i) => (
                       <TableRow 
                         key={i} 
                         className="border-treasury-gold/10 hover:bg-treasury-gold/5 transition-colors"
