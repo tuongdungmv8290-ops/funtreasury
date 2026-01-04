@@ -1,1 +1,10 @@
 project_id = "ubauaedefaafdmyygiiu"
+
+[functions.test-moralis-connection]
+verify_jwt = false
+
+[functions.sync-transactions]
+verify_jwt = false
+
+[functions.get-token-balances]
+verify_jwt = false
