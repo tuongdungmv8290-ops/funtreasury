@@ -286,7 +286,7 @@ export function CamlyMarketPrice() {
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const [chartRange, setChartRange] = useState<TimeRange>('1H');
   const [chartType, setChartType] = useState<ChartType>('candle');
-  const [activeIndicators, setActiveIndicators] = useState<IndicatorType[]>(['vol']);
+  const [activeIndicators, setActiveIndicators] = useState<IndicatorType[]>(['vol', 'ma']);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
