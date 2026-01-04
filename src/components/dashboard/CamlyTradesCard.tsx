@@ -53,15 +53,33 @@ export function CamlyTradesCard() {
       
       <div className="relative p-4">
         {/* Header */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-treasury-gold/40 shadow-lg">
-            <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-treasury-gold/40 shadow-lg">
+              <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-treasury-gold">CAMLY Analytics</h3>
+              <div className="flex items-center gap-1">
+                <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
+                <span className="text-[9px] text-emerald-500 font-medium">Live • Auto-refresh 30s</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-treasury-gold">CAMLY Analytics</h3>
-            <div className="flex items-center gap-1">
-              <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
-              <span className="text-[9px] text-emerald-500 font-medium">Live</span>
+          
+          {/* Count Badges */}
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 px-2 py-1 bg-treasury-gold/15 rounded-full border border-treasury-gold/30">
+              <Users className="w-3 h-3 text-treasury-gold" />
+              <span className="text-[10px] font-bold text-treasury-gold">
+                {data?.topHolders?.length || 0}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500/15 rounded-full border border-emerald-500/30">
+              <Activity className="w-3 h-3 text-emerald-600" />
+              <span className="text-[10px] font-bold text-emerald-600">
+                {data?.recentTrades?.length || 0}
+              </span>
             </div>
           </div>
         </div>
@@ -74,6 +92,11 @@ export function CamlyTradesCard() {
             >
               <Users className="w-3 h-3" />
               Top Holders
+              {data?.topHolders && data.topHolders.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[8px] font-bold">
+                  {data.topHolders.length}
+                </span>
+              )}
             </TabsTrigger>
             <TabsTrigger 
               value="trades" 
@@ -81,6 +104,11 @@ export function CamlyTradesCard() {
             >
               <Activity className="w-3 h-3" />
               Recent Trades
+              {data?.recentTrades && data.recentTrades.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[8px] font-bold">
+                  {data.recentTrades.length}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
 
