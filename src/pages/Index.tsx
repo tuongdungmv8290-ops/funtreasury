@@ -9,7 +9,7 @@ import { BulkTransferSection } from '@/components/dashboard/BulkTransferSection'
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
-import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown, Table2, ExternalLink } from 'lucide-react';
+import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -326,39 +326,6 @@ const Index = () => {
         {/* Bulk Transfer Section */}
         <div className="mb-6 md:mb-8">
           <BulkTransferSection />
-        </div>
-
-        {/* Bảng Thủ Công Section */}
-        <div className="mb-6 md:mb-8">
-          <div className="relative overflow-hidden rounded-2xl border border-treasury-gold/40 bg-gradient-to-br from-treasury-gold/5 via-background to-treasury-gold/10 p-6 shadow-lg hover:shadow-xl transition-all">
-            {/* Decorative elements */}
-            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-treasury-gold/10 blur-3xl" />
-            <div className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full bg-treasury-gold/15 blur-2xl" />
-            
-            <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-treasury-gold to-treasury-gold-dark flex items-center justify-center shadow-lg">
-                  <Table2 className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg md:text-xl font-bold gold-text">📊 Bảng Thủ Công</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Quản lý giao dịch thủ công trực tiếp trên Google Sheets
-                  </p>
-                </div>
-              </div>
-              <Button
-                className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg hover:shadow-xl transition-all px-6 py-3"
-                onClick={() => {
-                  window.open('https://docs.google.com/spreadsheets/d/1KePMTNAyHd1rCKEgiQ2f7HyGcPNQmhgzh9CkomsaYyc/edit?usp=sharing', '_blank');
-                  toast.success('📊 Đã mở Bảng Thủ Công trên Google Sheets!', { duration: 3000 });
-                }}
-              >
-                <ExternalLink className="w-4 h-4" />
-                Mở Google Sheets
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* Charts, Token Balances and Recent Transactions */}
