@@ -17,7 +17,8 @@ import { formatNumber, formatUSD } from '@/lib/formatNumber';
 import { cn } from '@/lib/utils';
 import camlyLogo from '@/assets/camly-coin-logo.png';
 
-const DEXSCREENER_URL = 'https://dexscreener.com/bsc/0x0910320181889fefde0bb1ca63962b0a8882e413';
+const DEXSCREENER_HOLDERS_URL = 'https://dexscreener.com/bsc/0x0910320181889fefde0bb1ca63962b0a8882e413?tab=holders';
+const DEXSCREENER_TRADES_URL = 'https://dexscreener.com/bsc/0x0910320181889fefde0bb1ca63962b0a8882e413?tab=transactions';
 const BSCSCAN_TOKEN_URL = 'https://bscscan.com/token/0x31f8d38df6514b6cc3c360ace3a2efa7496214f6';
 
 export function CamlyTradesCard() {
@@ -52,28 +53,17 @@ export function CamlyTradesCard() {
       
       <div className="relative p-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-treasury-gold/40 shadow-lg">
-              <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-treasury-gold">CAMLY Analytics</h3>
-              <div className="flex items-center gap-1">
-                <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
-                <span className="text-[9px] text-emerald-500 font-medium">Live</span>
-              </div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-treasury-gold/40 shadow-lg">
+            <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-treasury-gold">CAMLY Analytics</h3>
+            <div className="flex items-center gap-1">
+              <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
+              <span className="text-[9px] text-emerald-500 font-medium">Live</span>
             </div>
           </div>
-          
-          <Button
-            size="sm"
-            className="h-7 px-3 bg-gradient-to-r from-treasury-gold to-amber-500 hover:from-amber-500 hover:to-treasury-gold text-white text-xs font-semibold shadow-md"
-            onClick={() => window.open(DEXSCREENER_URL, '_blank')}
-          >
-            <ExternalLink className="w-3 h-3 mr-1" />
-            View All
-          </Button>
         </div>
 
         <Tabs defaultValue="trades" className="w-full">
@@ -164,16 +154,17 @@ export function CamlyTradesCard() {
                   </TableBody>
                 </Table>
                 
-                <div className="pt-2 pb-1">
-                  <a
-                    href={DEXSCREENER_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1 text-[10px] text-treasury-gold hover:text-amber-500 transition-colors font-medium"
+                <div className="pt-3 pb-1">
+                  <Button
+                    size="sm"
+                    className="w-full h-8 bg-gradient-to-r from-treasury-gold to-amber-500 hover:from-amber-600 hover:to-treasury-gold text-white text-xs font-bold shadow-md transition-all hover:scale-[1.02]"
+                    onClick={() => window.open(DEXSCREENER_HOLDERS_URL, '_blank')}
+                    title="Xem danh sách người nắm giữ"
                   >
-                    <ExternalLink className="w-3 h-3" />
-                    View all on DexScreener
-                  </a>
+                    <Users className="w-3.5 h-3.5 mr-1.5" />
+                    View All Holders on DexScreener
+                    <ExternalLink className="w-3 h-3 ml-1.5" />
+                  </Button>
                 </div>
               </ScrollArea>
             )}
@@ -243,16 +234,17 @@ export function CamlyTradesCard() {
                   </TableBody>
                 </Table>
                 
-                <div className="pt-2 pb-1">
-                  <a
-                    href={DEXSCREENER_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1 text-[10px] text-treasury-gold hover:text-amber-500 transition-colors font-medium"
+                <div className="pt-3 pb-1">
+                  <Button
+                    size="sm"
+                    className="w-full h-8 bg-gradient-to-r from-treasury-gold to-amber-500 hover:from-amber-600 hover:to-treasury-gold text-white text-xs font-bold shadow-md transition-all hover:scale-[1.02]"
+                    onClick={() => window.open(DEXSCREENER_TRADES_URL, '_blank')}
+                    title="Xem lịch sử mua bán realtime"
                   >
-                    <ExternalLink className="w-3 h-3" />
-                    View all on DexScreener
-                  </a>
+                    <Activity className="w-3.5 h-3.5 mr-1.5" />
+                    View All Trades on DexScreener
+                    <ExternalLink className="w-3 h-3 ml-1.5" />
+                  </Button>
                 </div>
               </ScrollArea>
             )}
