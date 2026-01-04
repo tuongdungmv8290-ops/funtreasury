@@ -339,26 +339,37 @@ export function CamlyMarketPrice() {
               </div>
             </div>
 
-            {/* Chart Section */}
+            {/* Chart Section - Bitget Style */}
             <div className="bg-gradient-to-br from-background/70 to-background/50 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/30 shadow-lg">
               {/* Chart Controls */}
-              <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-                {/* Chart Type Toggle */}
-                <div className="flex items-center gap-1 bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
-                  <button onClick={() => setChartType('line')} className={cn("p-1.5 rounded-md transition-all duration-200", chartType === 'line' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")} title="Line"><LineChart className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => setChartType('candle')} className={cn("p-1.5 rounded-md transition-all duration-200", chartType === 'candle' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")} title="Candle"><CandlestickChart className="w-3.5 h-3.5" /></button>
+              <div className="flex items-center justify-between mb-2 gap-2">
+                {/* Time Range - Bitget Style */}
+                <div className="flex items-center gap-1 text-[10px]">
+                  {compactRanges.map((range) => (
+                    <button 
+                      key={range} 
+                      onClick={() => handleRangeChange(range)} 
+                      className={cn(
+                        "px-2.5 py-1 rounded-md font-semibold transition-all duration-200",
+                        chartRange === range 
+                          ? "bg-foreground text-background shadow-md" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      )}
+                    >
+                      {TIME_RANGE_CONFIG[range].label}
+                    </button>
+                  ))}
                 </div>
                 
-                {/* Time Range */}
                 <div className="flex items-center gap-1">
-                  <div className="flex bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
-                    {compactRanges.map((range) => (
-                      <button key={range} onClick={() => handleRangeChange(range)} className={cn("px-2 py-1 rounded-md text-[9px] font-bold transition-all duration-200", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")}>{range}</button>
-                    ))}
+                  {/* Chart Type Toggle */}
+                  <div className="flex items-center gap-0.5 bg-muted/50 rounded-md p-0.5">
+                    <button onClick={() => setChartType('line')} className={cn("p-1 rounded transition-all", chartType === 'line' ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground")} title="Line"><LineChart className="w-3 h-3" /></button>
+                    <button onClick={() => setChartType('candle')} className={cn("p-1 rounded transition-all", chartType === 'candle' ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground")} title="Candle"><CandlestickChart className="w-3 h-3" /></button>
                   </div>
                   <button 
                     onClick={() => setIsFullscreen(true)} 
-                    className="p-1.5 rounded-md bg-treasury-gold/10 border border-treasury-gold/30 text-treasury-gold hover:bg-treasury-gold/20 transition-all duration-200"
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
                     title="Fullscreen"
                   >
                     <Maximize2 className="w-3.5 h-3.5" />
@@ -366,68 +377,73 @@ export function CamlyMarketPrice() {
                 </div>
               </div>
               
-              {/* Main Chart with Price on Right */}
-              <div className={cn("h-40 transition-all duration-300 ease-out", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
+              {/* Main Chart - Bitget Style with Y-axis prices */}
+              <div className={cn("h-44 transition-all duration-300 ease-out relative", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
                 <ResponsiveContainer width="100%" height="100%">
                   {chartType === 'line' ? (
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 5, bottom: 0, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 60, bottom: 0, left: 5 }}>
                       <defs>
                         <linearGradient id="camlyPriceGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.6} />
-                          <stop offset="30%" stopColor="#C9A227" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="#C9A227" stopOpacity={0.02} />
+                          <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.4} />
+                          <stop offset="100%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.02} />
                         </linearGradient>
-                        <filter id="lineGlow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                       </defs>
                       <XAxis 
                         dataKey="timeLabel" 
-                        tick={{ fontSize: 9, fill: '#888' }}
+                        tick={{ fontSize: 8, fill: '#888' }}
                         tickLine={false} 
-                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} 
+                        axisLine={{ stroke: '#333', strokeOpacity: 0.3 }} 
                         interval="preserveStartEnd"
                       />
                       <YAxis 
-                        domain={['dataMin', 'dataMax']} 
-                        hide
-                        padding={{ top: 15, bottom: 15 }}
+                        domain={[minPrice * 0.999, maxPrice * 1.001]} 
+                        orientation="right"
+                        tick={{ fontSize: 8, fill: '#888' }}
+                        tickFormatter={(value) => value.toFixed(8)}
+                        tickLine={false}
+                        axisLine={false}
+                        width={55}
+                        tickCount={5}
                       />
                       <Tooltip content={<CustomCandleTooltip />} />
-                      {/* Min/Max Price Lines */}
-                      <ReferenceLine y={maxPrice} stroke="#22c55e" strokeDasharray="6 4" strokeWidth={1.5} label={{ value: `Max: $${maxPrice.toFixed(8)}`, position: 'insideTopLeft', fontSize: 9, fill: '#22c55e', fontWeight: 'bold' }} />
-                      <ReferenceLine y={minPrice} stroke="#ef4444" strokeDasharray="6 4" strokeWidth={1.5} label={{ value: `Min: $${minPrice.toFixed(8)}`, position: 'insideBottomLeft', fontSize: 9, fill: '#ef4444', fontWeight: 'bold' }} />
-                      {indicator === 'boll' && (<><Area type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" fill="none" dot={false} /><Area type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={1.5} fill="none" dot={false} /><Area type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" fill="none" dot={false} /></>)}
-                      <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={2.5} fill="url(#camlyPriceGrad)" dot={false} activeDot={{ r: 6, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={800} animationEasing="ease-out" style={{ filter: 'url(#lineGlow)' }} />
+                      {/* Current Price Line */}
+                      <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} label={{ value: currentPrice.toFixed(8), position: 'right', fontSize: 8, fill: isPositiveChange ? '#22c55e' : '#ef4444', fontWeight: 'bold' }} />
+                      <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={2} fill="url(#camlyPriceGrad)" dot={false} activeDot={{ r: 4, fill: '#C9A227', stroke: '#fff', strokeWidth: 2 }} animationDuration={600} />
                     </ComposedChart>
                   ) : (
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 5, bottom: 0, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 60, bottom: 0, left: 5 }}>
                       <defs>
                         <linearGradient id="candleGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                         <linearGradient id="candleRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
                       </defs>
                       <XAxis 
                         dataKey="timeLabel" 
-                        tick={{ fontSize: 9, fill: '#888' }} 
+                        tick={{ fontSize: 8, fill: '#888' }} 
                         tickLine={false} 
-                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} 
+                        axisLine={{ stroke: '#333', strokeOpacity: 0.3 }} 
                         interval="preserveStartEnd"
                       />
                       <YAxis 
                         domain={[minPrice * 0.998, maxPrice * 1.002]} 
-                        hide
+                        orientation="right"
+                        tick={{ fontSize: 8, fill: '#888' }}
+                        tickFormatter={(value) => value.toFixed(8)}
+                        tickLine={false}
+                        axisLine={false}
+                        width={55}
+                        tickCount={5}
                       />
                       <Tooltip content={<CustomCandleTooltip />} />
-                      {/* Min/Max Price Lines */}
-                      <ReferenceLine y={maxPrice} stroke="#22c55e" strokeDasharray="6 4" strokeWidth={1.5} />
-                      <ReferenceLine y={minPrice} stroke="#ef4444" strokeDasharray="6 4" strokeWidth={1.5} />
-                      {indicator === 'boll' && (<><Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" dot={false} /><Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={1.5} dot={false} /><Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" dot={false} /></>)}
-                      <Bar dataKey="close" shape={() => null} animationDuration={600} animationEasing="ease-out" />
+                      {/* Current Price Line */}
+                      <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} />
+                      <Bar dataKey="close" shape={() => null} animationDuration={500} />
                       {chartData.map((entry, index) => {
                         const barWidth = 100 / chartData.length;
                         const x = index * barWidth;
                         const yRange = maxPrice * 1.002 - minPrice * 0.998;
                         const toY = (price: number) => ((maxPrice * 1.002 - price) / yRange) * 100;
                         return (
-                          <g key={index} className="transition-all duration-300">
+                          <g key={index}>
                             {/* Wick */}
                             <line 
                               x1={`${x + barWidth / 2}%`} 
@@ -435,19 +451,15 @@ export function CamlyMarketPrice() {
                               x2={`${x + barWidth / 2}%`} 
                               y2={`${toY(entry.low)}%`} 
                               stroke={entry.isUp ? '#22c55e' : '#ef4444'} 
-                              strokeWidth={1.5} 
-                              opacity={0.9} 
+                              strokeWidth={1} 
                             />
                             {/* Candle Body */}
                             <rect 
-                              x={`${x + barWidth * 0.15}%`} 
+                              x={`${x + barWidth * 0.2}%`} 
                               y={`${toY(Math.max(entry.open, entry.close))}%`} 
-                              width={`${barWidth * 0.7}%`} 
-                              height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.4)}%`} 
-                              fill={entry.isUp ? 'url(#candleGreen)' : 'url(#candleRed)'} 
-                              rx={1}
-                              stroke={entry.isUp ? '#16a34a' : '#dc2626'}
-                              strokeWidth={0.5}
+                              width={`${barWidth * 0.6}%`} 
+                              height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.3)}%`} 
+                              fill={entry.isUp ? '#22c55e' : '#ef4444'} 
                             />
                           </g>
                         );
@@ -455,34 +467,40 @@ export function CamlyMarketPrice() {
                     </ComposedChart>
                   )}
                 </ResponsiveContainer>
-              </div>
-              
-              {/* Min/Max Legend */}
-              <div className="flex items-center justify-center gap-4 mt-1 text-[9px]">
-                <div className="flex items-center gap-1">
-                  <div className="w-4 h-0.5 bg-emerald-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #22c55e 0, #22c55e 4px, transparent 4px, transparent 8px)' }} />
-                  <span className="text-emerald-500 font-bold">Max: ${maxPrice.toFixed(8)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-4 h-0.5 bg-rose-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #ef4444 0, #ef4444 4px, transparent 4px, transparent 8px)' }} />
-                  <span className="text-rose-500 font-bold">Min: ${minPrice.toFixed(8)}</span>
-                </div>
-              </div>
-              
-              {/* Current Price Badge - Below Chart */}
-              <div className="flex items-center justify-end mt-1">
+                
+                {/* Current Price Badge - Floating on right */}
                 <div 
                   className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-black shadow-lg",
+                    "absolute right-0 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[9px] font-bold rounded-l-md shadow-lg z-10",
                     isPositiveChange 
                       ? "bg-emerald-500 text-white" 
                       : "bg-rose-500 text-white"
                   )}
                 >
-                  Giá hiện tại: <span className="ml-1">${currentPrice.toFixed(8)}</span>
+                  {currentPrice.toFixed(8)}
                 </div>
               </div>
-
+              
+              {/* Volume Bars - Bitget Style */}
+              <div className="h-10 mt-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={chartData} margin={{ top: 0, right: 60, bottom: 0, left: 5 }}>
+                    <XAxis dataKey="timeLabel" hide />
+                    <YAxis domain={[0, 'dataMax']} hide />
+                    <Bar dataKey="volume" animationDuration={400}>
+                      {chartData.map((entry, index) => (
+                        <Cell 
+                          key={index} 
+                          fill={entry.isUp ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)'} 
+                        />
+                      ))}
+                    </Bar>
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Vol Label */}
+              <div className="text-[9px] text-muted-foreground mt-0.5">Vol</div>
             </div>
 
             {/* Footer Status */}
