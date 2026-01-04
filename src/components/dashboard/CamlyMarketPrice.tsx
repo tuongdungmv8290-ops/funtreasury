@@ -810,23 +810,23 @@ export function CamlyMarketPrice() {
             {/* Fullscreen Chart Area */}
             <div className="flex-1 p-4 overflow-hidden">
               <div className="h-full bg-gradient-to-br from-background/80 to-background/60 rounded-xl border border-treasury-gold/30 p-4 relative flex flex-col">
-                {/* Min/Max Legend */}
-                <div className="absolute top-2 right-4 flex items-center gap-4 text-xs z-10">
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/15 rounded-lg border border-emerald-500/30">
-                    <div className="w-5 h-0.5" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #22c55e 0, #22c55e 4px, transparent 4px, transparent 8px)' }} />
+                {/* Min/Max Legend - Moved to TOP LEFT */}
+                <div className="flex items-center gap-3 text-xs mb-2">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-500/15 rounded-lg border border-emerald-500/30 shadow-sm">
+                    <div className="w-6 h-0.5" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #22c55e 0, #22c55e 4px, transparent 4px, transparent 8px)' }} />
                     <span className="text-emerald-500 font-bold">Max: ${maxPrice.toFixed(8)}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-500/15 rounded-lg border border-rose-500/30">
-                    <div className="w-5 h-0.5" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #ef4444 0, #ef4444 4px, transparent 4px, transparent 8px)' }} />
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-rose-500/15 rounded-lg border border-rose-500/30 shadow-sm">
+                    <div className="w-6 h-0.5" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #ef4444 0, #ef4444 4px, transparent 4px, transparent 8px)' }} />
                     <span className="text-rose-500 font-bold">Min: ${minPrice.toFixed(8)}</span>
                   </div>
                 </div>
                 
-                {/* Main Chart */}
+                {/* Main Chart - Increased right margin for Y-axis */}
                 <div className={cn("flex-1 transition-all duration-300 ease-out", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
                   <ResponsiveContainer width="100%" height="100%">
                     {chartType === 'line' ? (
-                      <ComposedChart data={chartData} margin={{ top: 30, right: 70, bottom: 20, left: 20 }}>
+                      <ComposedChart data={chartData} margin={{ top: 10, right: 90, bottom: 20, left: 10 }}>
                         <defs>
                           <linearGradient id="camlyPriceGradFull" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.5} />
@@ -837,13 +837,13 @@ export function CamlyMarketPrice() {
                         </defs>
                         <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
                         <YAxis 
-                          domain={[minPrice * 0.998, maxPrice * 1.002]} 
+                          domain={[minPrice * 0.997, maxPrice * 1.003]} 
                           orientation="right"
                           tick={{ fontSize: 10, fill: '#888' }}
                           tickFormatter={(value) => value.toFixed(8)}
                           tickLine={false}
                           axisLine={false}
-                          width={65}
+                          width={80}
                           tickCount={7}
                         />
                         <Tooltip content={<CustomCandleTooltip />} />
@@ -872,20 +872,20 @@ export function CamlyMarketPrice() {
                         <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={3} fill="url(#camlyPriceGradFull)" dot={false} activeDot={{ r: 8, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={800} animationEasing="ease-out" style={{ filter: 'url(#lineGlowFull)' }} />
                       </ComposedChart>
                     ) : (
-                      <ComposedChart data={chartData} margin={{ top: 30, right: 70, bottom: 20, left: 20 }}>
+                      <ComposedChart data={chartData} margin={{ top: 10, right: 90, bottom: 20, left: 10 }}>
                         <defs>
                           <linearGradient id="candleGreenFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                           <linearGradient id="candleRedFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
                         </defs>
                         <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
                         <YAxis 
-                          domain={[minPrice * 0.997, maxPrice * 1.003]} 
+                          domain={[minPrice * 0.996, maxPrice * 1.004]} 
                           orientation="right"
                           tick={{ fontSize: 10, fill: '#888' }}
                           tickFormatter={(value) => value.toFixed(8)}
                           tickLine={false}
                           axisLine={false}
-                          width={65}
+                          width={80}
                           tickCount={7}
                         />
                         <Tooltip content={<CustomCandleTooltip />} />
@@ -915,12 +915,12 @@ export function CamlyMarketPrice() {
                         {chartData.map((entry, index) => {
                           const barWidth = 100 / chartData.length;
                           const x = index * barWidth;
-                          const yRange = maxPrice * 1.003 - minPrice * 0.997;
-                          const toY = (price: number) => ((maxPrice * 1.003 - price) / yRange) * 100;
+                          const yRange = maxPrice * 1.004 - minPrice * 0.996;
+                          const toY = (price: number) => ((maxPrice * 1.004 - price) / yRange) * 100;
                           return (
                             <g key={index}>
                               <line x1={`${x + barWidth / 2}%`} y1={`${toY(entry.high)}%`} x2={`${x + barWidth / 2}%`} y2={`${toY(entry.low)}%`} stroke={entry.isUp ? '#22c55e' : '#ef4444'} strokeWidth={2} opacity={0.95} />
-                              <rect x={`${x + barWidth * 0.15}%`} y={`${toY(Math.max(entry.open, entry.close))}%`} width={`${barWidth * 0.7}%`} height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.3)}%`} fill={entry.isUp ? 'url(#candleGreenFull)' : 'url(#candleRedFull)'} rx={2} stroke={entry.isUp ? '#16a34a' : '#dc2626'} strokeWidth={0.8} />
+                              <rect x={`${x + barWidth * 0.2}%`} y={`${toY(Math.max(entry.open, entry.close))}%`} width={`${barWidth * 0.6}%`} height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.4)}%`} fill={entry.isUp ? 'url(#candleGreenFull)' : 'url(#candleRedFull)'} rx={2} stroke={entry.isUp ? '#16a34a' : '#dc2626'} strokeWidth={0.8} />
                             </g>
                           );
                         })}
@@ -936,7 +936,7 @@ export function CamlyMarketPrice() {
                       <span className="font-bold text-treasury-gold">Volume</span>
                     </div>
                     <ResponsiveContainer width="100%" height="80%">
-                      <ComposedChart data={chartData} margin={{ top: 0, right: 70, bottom: 0, left: 20 }}>
+                      <ComposedChart data={chartData} margin={{ top: 0, right: 90, bottom: 0, left: 10 }}>
                         <XAxis dataKey="timeLabel" hide />
                         <YAxis 
                           domain={[0, 'dataMax']} 
@@ -945,7 +945,7 @@ export function CamlyMarketPrice() {
                           tickFormatter={(v) => formatNumber(v, { compact: true })}
                           tickLine={false}
                           axisLine={false}
-                          width={55}
+                          width={70}
                           tickCount={3}
                         />
                         <Bar dataKey="volume" animationDuration={400}>
