@@ -7,6 +7,7 @@ import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { PortfolioHistoryChart } from '@/components/dashboard/PortfolioHistoryChart';
 import { BulkTransferSection } from '@/components/dashboard/BulkTransferSection';
 import { CamlyMarketPrice } from '@/components/dashboard/CamlyMarketPrice';
+import { CamlyTradesCard } from '@/components/dashboard/CamlyTradesCard';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
@@ -204,9 +205,10 @@ const Index = () => {
           </div>
         </div>
 
-        {/* CAMLY Market Price Section - TOP */}
-        <div className="mb-6 md:mb-8">
+        {/* CAMLY Market Price + Trades Section - TOP */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 md:mb-8">
           <CamlyMarketPrice />
+          <CamlyTradesCard />
         </div>
 
         {/* Balance Hero Card */}
