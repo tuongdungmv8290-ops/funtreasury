@@ -78,7 +78,10 @@ export function RecentTransactions() {
                     tx.direction === 'IN' ? "inflow-text" : "outflow-text"
                   )}
                 >
-                  {tx.direction === 'IN' ? '+' : '-'}{tx.amount.toLocaleString()} {tx.token_symbol}
+                  {tx.direction === 'IN' ? '+' : '-'}
+                  {tx.amount < 0.01 && tx.amount > 0 
+                    ? tx.amount.toFixed(8).replace(/\.?0+$/, '') 
+                    : tx.amount.toLocaleString(undefined, { maximumFractionDigits: 6 })} {tx.token_symbol}
                 </p>
                 <p className="text-xs text-muted-foreground font-medium">{formatCurrency(tx.usd_value)}</p>
               </div>
