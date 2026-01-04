@@ -166,13 +166,13 @@ export function CamlyTradesCard() {
                 
                 <div className="pt-2 pb-1">
                   <a
-                    href={`${BSCSCAN_TOKEN_URL}#balances`}
+                    href={DEXSCREENER_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-1 text-[10px] text-treasury-gold hover:text-amber-500 transition-colors font-medium"
                   >
                     <ExternalLink className="w-3 h-3" />
-                    View all on BSCScan
+                    View all on DexScreener
                   </a>
                 </div>
               </ScrollArea>
