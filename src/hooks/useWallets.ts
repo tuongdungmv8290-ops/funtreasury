@@ -20,12 +20,12 @@ export interface Wallet {
 // Core tokens to display (filter out spam/airdrops)
 const CORE_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB', 'USDC'];
 
-// Realtime prices - CAMLY at $0.000032
+// Realtime prices - CAMLY at $0.000022
 const REALTIME_PRICES: Record<string, number> = {
-  'CAMLY': 0.000032,
-  'BTC': 91374,
-  'BTCB': 91374,
-  'BNB': 885,
+  'CAMLY': 0.000022,
+  'BTC': 97000,
+  'BTCB': 97000,
+  'BNB': 710,
   'USDT': 1,
   'USDC': 1,
 };
