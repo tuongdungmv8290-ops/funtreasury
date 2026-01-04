@@ -9,46 +9,76 @@ import { useState, useMemo } from 'react';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine } from 'recharts';
 import camlyLogo from '@/assets/camly-coin-logo.png';
 
-// Generate realistic step-line price data like CoinGecko
-const generateRealisticPriceData = (days: number, basePrice: number, change24h: number) => {
+// Generate realistic crypto candlestick-style price data like Bitget/CoinGecko
+const generateRealisticCryptoPriceData = (days: number, basePrice: number, change24h: number) => {
   const data = [];
-  const hoursPerDay = 24;
-  const totalHours = days * hoursPerDay;
-  const pointsPerHour = 2; // 2 data points per hour for smoother chart
-  const totalPoints = totalHours * pointsPerHour;
+  const totalPoints = days <= 1 ? 48 : days <= 7 ? 168 : 360; // More granular data
   
-  let currentPrice = basePrice * (1 - (change24h / 100) * 0.5); // Start price
-  const targetPrice = basePrice;
-  const volatility = 0.002; // 0.2% volatility per step
+  // Start from a lower/higher price based on 24h change
+  const startPrice = basePrice * (1 - (change24h / 100));
+  let currentPrice = startPrice;
+  
+  // Create realistic crypto volatility with momentum
+  let momentum = 0;
+  const baseVolatility = 0.004; // 0.4% base volatility
+  
+  // Generate random but smooth price movement
+  const seed = basePrice * 10000000; // Use price as seed for consistency
+  let noiseValue = seed;
   
   for (let i = 0; i <= totalPoints; i++) {
     const progress = i / totalPoints;
-    const trendBias = (change24h > 0 ? 0.001 : -0.001) * (1 - progress);
     
-    // Random walk with mean reversion
-    const randomMove = (Math.random() - 0.5) * 2 * volatility;
-    const meanReversion = (targetPrice - currentPrice) / targetPrice * 0.1;
+    // Pseudo-random noise with smooth transitions
+    noiseValue = (noiseValue * 9301 + 49297) % 233280;
+    const random1 = noiseValue / 233280;
+    noiseValue = (noiseValue * 9301 + 49297) % 233280;
+    const random2 = noiseValue / 233280;
     
-    currentPrice = currentPrice * (1 + randomMove + trendBias + meanReversion);
-    currentPrice = Math.max(currentPrice, basePrice * 0.85);
-    currentPrice = Math.min(currentPrice, basePrice * 1.15);
+    // Combine randoms for smoother distribution
+    const smoothRandom = (random1 + random2) / 2 - 0.5;
     
-    // Calculate time label
-    const hourOffset = Math.floor(i / pointsPerHour);
+    // Add momentum for realistic trends
+    momentum = momentum * 0.85 + smoothRandom * 0.15;
+    
+    // Trend towards target price with volatility
+    const trendPull = (basePrice - currentPrice) * 0.02;
+    const volatility = baseVolatility * (1 + Math.abs(momentum) * 2);
+    const priceMove = (momentum * volatility) + trendPull;
+    
+    currentPrice = currentPrice * (1 + priceMove);
+    
+    // Clamp to realistic range
+    const minBound = basePrice * 0.88;
+    const maxBound = basePrice * 1.12;
+    currentPrice = Math.max(minBound, Math.min(maxBound, currentPrice));
+    
+    // Time calculation
+    const hourOffset = Math.floor((i / totalPoints) * days * 24);
     const date = new Date();
-    date.setHours(date.getHours() - (totalHours - hourOffset));
+    date.setHours(date.getHours() - (days * 24 - hourOffset));
+    
+    // Volume with spikes
+    const volumeSpike = random1 > 0.9 ? 3 : 1;
+    const baseVolume = 500 + random2 * 1500;
     
     data.push({ 
       time: i,
       timeLabel: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       dateLabel: date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' }),
       price: currentPrice,
-      volume: Math.random() * 1000 + 500
+      volume: baseVolume * volumeSpike
     });
   }
   
-  // Ensure last point is current price
-  data[data.length - 1].price = basePrice;
+  // Smooth transition to exact current price in last few points
+  const smoothPoints = 5;
+  for (let i = 0; i < smoothPoints; i++) {
+    const idx = data.length - smoothPoints + i;
+    const factor = (i + 1) / smoothPoints;
+    data[idx].price = data[idx].price * (1 - factor) + basePrice * factor;
+  }
+  
   return data;
 };
 
@@ -67,7 +97,7 @@ export function CamlyMarketPrice() {
   
   const chartDays = chartRange === '24H' ? 1 : chartRange === '7D' ? 7 : 30;
   const sparklineData = useMemo(() => 
-    generateRealisticPriceData(chartDays, priceData?.price_usd || 0.00002272, priceData?.change_24h || 0),
+    generateRealisticCryptoPriceData(chartDays, priceData?.price_usd || 0.00002272, priceData?.change_24h || 0),
     [chartDays, priceData?.price_usd, priceData?.change_24h]
   );
 
@@ -182,64 +212,90 @@ export function CamlyMarketPrice() {
                 </div>
               </div>
               
-              {/* Chart Area */}
-              <div className="h-28 -mx-1">
+              {/* Chart Area - Smooth crypto-style line */}
+              <div className="h-32 -mx-1">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={sparklineData} margin={{ top: 5, right: 5, bottom: 0, left: 5 }}>
+                  <AreaChart data={sparklineData} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
                     <defs>
-                      <linearGradient id="camlyPriceGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.35} />
-                        <stop offset="50%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.15} />
-                        <stop offset="100%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.02} />
+                      {/* Beautiful gradient matching Bitget style - gold/green to transparent */}
+                      <linearGradient id="camlyPriceGradientSmooth" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.5} />
+                        <stop offset="40%" stopColor={isPositiveChange ? '#22c55e' : '#ef4444'} stopOpacity={0.25} />
+                        <stop offset="70%" stopColor="#C9A227" stopOpacity={0.12} />
+                        <stop offset="100%" stopColor="#C9A227" stopOpacity={0.03} />
                       </linearGradient>
+                      {/* Glow filter for line */}
+                      <filter id="lineGlow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
                     </defs>
+                    <YAxis 
+                      domain={['dataMin', 'dataMax']} 
+                      hide 
+                      padding={{ top: 10, bottom: 10 }}
+                    />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '10px',
+                        border: '2px solid #C9A227',
+                        borderRadius: '12px',
                         fontSize: '11px',
-                        padding: '8px 12px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                        padding: '10px 14px',
+                        boxShadow: '0 8px 24px rgba(201, 162, 39, 0.25)'
                       }}
-                      formatter={(value: number) => [`Price: $${value.toFixed(8)}`, '']}
+                      formatter={(value: number) => [`$${value.toFixed(8)}`, 'Giá']}
                       labelFormatter={(_, payload) => {
                         if (payload && payload[0]) {
                           const data = payload[0].payload;
-                          return `${data.dateLabel}, ${data.timeLabel}`;
+                          return `📅 ${data.dateLabel}, ${data.timeLabel}`;
                         }
                         return '';
                       }}
                     />
                     <Area
-                      type="stepAfter"
+                      type="monotone"
                       dataKey="price"
-                      stroke={isPositiveChange ? '#10b981' : '#f43f5e'}
-                      strokeWidth={1.5}
-                      fill="url(#camlyPriceGradient)"
+                      stroke={isPositiveChange ? '#22c55e' : '#ef4444'}
+                      strokeWidth={2.5}
+                      fill="url(#camlyPriceGradientSmooth)"
                       dot={false}
                       activeDot={{ 
-                        r: 4, 
-                        fill: isPositiveChange ? '#10b981' : '#f43f5e',
+                        r: 5, 
+                        fill: '#C9A227',
                         stroke: '#fff',
-                        strokeWidth: 2
+                        strokeWidth: 2,
+                        filter: 'url(#lineGlow)'
                       }}
-                      animationDuration={800}
+                      animationDuration={1000}
                       animationEasing="ease-out"
+                      style={{ filter: 'url(#lineGlow)' }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
 
-              {/* Volume Bars (simplified) */}
-              <div className="h-6 mt-1 flex items-end gap-px opacity-40">
-                {sparklineData.filter((_, i) => i % 8 === 0).map((d, i) => (
-                  <div 
-                    key={i} 
-                    className="flex-1 bg-muted-foreground/40 rounded-t-sm transition-all hover:bg-treasury-gold/60"
-                    style={{ height: `${(d.volume / 1500) * 100}%` }}
-                  />
-                ))}
+              {/* Volume Bars - Colorful like Bitget */}
+              <div className="h-8 mt-1 flex items-end gap-0.5">
+                {sparklineData.filter((_, i) => i % 6 === 0).map((d, i, arr) => {
+                  const prevPrice = i > 0 ? arr[i - 1].price : d.price;
+                  const isUp = d.price >= prevPrice;
+                  const maxVolume = Math.max(...arr.map(x => x.volume));
+                  const heightPercent = (d.volume / maxVolume) * 100;
+                  return (
+                    <div 
+                      key={i} 
+                      className={cn(
+                        "flex-1 rounded-t-sm transition-all duration-200",
+                        isUp ? "bg-emerald-500/60 hover:bg-emerald-500" : "bg-rose-500/60 hover:bg-rose-500"
+                      )}
+                      style={{ height: `${Math.max(heightPercent, 8)}%` }}
+                    />
+                  );
+                })}
               </div>
             </div>
 
