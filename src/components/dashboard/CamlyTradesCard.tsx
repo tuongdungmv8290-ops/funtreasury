@@ -2,10 +2,23 @@ import { useCamlyTrades } from '@/hooks/useCamlyTrades';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Activity, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Users, Activity, TrendingUp, TrendingDown, ExternalLink, Database, Radio } from 'lucide-react';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
 import { cn } from '@/lib/utils';
 import camlyLogo from '@/assets/camly-coin-logo.png';
+
+const DEXSCREENER_URL = 'https://dexscreener.com/bsc/0x0910320181889fefde0bb1ca63962b0a8882e413';
+const BSCSCAN_TOKEN_URL = 'https://bscscan.com/token/0x31f8d38df6514b6cc3c360ace3a2efa7496214f6';
 
 export function CamlyTradesCard() {
   const { data, isLoading } = useCamlyTrades();
@@ -15,149 +28,227 @@ export function CamlyTradesCard() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const formatTimeAgo = (timestamp: string) => {
-    const diff = Date.now() - new Date(timestamp).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('vi-VN', { 
+      day: '2-digit', 
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <Database className="w-10 h-10 text-treasury-gold/40 mb-2" />
+      <p className="text-sm text-muted-foreground">Chưa có data mới</p>
+      <p className="text-xs text-muted-foreground/70">Volume thấp – Vui lòng thử lại sau</p>
+    </div>
+  );
+
   return (
-    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50/50 via-background to-orange-50/50 dark:from-amber-950/20 dark:via-background dark:to-orange-950/20 shadow-lg">
-      <div className="absolute inset-0 rounded-xl border border-treasury-gold/20" />
+    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50/80 via-background to-orange-50/50 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20 shadow-lg">
+      <div className="absolute inset-0 rounded-xl border-2 border-treasury-gold/30" />
       
       <div className="relative p-4">
         {/* Header */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-6 h-6 rounded-full overflow-hidden ring-1 ring-treasury-gold/30">
-            <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-treasury-gold/40 shadow-lg">
+              <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-treasury-gold">CAMLY Analytics</h3>
+              <div className="flex items-center gap-1">
+                <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
+                <span className="text-[9px] text-emerald-500 font-medium">Live</span>
+              </div>
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-treasury-gold">CAMLY Analytics</h3>
+          
+          <Button
+            size="sm"
+            className="h-7 px-3 bg-gradient-to-r from-treasury-gold to-amber-500 hover:from-amber-500 hover:to-treasury-gold text-white text-xs font-semibold shadow-md"
+            onClick={() => window.open(DEXSCREENER_URL, '_blank')}
+          >
+            <ExternalLink className="w-3 h-3 mr-1" />
+            View All
+          </Button>
         </div>
 
-        <Tabs defaultValue="trades" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-8 bg-muted/50">
-            <TabsTrigger value="trades" className="text-xs gap-1 data-[state=active]:bg-treasury-gold data-[state=active]:text-white">
-              <Activity className="w-3 h-3" />
-              Recent Trades
-            </TabsTrigger>
-            <TabsTrigger value="holders" className="text-xs gap-1 data-[state=active]:bg-treasury-gold data-[state=active]:text-white">
+        <Tabs defaultValue="holders" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-8 bg-treasury-gold/10 border border-treasury-gold/20">
+            <TabsTrigger 
+              value="holders" 
+              className="text-xs gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-treasury-gold data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
               <Users className="w-3 h-3" />
               Top Holders
             </TabsTrigger>
+            <TabsTrigger 
+              value="trades" 
+              className="text-xs gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-treasury-gold data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
+              <Activity className="w-3 h-3" />
+              Recent Trades
+            </TabsTrigger>
           </TabsList>
 
-          {/* Recent Trades Tab */}
-          <TabsContent value="trades" className="mt-3 space-y-2">
+          {/* Top Holders Tab */}
+          <TabsContent value="holders" className="mt-3">
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full bg-treasury-gold/5" />
-              ))
-            ) : (
-              <>
-                {data?.recentTrades.slice(0, 5).map((trade, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-2 rounded-lg bg-background/60 border border-border/50 hover:border-treasury-gold/30 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className={cn(
-                        "w-6 h-6 rounded-full flex items-center justify-center",
-                        trade.type === 'buy' 
-                          ? "bg-emerald-500/15 text-emerald-500" 
-                          : "bg-red-500/15 text-red-500"
-                      )}>
-                        {trade.type === 'buy' ? (
-                          <TrendingUp className="w-3 h-3" />
-                        ) : (
-                          <TrendingDown className="w-3 h-3" />
-                        )}
-                      </div>
-                      <div>
-                        <p className={cn(
-                          "text-xs font-semibold",
-                          trade.type === 'buy' ? "text-emerald-500" : "text-red-500"
-                        )}>
-                          {trade.type.toUpperCase()}
-                        </p>
-                        <p className="text-[9px] text-muted-foreground">
-                          {formatTimeAgo(trade.timestamp)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-semibold">
-                        {formatNumber(trade.amount, { compact: true })} CAMLY
-                      </p>
-                      <p className="text-[9px] text-muted-foreground">
-                        {formatUSD(trade.valueUsd)}
-                      </p>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full bg-treasury-gold/10" />
                 ))}
+              </div>
+            ) : !data?.topHolders || data.topHolders.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <ScrollArea className="h-[220px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-treasury-gold/20 hover:bg-transparent">
+                      <TableHead className="text-[10px] text-treasury-gold font-bold w-10">Rank</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold">Address</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">Quantity</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right w-16">%</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.topHolders.slice(0, 10).map((holder, i) => (
+                      <TableRow 
+                        key={i} 
+                        className="border-treasury-gold/10 hover:bg-treasury-gold/5 transition-colors"
+                      >
+                        <TableCell className="py-2">
+                          <div className={cn(
+                            "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                            i === 0 && "bg-yellow-500 text-white",
+                            i === 1 && "bg-gray-400 text-white",
+                            i === 2 && "bg-amber-600 text-white",
+                            i > 2 && "bg-treasury-gold/20 text-treasury-gold"
+                          )}>
+                            {i + 1}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <a
+                            href={`https://bscscan.com/address/${holder.address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] font-mono text-foreground hover:text-treasury-gold transition-colors flex items-center gap-1"
+                          >
+                            {formatAddress(holder.address)}
+                            <ExternalLink className="w-2.5 h-2.5 opacity-50" />
+                          </a>
+                        </TableCell>
+                        <TableCell className="py-2 text-right">
+                          <span className="text-[11px] font-medium">
+                            {formatNumber(holder.balance, { compact: true })}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-2 text-right">
+                          <span className="text-[11px] font-bold text-treasury-gold">
+                            {holder.percentage.toFixed(2)}%
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
                 
-                <a
-                  href={`https://dexscreener.com/bsc/0x31f8d38df6514b6cc3c360ace3a2efa7496214f6`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1 text-[10px] text-treasury-gold hover:underline pt-1"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  View all on DexScreener
-                </a>
-              </>
+                <div className="pt-2 pb-1">
+                  <a
+                    href={`${BSCSCAN_TOKEN_URL}#balances`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1 text-[10px] text-treasury-gold hover:text-amber-500 transition-colors font-medium"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    View all on BSCScan
+                  </a>
+                </div>
+              </ScrollArea>
             )}
           </TabsContent>
 
-          {/* Top Holders Tab */}
-          <TabsContent value="holders" className="mt-3 space-y-2">
+          {/* Recent Trades Tab */}
+          <TabsContent value="trades" className="mt-3">
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full bg-treasury-gold/5" />
-              ))
-            ) : (
-              <>
-                {data?.topHolders.slice(0, 5).map((holder, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-2 rounded-lg bg-background/60 border border-border/50 hover:border-treasury-gold/30 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-treasury-gold/10 flex items-center justify-center text-treasury-gold text-[10px] font-bold">
-                        #{i + 1}
-                      </div>
-                      <div>
-                        <p className="text-xs font-mono font-medium">
-                          {formatAddress(holder.address)}
-                        </p>
-                        <p className="text-[9px] text-muted-foreground">
-                          {formatNumber(holder.balance, { compact: true })} CAMLY
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-bold text-treasury-gold">
-                        {holder.percentage.toFixed(2)}%
-                      </p>
-                      <p className="text-[9px] text-muted-foreground">
-                        {formatUSD(holder.valueUsd)}
-                      </p>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full bg-treasury-gold/10" />
                 ))}
+              </div>
+            ) : !data?.recentTrades || data.recentTrades.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <ScrollArea className="h-[220px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-treasury-gold/20 hover:bg-transparent">
+                      <TableHead className="text-[10px] text-treasury-gold font-bold">Date</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold">Type</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">Amount</TableHead>
+                      <TableHead className="text-[10px] text-treasury-gold font-bold text-right">Value</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.recentTrades.slice(0, 10).map((trade, i) => (
+                      <TableRow 
+                        key={i} 
+                        className="border-treasury-gold/10 hover:bg-treasury-gold/5 transition-colors"
+                      >
+                        <TableCell className="py-2">
+                          <span className="text-[10px] text-muted-foreground">
+                            {formatDate(trade.timestamp)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <div className={cn(
+                            "flex items-center gap-1 px-1.5 py-0.5 rounded-full w-fit",
+                            trade.type === 'buy' 
+                              ? "bg-emerald-500/15 text-emerald-500" 
+                              : "bg-red-500/15 text-red-500"
+                          )}>
+                            {trade.type === 'buy' ? (
+                              <TrendingUp className="w-3 h-3" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3" />
+                            )}
+                            <span className="text-[10px] font-bold uppercase">
+                              {trade.type}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2 text-right">
+                          <span className="text-[11px] font-medium">
+                            {formatNumber(trade.amount, { compact: true })}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-2 text-right">
+                          <span className="text-[11px] font-semibold text-treasury-gold">
+                            {formatUSD(trade.valueUsd)}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
                 
-                <a
-                  href={`https://bscscan.com/token/0x31f8d38df6514b6cc3c360ace3a2efa7496214f6#balances`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1 text-[10px] text-treasury-gold hover:underline pt-1"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  View all on BSCScan
-                </a>
-              </>
+                <div className="pt-2 pb-1">
+                  <a
+                    href={DEXSCREENER_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1 text-[10px] text-treasury-gold hover:text-amber-500 transition-colors font-medium"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    View all on DexScreener
+                  </a>
+                </div>
+              </ScrollArea>
             )}
           </TabsContent>
         </Tabs>
