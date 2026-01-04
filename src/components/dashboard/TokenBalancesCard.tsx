@@ -1,4 +1,4 @@
-import { useTokenBalances, WalletBalances } from '@/hooks/useTokenBalances';
+import { useAggregatedTokenBalances } from '@/hooks/useTokenBalancesFromDB';
 import { Loader2, Coins, RefreshCw, AlertCircle, Settings, History, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
@@ -46,7 +46,7 @@ const DEFAULT_LOGO = 'https://cryptologos.cc/logos/cryptocom-chain-cro-logo.png'
 
 // Active shape renderer for pie chart hover effect
 const renderActiveShape = (props: any) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
   
   return (
     <g>
@@ -142,109 +142,44 @@ function TokenSkeleton() {
   );
 }
 
-// Fallback prices (used when API returns prices or as backup) - CAMLY ~$0.000022
-const FALLBACK_PRICES: Record<string, number> = {
-  'BTC': 97000,
-  'BTCB': 97000,
-  'BNB': 710,
-  'USDT': 1,
-  'CAMLY': 0.000022,
-};
-
 export function TokenBalancesCard() {
-  const { data: balances, isLoading, error, refetch } = useTokenBalances();
+  const { data: tokenList, prices, isLoading, error, refetch } = useAggregatedTokenBalances();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [historyToken, setHistoryToken] = useState<{ symbol: string; name: string; price: number } | null>(null);
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
-  const [tokenPrices, setTokenPrices] = useState<Record<string, number>>(FALLBACK_PRICES);
   const queryClient = useQueryClient();
-
-  // Extract prices from balance response when available
-  useEffect(() => {
-    // @ts-ignore - prices may be returned from edge function
-    if (balances && (balances as any).prices) {
-      // @ts-ignore
-      setTokenPrices((balances as any).prices);
-    }
-  }, [balances]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
+      // Also trigger edge function to refresh balances from blockchain
+      await supabase.functions.invoke('get-token-balances');
       await refetch();
       toast.success('Đã cập nhật số dư token!');
     } catch (e) {
-      // Error handled below
+      console.error('Refresh error:', e);
     } finally {
       setIsRefreshing(false);
     }
   };
 
-  // Separate tokens by chain
-  const allTokens = new Map<string, { symbol: string; name: string; totalBalance: number; wallets: string[]; chain: string; displaySymbol: string }>();
-  
-  if (balances) {
-    for (const walletBalance of balances) {
-      const isBitcoinWallet = walletBalance.walletName.toLowerCase().includes('bitcoin');
-      
-      for (const token of walletBalance.tokens) {
-        const chain = isBitcoinWallet ? 'BTC' : 'BNB';
-        const uniqueKey = `${token.symbol}-${chain}`;
-        
-        const existing = allTokens.get(uniqueKey);
-        if (existing) {
-          existing.totalBalance += parseFloat(token.balance);
-          if (!existing.wallets.includes(walletBalance.walletName)) {
-            existing.wallets.push(walletBalance.walletName);
-          }
-        } else {
-          allTokens.set(uniqueKey, {
-            symbol: token.symbol,
-            displaySymbol: token.symbol === 'BTC' ? 'BTC' : token.symbol,
-            name: token.name,
-            totalBalance: parseFloat(token.balance),
-            wallets: [walletBalance.walletName],
-            chain
-          });
-        }
-      }
-    }
-  }
-
-  const ALLOWED_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB'];
-  const TOKEN_ORDER: Record<string, number> = { 'CAMLY': 0, 'BNB': 1, 'USDT': 2, 'BTC': 3, 'BTCB': 4 };
-  
-  const tokenList = Array.from(allTokens.values())
-    .filter(t => t.totalBalance > 0 && ALLOWED_TOKENS.includes(t.symbol))
-    .sort((a, b) => {
-      const aOrder = TOKEN_ORDER[a.symbol] ?? 100;
-      const bOrder = TOKEN_ORDER[b.symbol] ?? 100;
-      return aOrder - bOrder;
-    });
-
-  // Calculate USD values using dynamic prices
-  const tokenListWithUsd = useMemo(() => tokenList.map(token => ({
-    ...token,
-    usdValue: token.totalBalance * (tokenPrices[token.symbol] || 0),
-    price: tokenPrices[token.symbol] || 0
-  })), [tokenList, tokenPrices]);
-
+  // Calculate total USD value
   const totalUsdValue = useMemo(() => 
-    tokenListWithUsd.reduce((sum, token) => sum + token.usdValue, 0),
-    [tokenListWithUsd]
+    (tokenList || []).reduce((sum, token) => sum + token.totalUsdValue, 0),
+    [tokenList]
   );
 
   // Pie chart data
   const pieData = useMemo(() => 
-    tokenListWithUsd
-      .filter(t => t.usdValue > 0)
+    (tokenList || [])
+      .filter(t => t.totalUsdValue > 0)
       .map(token => ({
         name: token.symbol,
-        value: token.usdValue,
+        value: token.totalUsdValue,
         color: TOKEN_COLORS[token.symbol] || '#8884d8',
-        percentage: totalUsdValue > 0 ? (token.usdValue / totalUsdValue) * 100 : 0
+        percentage: totalUsdValue > 0 ? (token.totalUsdValue / totalUsdValue) * 100 : 0
       })),
-    [tokenListWithUsd, totalUsdValue]
+    [tokenList, totalUsdValue]
   );
 
   // Fetch 24h snapshot from database
@@ -272,8 +207,8 @@ export function TokenBalancesCard() {
   // Mutation to save new snapshot
   const saveSnapshot = useMutation({
     mutationFn: async (value: number) => {
-      const tokenBreakdown = tokenListWithUsd.reduce((acc, t) => {
-        acc[t.symbol] = { balance: t.totalBalance, usdValue: t.usdValue };
+      const tokenBreakdown = (tokenList || []).reduce((acc, t) => {
+        acc[t.symbol] = { balance: t.totalBalance, usdValue: t.totalUsdValue };
         return acc;
       }, {} as Record<string, { balance: number; usdValue: number }>);
 
@@ -328,8 +263,6 @@ export function TokenBalancesCard() {
     return displayNames[symbol] || name;
   };
 
-  const isApiKeyMissing = error?.message?.includes('API Key') || error?.message?.includes('Moralis');
-
   if (isLoading || isRefreshing) {
     return (
       <div className="treasury-card">
@@ -372,22 +305,14 @@ export function TokenBalancesCard() {
         <div className="flex flex-col gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
           <div className="flex items-center gap-2 text-primary">
             <AlertCircle className="w-5 h-5" />
-            <span className="text-sm font-medium">
-              {isApiKeyMissing ? 'Cần cấu hình Moralis API Key' : 'Không thể tải số dư'}
-            </span>
+            <span className="text-sm font-medium">Không thể tải số dư</span>
           </div>
-          {isApiKeyMissing && (
-            <Link to="/settings">
-              <Button variant="outline" size="sm" className="gap-2 border-primary/50 text-primary hover:bg-primary/10">
-                <Settings className="w-4 h-4" />
-                Đi tới Settings
-              </Button>
-            </Link>
-          )}
         </div>
       </div>
     );
   }
+
+  const walletCount = new Set((tokenList || []).flatMap(t => t.wallets)).size;
 
   return (
     <div className="treasury-card">
@@ -398,7 +323,7 @@ export function TokenBalancesCard() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground">Token Balances</h3>
-            <p className="text-xs text-muted-foreground">Realtime từ CoinGecko</p>
+            <p className="text-xs text-muted-foreground">Realtime prices • CAMLY ${prices?.CAMLY?.toFixed(6) || '0.000032'}</p>
           </div>
         </div>
         <Button
@@ -412,14 +337,14 @@ export function TokenBalancesCard() {
         </Button>
       </div>
 
-      {tokenList.length === 0 ? (
+      {(!tokenList || tokenList.length === 0) ? (
         <div className="text-center py-6 text-muted-foreground">
           <p>Chưa có token nào được phát hiện</p>
           <p className="text-xs mt-1">Nhấn Sync để cập nhật</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {tokenListWithUsd.map((token, index) => (
+          {tokenList.map((token, index) => (
             <div
               key={`${token.symbol}-${token.chain}`}
               className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border/50 hover:border-primary/30 transition-all duration-200 group animate-fade-in"
@@ -440,7 +365,7 @@ export function TokenBalancesCard() {
                   onClick={() => setHistoryToken({ 
                     symbol: token.symbol, 
                     name: getTokenDisplayName(token.symbol, token.name, token.chain),
-                    price: token.price
+                    price: prices?.[token.symbol] || 0
                   })}
                   className="opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary hover:bg-primary/10"
                   title="Xem lịch sử giao dịch"
@@ -452,7 +377,7 @@ export function TokenBalancesCard() {
                     {formatTokenAmount(token.totalBalance, token.symbol)}
                   </p>
                   <p className="text-xs font-mono text-green-500">
-                    {formatUSD(token.usdValue)}
+                    {formatUSD(token.totalUsdValue)}
                   </p>
                 </div>
               </div>
@@ -535,12 +460,12 @@ export function TokenBalancesCard() {
         </div>
       )}
 
-      {balances && balances.length > 0 && (
+      {tokenList && tokenList.length > 0 && (
         <div className="mt-4 pt-4 border-t border-border/50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">
-                Tổng giá trị ({balances.length} ví)
+                Tổng giá trị ({walletCount} ví)
               </p>
               {change24h && (
                 <div className={`flex items-center gap-1 text-xs ${change24h.value >= 0 ? 'text-green-500' : 'text-red-500'}`}>
