@@ -2,11 +2,12 @@ import { useCamlyPrice } from '@/hooks/useCamlyPrice';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ExternalLink, TrendingUp, TrendingDown, RefreshCw, Loader2, CandlestickChart, LineChart, Activity, Radio } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ExternalLink, TrendingUp, TrendingDown, RefreshCw, Loader2, CandlestickChart, LineChart, Activity, Radio, Maximize2, X } from 'lucide-react';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
 import { cn } from '@/lib/utils';
 import { useState, useMemo } from 'react';
-import { Area, ResponsiveContainer, Tooltip, YAxis, ComposedChart, Bar, Line, Cell, ReferenceLine } from 'recharts';
+import { Area, ResponsiveContainer, Tooltip, YAxis, XAxis, ComposedChart, Bar, Line, Cell, ReferenceLine } from 'recharts';
 import camlyLogo from '@/assets/camly-coin-logo.png';
 
 type ChartType = 'line' | 'candle';
@@ -186,6 +187,7 @@ export function CamlyMarketPrice() {
   const [chartRange, setChartRange] = useState<'24H' | '7D' | '30D'>('24H');
   const [chartType, setChartType] = useState<ChartType>('candle');
   const [indicator, setIndicator] = useState<IndicatorType>('none');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleRefresh = async () => {
     setIsManualRefresh(true);
@@ -286,10 +288,19 @@ export function CamlyMarketPrice() {
                     <button key={ind} onClick={() => setIndicator(ind)} className={cn("px-2 py-1 rounded-md text-[9px] font-bold transition-all duration-200 uppercase", indicator === ind ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")}>{ind === 'none' ? '—' : ind}</button>
                   ))}
                 </div>
-                <div className="flex bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
-                  {(['24H', '7D', '30D'] as const).map((range) => (
-                    <button key={range} onClick={() => setChartRange(range)} className={cn("px-2.5 py-1 rounded-md text-[10px] font-bold transition-all duration-200", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")}>{range}</button>
-                  ))}
+                <div className="flex items-center gap-1">
+                  <div className="flex bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
+                    {(['24H', '7D', '30D'] as const).map((range) => (
+                      <button key={range} onClick={() => setChartRange(range)} className={cn("px-2.5 py-1 rounded-md text-[10px] font-bold transition-all duration-200", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")}>{range}</button>
+                    ))}
+                  </div>
+                  <button 
+                    onClick={() => setIsFullscreen(true)} 
+                    className="p-1.5 rounded-md bg-treasury-gold/10 border border-treasury-gold/30 text-treasury-gold hover:bg-treasury-gold/20 transition-all duration-200"
+                    title="Fullscreen"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
               
@@ -392,6 +403,154 @@ export function CamlyMarketPrice() {
           </>
         )}
       </div>
+
+      {/* Fullscreen Chart Modal */}
+      <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 bg-gradient-to-br from-background via-background to-amber-950/10 border-2 border-treasury-gold/50">
+          <div className="relative h-full flex flex-col">
+            {/* Fullscreen Header */}
+            <DialogHeader className="p-4 border-b border-treasury-gold/30 bg-gradient-to-r from-amber-50/50 to-orange-50/30 dark:from-amber-950/30 dark:to-orange-950/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-treasury-gold/50 rounded-full blur-md animate-pulse" />
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-treasury-gold shadow-lg">
+                      <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <div>
+                    <DialogTitle className="text-xl font-black text-foreground flex items-center gap-2">
+                      CAMLY COIN
+                      <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/20 rounded-full text-[10px]">
+                        <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
+                        <span className="font-bold text-emerald-500">LIVE</span>
+                      </span>
+                    </DialogTitle>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-2xl font-black bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+                        ${priceData?.price_usd?.toFixed(8) || '0.00002247'}
+                      </span>
+                      <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full text-sm font-bold", isPositiveChange ? "bg-emerald-500/20 text-emerald-500" : "bg-rose-500/20 text-rose-500")}>
+                        {isPositiveChange ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                        {isPositiveChange ? '+' : ''}{formatNumber(priceData?.change_24h || 0, { minDecimals: 2, maxDecimals: 2 })}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Fullscreen Controls */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1 bg-treasury-gold/10 rounded-lg p-1 border border-treasury-gold/30">
+                    <button onClick={() => setChartType('line')} className={cn("p-2 rounded-md transition-all", chartType === 'line' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}><LineChart className="w-4 h-4" /></button>
+                    <button onClick={() => setChartType('candle')} className={cn("p-2 rounded-md transition-all", chartType === 'candle' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}><CandlestickChart className="w-4 h-4" /></button>
+                  </div>
+                  <div className="flex items-center gap-0.5 bg-treasury-gold/10 rounded-lg p-1 border border-treasury-gold/30">
+                    {(['none', 'boll', 'macd', 'rsi'] as const).map((ind) => (
+                      <button key={ind} onClick={() => setIndicator(ind)} className={cn("px-3 py-1.5 rounded-md text-xs font-bold uppercase", indicator === ind ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}>{ind === 'none' ? '—' : ind}</button>
+                    ))}
+                  </div>
+                  <div className="flex bg-treasury-gold/10 rounded-lg p-1 border border-treasury-gold/30">
+                    {(['24H', '7D', '30D'] as const).map((range) => (
+                      <button key={range} onClick={() => setChartRange(range)} className={cn("px-3 py-1.5 rounded-md text-xs font-bold", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}>{range}</button>
+                    ))}
+                  </div>
+                  <button onClick={() => setIsFullscreen(false)} className="p-2 rounded-full bg-muted hover:bg-muted/80 text-muted-foreground"><X className="w-5 h-5" /></button>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {/* Fullscreen Chart Area */}
+            <div className="flex-1 p-4">
+              <div className="h-full bg-gradient-to-br from-background/80 to-background/60 rounded-xl border border-treasury-gold/30 p-4">
+                <ResponsiveContainer width="100%" height={indicator !== 'none' && indicator !== 'boll' ? '75%' : '85%'}>
+                  {chartType === 'line' ? (
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                      <defs>
+                        <linearGradient id="camlyPriceGradFull" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.5} />
+                          <stop offset="50%" stopColor="#C9A227" stopOpacity={0.2} />
+                          <stop offset="100%" stopColor="#C9A227" stopOpacity={0.02} />
+                        </linearGradient>
+                        <filter id="lineGlowFull"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                      </defs>
+                      <XAxis dataKey="timeLabel" tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} interval="preserveStartEnd" />
+                      <YAxis domain={['dataMin', 'dataMax']} tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(v) => `$${v.toFixed(8)}`} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} width={90} padding={{ top: 20, bottom: 20 }} />
+                      <Tooltip content={<CustomCandleTooltip />} />
+                      {indicator === 'boll' && (<><Area type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} /><Area type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} fill="none" dot={false} /><Area type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} /></>)}
+                      <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={3} fill="url(#camlyPriceGradFull)" dot={false} activeDot={{ r: 8, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={1000} style={{ filter: 'url(#lineGlowFull)' }} />
+                    </ComposedChart>
+                  ) : (
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                      <defs>
+                        <linearGradient id="candleGreenFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
+                        <linearGradient id="candleRedFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
+                      </defs>
+                      <XAxis dataKey="timeLabel" tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} interval="preserveStartEnd" />
+                      <YAxis domain={[minPrice * 0.997, maxPrice * 1.003]} tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(v) => `$${v.toFixed(8)}`} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} width={90} />
+                      <Tooltip content={<CustomCandleTooltip />} />
+                      {indicator === 'boll' && (<><Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} /><Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} dot={false} /><Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} /></>)}
+                      <Bar dataKey="close" shape={() => null} />
+                      {chartData.map((entry, index) => {
+                        const barWidth = 100 / chartData.length;
+                        const x = index * barWidth;
+                        const yRange = maxPrice * 1.003 - minPrice * 0.997;
+                        const toY = (price: number) => ((maxPrice * 1.003 - price) / yRange) * 100;
+                        return (
+                          <g key={index}>
+                            <line x1={`${x + barWidth / 2}%`} y1={`${toY(entry.high)}%`} x2={`${x + barWidth / 2}%`} y2={`${toY(entry.low)}%`} stroke={entry.isUp ? '#22c55e' : '#ef4444'} strokeWidth={1.5} opacity={0.9} />
+                            <rect x={`${x + barWidth * 0.15}%`} y={`${toY(Math.max(entry.open, entry.close))}%`} width={`${barWidth * 0.7}%`} height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.2)}%`} fill={entry.isUp ? 'url(#candleGreenFull)' : 'url(#candleRedFull)'} rx={2} />
+                          </g>
+                        );
+                      })}
+                    </ComposedChart>
+                  )}
+                </ResponsiveContainer>
+
+                {/* Fullscreen Indicator Panel */}
+                {indicator !== 'none' && indicator !== 'boll' && (
+                  <div className="h-[15%] border-t border-treasury-gold/30 pt-3 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Activity className="w-4 h-4 text-treasury-gold" />
+                      <span className="text-sm font-bold text-treasury-gold uppercase">{indicator}</span>
+                      {indicator === 'rsi' && <span className="text-xs text-muted-foreground">(70=Overbought, 30=Oversold)</span>}
+                      {indicator === 'macd' && <span className="text-xs text-muted-foreground">(Blue=MACD, Orange=Signal)</span>}
+                    </div>
+                    <ResponsiveContainer width="100%" height="70%">
+                      {indicator === 'rsi' ? (
+                        <ComposedChart data={chartData} margin={{ top: 5, right: 30, bottom: 5, left: 30 }}>
+                          <defs><linearGradient id="rsiGradFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} /><stop offset="100%" stopColor="#a855f7" stopOpacity={0.05} /></linearGradient></defs>
+                          <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
+                          <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="4 4" strokeWidth={1} label={{ value: '70', position: 'right', fontSize: 10, fill: '#ef4444' }} />
+                          <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="4 4" strokeWidth={1} label={{ value: '30', position: 'right', fontSize: 10, fill: '#22c55e' }} />
+                          <ReferenceLine y={50} stroke="#666" strokeDasharray="2 4" strokeWidth={0.5} />
+                          <Area type="monotone" dataKey="rsi" stroke="#a855f7" strokeWidth={2} fill="url(#rsiGradFull)" dot={false} />
+                        </ComposedChart>
+                      ) : (
+                        <ComposedChart data={chartData} margin={{ top: 5, right: 30, bottom: 5, left: 30 }}>
+                          <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
+                          <ReferenceLine y={0} stroke="#666" strokeWidth={1} />
+                          <Bar dataKey="macdHist">{chartData.map((entry, index) => (<Cell key={index} fill={entry.macdHist >= 0 ? '#22c55e' : '#ef4444'} opacity={0.7} />))}</Bar>
+                          <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="macdSignal" stroke="#f97316" strokeWidth={2} dot={false} />
+                        </ComposedChart>
+                      )}
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* Fullscreen Volume */}
+                <div className="h-12 mt-3 flex items-end gap-0.5 border-t border-treasury-gold/20 pt-2">
+                  {chartData.map((d, i, arr) => {
+                    const maxVolume = Math.max(...arr.map(x => x.volume));
+                    const heightPercent = (d.volume / maxVolume) * 100;
+                    return (<div key={i} className={cn("flex-1 rounded-t transition-all", d.isUp ? "bg-emerald-500/60 hover:bg-emerald-500" : "bg-rose-500/60 hover:bg-rose-500")} style={{ height: `${Math.max(heightPercent, 5)}%` }} />);
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
