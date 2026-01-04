@@ -349,13 +349,6 @@ export function CamlyMarketPrice() {
                   <button onClick={() => setChartType('candle')} className={cn("p-1.5 rounded-md transition-all duration-200", chartType === 'candle' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")} title="Candle"><CandlestickChart className="w-3.5 h-3.5" /></button>
                 </div>
                 
-                {/* Indicators */}
-                <div className="flex items-center gap-0.5 bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
-                  {(['none', 'boll', 'macd', 'rsi'] as const).map((ind) => (
-                    <button key={ind} onClick={() => setIndicator(ind)} className={cn("px-2 py-1 rounded-md text-[9px] font-bold transition-all duration-200 uppercase", indicator === ind ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")}>{ind === 'none' ? '—' : ind}</button>
-                  ))}
-                </div>
-                
                 {/* Time Range */}
                 <div className="flex items-center gap-1">
                   <div className="flex bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
@@ -490,38 +483,7 @@ export function CamlyMarketPrice() {
                 </div>
               </div>
 
-              {/* Indicator Panel - Only show when indicator is selected */}
-              {indicator !== 'none' && indicator !== 'boll' && (
-                <div className="h-12 mt-2 border-t border-treasury-gold/30 pt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    {indicator === 'rsi' ? (
-                      <ComposedChart data={chartData} margin={{ top: 2, right: 5, bottom: 0, left: 5 }}>
-                        <defs><linearGradient id="rsiGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} /><stop offset="100%" stopColor="#a855f7" stopOpacity={0.05} /></linearGradient></defs>
-                        <YAxis domain={[0, 100]} hide />
-                        <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={0.8} />
-                        <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={0.8} />
-                        <Area type="monotone" dataKey="rsi" stroke="#a855f7" strokeWidth={1.5} fill="url(#rsiGrad)" dot={false} />
-                      </ComposedChart>
-                    ) : (
-                      <ComposedChart data={chartData} margin={{ top: 2, right: 5, bottom: 0, left: 5 }}>
-                        <YAxis domain={['auto', 'auto']} hide />
-                        <ReferenceLine y={0} stroke="#666" strokeWidth={0.5} />
-                        <Bar dataKey="macdHist">{chartData.map((entry, index) => (<Cell key={index} fill={entry.macdHist >= 0 ? '#22c55e' : '#ef4444'} opacity={0.7} />))}</Bar>
-                        <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={1.5} dot={false} />
-                        <Line type="monotone" dataKey="macdSignal" stroke="#f97316" strokeWidth={1.5} dot={false} />
-                      </ComposedChart>
-                    )}
-                  </ResponsiveContainer>
-                </div>
-              )}
             </div>
-
-            {/* CoinGecko Button */}
-            <Button className="w-full gap-2 bg-gradient-to-r from-treasury-gold via-amber-500 to-yellow-500 hover:from-amber-600 hover:via-treasury-gold hover:to-amber-500 text-white font-bold text-sm py-3 h-11 shadow-xl shadow-treasury-gold/30 transition-all duration-300 hover:shadow-treasury-gold/50 hover:scale-[1.02]" asChild>
-              <a href="https://www.coingecko.com/en/coins/camly-coin" target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4" />Xem trên CoinGecko<span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[9px] font-bold">LIVE</span>
-              </a>
-            </Button>
 
             {/* Footer Status */}
             <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
