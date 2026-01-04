@@ -9,17 +9,28 @@ import { useState } from 'react';
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
 import camlyLogo from '@/assets/camly-coin-logo.png';
 
-// Generate smooth sparkline data
+// Generate beautiful wave sparkline data
 const generateSparklineData = (days: number, basePrice: number, change24h: number) => {
   const data = [];
-  for (let i = 0; i <= days; i++) {
-    const progress = i / days;
-    const wave = Math.sin(progress * Math.PI * 2) * 0.05;
-    const trend = change24h / 100 * progress;
-    const noise = (Math.random() - 0.5) * 0.03;
-    const price = basePrice * (1 - change24h / 100 + trend + wave + noise);
-    data.push({ day: i, price: Math.max(price, basePrice * 0.8) });
+  const points = days * 4; // More points for smoother curve
+  
+  for (let i = 0; i <= points; i++) {
+    const progress = i / points;
+    // Create beautiful wave pattern with multiple sine waves
+    const wave1 = Math.sin(progress * Math.PI * 3) * 0.08;
+    const wave2 = Math.sin(progress * Math.PI * 5 + 1) * 0.04;
+    const wave3 = Math.sin(progress * Math.PI * 7 + 2) * 0.02;
+    const trend = (change24h / 100) * progress * 0.5;
+    const combinedWave = wave1 + wave2 + wave3 + trend;
+    
+    const price = basePrice * (1 + combinedWave);
+    data.push({ 
+      day: i, 
+      price: Math.max(price, basePrice * 0.85)
+    });
   }
+  
+  // Ensure last point is current price
   data[data.length - 1].price = basePrice;
   return data;
 };
