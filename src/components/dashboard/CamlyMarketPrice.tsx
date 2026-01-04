@@ -12,15 +12,27 @@ import camlyLogo from '@/assets/camly-coin-logo.png';
 
 type ChartType = 'line' | 'candle';
 type IndicatorType = 'none' | 'macd' | 'rsi' | 'boll';
+type TimeRange = '5m' | '15m' | '1H' | '4H' | '1D' | '1W' | '1M';
 
-const generateCandlestickData = (days: number, basePrice: number, change24h: number) => {
+const TIME_RANGE_CONFIG: Record<TimeRange, { label: string; minutes: number; candles: number }> = {
+  '5m': { label: '5 phút', minutes: 5, candles: 60 },
+  '15m': { label: '15 phút', minutes: 15, candles: 48 },
+  '1H': { label: '1 giờ', minutes: 60, candles: 48 },
+  '4H': { label: '4 giờ', minutes: 240, candles: 42 },
+  '1D': { label: '1 ngày', minutes: 1440, candles: 30 },
+  '1W': { label: 'Tuần', minutes: 10080, candles: 52 },
+  '1M': { label: 'Tháng', minutes: 43200, candles: 30 },
+};
+
+const generateCandlestickData = (timeRange: TimeRange, basePrice: number, change24h: number) => {
+  const config = TIME_RANGE_CONFIG[timeRange];
   const data = [];
-  const totalCandles = days <= 1 ? 48 : days <= 7 ? 84 : 120;
+  const totalCandles = config.candles;
   
-  const startPrice = basePrice * (1 - (change24h / 100));
+  const startPrice = basePrice * (1 - (change24h / 100) * 0.5);
   let currentPrice = startPrice;
   let momentum = 0;
-  const baseVolatility = 0.008;
+  const baseVolatility = 0.006;
   const seed = basePrice * 10000000;
   let noiseValue = seed;
   const closePrices: number[] = [];
@@ -36,34 +48,49 @@ const generateCandlestickData = (days: number, basePrice: number, change24h: num
     const smoothRandom = (random1 + random2) / 2 - 0.5;
     momentum = momentum * 0.75 + smoothRandom * 0.25;
     
-    const trendPull = (basePrice - currentPrice) * 0.02;
-    const volatility = baseVolatility * (1 + Math.abs(momentum) * 4);
+    const trendPull = (basePrice - currentPrice) * 0.015;
+    const volatility = baseVolatility * (1 + Math.abs(momentum) * 3);
     
     const open = currentPrice;
     const move = (momentum * volatility) + trendPull;
     const close = open * (1 + move);
     
-    const wickSize = volatility * random3 * 1.5;
+    const wickSize = volatility * random3 * 1.2;
     const high = Math.max(open, close) * (1 + wickSize);
     const low = Math.min(open, close) * (1 - wickSize);
     
     currentPrice = close;
-    currentPrice = Math.max(basePrice * 0.85, Math.min(basePrice * 1.15, currentPrice));
+    currentPrice = Math.max(basePrice * 0.88, Math.min(basePrice * 1.12, currentPrice));
     
-    const hourOffset = Math.floor((i / totalCandles) * days * 24);
+    // Calculate time based on candle interval
+    const minutesBack = (totalCandles - i) * config.minutes;
     const date = new Date();
-    date.setHours(date.getHours() - (days * 24 - hourOffset));
+    date.setMinutes(date.getMinutes() - minutesBack);
     
-    const volumeSpike = random1 > 0.85 ? 3.5 : 1;
-    const volume = (500 + random2 * 1500) * volumeSpike;
+    const volumeSpike = random1 > 0.88 ? 3 : 1;
+    const volume = (800 + random2 * 2000) * volumeSpike;
     
     closePrices.push(close);
     
+    // Format time label based on interval
+    let timeLabel = '';
+    let dateLabel = '';
+    if (config.minutes <= 60) {
+      timeLabel = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      dateLabel = date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' });
+    } else if (config.minutes <= 1440) {
+      timeLabel = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      dateLabel = date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' });
+    } else {
+      timeLabel = date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' });
+      dateLabel = date.toLocaleDateString('vi-VN', { year: 'numeric' });
+    }
+    
     data.push({ 
       time: i,
-      timeLabel: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-      dateLabel: date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' }),
-      fullDateTime: date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
+      timeLabel,
+      dateLabel,
+      fullDateTime: `${date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' })}, ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`,
       open, high, low, close,
       price: close,
       volume,
@@ -71,6 +98,7 @@ const generateCandlestickData = (days: number, basePrice: number, change24h: num
     });
   }
   
+  // Smooth transition to current price
   const smoothPoints = 3;
   for (let i = 0; i < smoothPoints; i++) {
     const idx = data.length - smoothPoints + i;
@@ -153,27 +181,42 @@ const calculateIndicators = (data: any[], closePrices: number[]) => {
   return data;
 };
 
+// Enhanced tooltip with detailed time
 const CustomCandleTooltip = ({ active, payload }: any) => {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;
   
   return (
-    <div className="bg-card/95 backdrop-blur-md border-2 border-treasury-gold rounded-xl p-3 shadow-2xl shadow-treasury-gold/20">
-      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-treasury-gold/30">
-        <span className="text-[10px] text-muted-foreground">📅</span>
-        <span className="text-xs font-bold text-treasury-gold">{data.fullDateTime}</span>
+    <div className="bg-card/98 backdrop-blur-xl border-2 border-treasury-gold rounded-xl p-3 shadow-2xl shadow-treasury-gold/30">
+      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-treasury-gold/40">
+        <span className="text-xs">📅</span>
+        <span className="text-sm font-black text-treasury-gold">{data.fullDateTime}</span>
       </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-        <div className="flex justify-between"><span className="text-muted-foreground">Open:</span><span className="font-mono font-semibold">${data.open?.toFixed(8)}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">High:</span><span className="font-mono font-semibold text-emerald-500">${data.high?.toFixed(8)}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Low:</span><span className="font-mono font-semibold text-rose-500">${data.low?.toFixed(8)}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Close:</span><span className={cn("font-mono font-bold", data.isUp ? "text-emerald-500" : "text-rose-500")}>${data.close?.toFixed(8)}</span></div>
+      <div className="space-y-1.5">
+        <div className="flex justify-between items-center gap-4">
+          <span className="text-xs text-muted-foreground">Open:</span>
+          <span className="font-mono font-bold text-sm">${data.open?.toFixed(8)}</span>
+        </div>
+        <div className="flex justify-between items-center gap-4">
+          <span className="text-xs text-muted-foreground">High:</span>
+          <span className="font-mono font-bold text-sm text-emerald-500">${data.high?.toFixed(8)}</span>
+        </div>
+        <div className="flex justify-between items-center gap-4">
+          <span className="text-xs text-muted-foreground">Low:</span>
+          <span className="font-mono font-bold text-sm text-rose-500">${data.low?.toFixed(8)}</span>
+        </div>
+        <div className="flex justify-between items-center gap-4">
+          <span className="text-xs text-muted-foreground">Close:</span>
+          <span className={cn("font-mono font-black text-sm", data.isUp ? "text-emerald-500" : "text-rose-500")}>${data.close?.toFixed(8)}</span>
+        </div>
       </div>
-      <div className="mt-2 pt-2 border-t border-treasury-gold/30 flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground">Vol:</span>
-        <span className="text-[11px] font-semibold">{formatNumber(data.volume, { compact: true })}</span>
-        <span className={cn("ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded", data.isUp ? "bg-emerald-500/20 text-emerald-500" : "bg-rose-500/20 text-rose-500")}>
+      <div className="mt-2 pt-2 border-t border-treasury-gold/40 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-muted-foreground">📊 Vol:</span>
+          <span className="text-xs font-bold">{formatNumber(data.volume, { compact: true })}</span>
+        </div>
+        <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-full", data.isUp ? "bg-emerald-500/25 text-emerald-500" : "bg-rose-500/25 text-rose-500")}>
           {data.isUp ? '▲ BUY' : '▼ SELL'}
         </span>
       </div>
@@ -184,7 +227,7 @@ const CustomCandleTooltip = ({ active, payload }: any) => {
 export function CamlyMarketPrice() {
   const { data: priceData, isLoading, isRefetching, refetch } = useCamlyPrice();
   const [isManualRefresh, setIsManualRefresh] = useState(false);
-  const [chartRange, setChartRange] = useState<'24H' | '7D' | '30D'>('24H');
+  const [chartRange, setChartRange] = useState<TimeRange>('1H');
   const [chartType, setChartType] = useState<ChartType>('candle');
   const [indicator, setIndicator] = useState<IndicatorType>('none');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -196,15 +239,19 @@ export function CamlyMarketPrice() {
   };
 
   const isPositiveChange = (priceData?.change_24h || 0) >= 0;
-  const chartDays = chartRange === '24H' ? 1 : chartRange === '7D' ? 7 : 30;
   const chartData = useMemo(() => 
-    generateCandlestickData(chartDays, priceData?.price_usd || 0.00002247, priceData?.change_24h || 0),
-    [chartDays, priceData?.price_usd, priceData?.change_24h]
+    generateCandlestickData(chartRange, priceData?.price_usd || 0.00002247, priceData?.change_24h || 0),
+    [chartRange, priceData?.price_usd, priceData?.change_24h]
   );
 
   const minPrice = Math.min(...chartData.map(d => d.low));
   const maxPrice = Math.max(...chartData.map(d => d.high));
   const priceRange = maxPrice - minPrice;
+  const currentPrice = priceData?.price_usd || 0.00002247;
+
+  // Time range buttons for compact view
+  const compactRanges: TimeRange[] = ['5m', '15m', '1H', '4H', '1D'];
+  const allRanges: TimeRange[] = ['5m', '15m', '1H', '4H', '1D', '1W', '1M'];
 
   return (
     <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-orange-50/50 dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/30 shadow-2xl">
@@ -213,6 +260,7 @@ export function CamlyMarketPrice() {
       <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-amber-400/20 rounded-full blur-3xl" />
       
       <div className="relative p-4 space-y-3">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -247,9 +295,10 @@ export function CamlyMarketPrice() {
           </div>
         ) : (
           <>
+            {/* Price Display */}
             <div className="flex items-baseline gap-3 flex-wrap">
               <p className="text-4xl font-black bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-sm">
-                ${priceData?.price_usd?.toFixed(8) || '0.00002247'}
+                ${currentPrice.toFixed(8)}
               </p>
               <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold shadow-md", isPositiveChange ? "bg-gradient-to-r from-emerald-500/25 to-emerald-400/15 text-emerald-500 border border-emerald-500/30" : "bg-gradient-to-r from-rose-500/25 to-rose-400/15 text-rose-500 border border-rose-500/30")}>
                 {isPositiveChange ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
@@ -258,14 +307,16 @@ export function CamlyMarketPrice() {
               </div>
             </div>
 
+            {/* Price Range Bar */}
             <div className="flex items-center gap-2 text-xs">
               <span className="text-muted-foreground font-mono text-[10px]">${minPrice.toFixed(8)}</span>
               <div className="flex-1 h-2 bg-gradient-to-r from-rose-500 via-treasury-gold to-emerald-500 rounded-full relative shadow-inner">
-                <div className="absolute w-3 h-3 bg-white border-2 border-treasury-gold rounded-full top-1/2 -translate-y-1/2 shadow-lg shadow-treasury-gold/50 transition-all duration-500" style={{ left: `${Math.max(5, Math.min(95, ((priceData?.price_usd || 0) - minPrice) / priceRange * 100))}%` }} />
+                <div className="absolute w-3 h-3 bg-white border-2 border-treasury-gold rounded-full top-1/2 -translate-y-1/2 shadow-lg shadow-treasury-gold/50 transition-all duration-500" style={{ left: `${Math.max(5, Math.min(95, ((currentPrice) - minPrice) / priceRange * 100))}%` }} />
               </div>
               <span className="text-muted-foreground font-mono text-[10px]">${maxPrice.toFixed(8)}</span>
             </div>
 
+            {/* Volume & Market Cap */}
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gradient-to-br from-background/80 to-background/60 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/30 shadow-md">
                 <p className="text-[10px] text-muted-foreground font-medium mb-1">📊 Volume 24h</p>
@@ -277,21 +328,28 @@ export function CamlyMarketPrice() {
               </div>
             </div>
 
+            {/* Chart Section */}
             <div className="bg-gradient-to-br from-background/70 to-background/50 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/30 shadow-lg">
+              {/* Chart Controls */}
               <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+                {/* Chart Type Toggle */}
                 <div className="flex items-center gap-1 bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
                   <button onClick={() => setChartType('line')} className={cn("p-1.5 rounded-md transition-all duration-200", chartType === 'line' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")} title="Line"><LineChart className="w-3.5 h-3.5" /></button>
                   <button onClick={() => setChartType('candle')} className={cn("p-1.5 rounded-md transition-all duration-200", chartType === 'candle' ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")} title="Candle"><CandlestickChart className="w-3.5 h-3.5" /></button>
                 </div>
+                
+                {/* Indicators */}
                 <div className="flex items-center gap-0.5 bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
                   {(['none', 'boll', 'macd', 'rsi'] as const).map((ind) => (
                     <button key={ind} onClick={() => setIndicator(ind)} className={cn("px-2 py-1 rounded-md text-[9px] font-bold transition-all duration-200 uppercase", indicator === ind ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")}>{ind === 'none' ? '—' : ind}</button>
                   ))}
                 </div>
+                
+                {/* Time Range */}
                 <div className="flex items-center gap-1">
                   <div className="flex bg-treasury-gold/10 rounded-lg p-0.5 border border-treasury-gold/30">
-                    {(['24H', '7D', '30D'] as const).map((range) => (
-                      <button key={range} onClick={() => setChartRange(range)} className={cn("px-2.5 py-1 rounded-md text-[10px] font-bold transition-all duration-200", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")}>{range}</button>
+                    {compactRanges.map((range) => (
+                      <button key={range} onClick={() => setChartRange(range)} className={cn("px-2 py-1 rounded-md text-[9px] font-bold transition-all duration-200", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground hover:bg-treasury-gold/20")}>{range}</button>
                     ))}
                   </div>
                   <button 
@@ -304,10 +362,11 @@ export function CamlyMarketPrice() {
                 </div>
               </div>
               
-              <div className="h-36 -mx-1">
+              {/* Main Chart with Price on Right */}
+              <div className="h-40 relative">
                 <ResponsiveContainer width="100%" height="100%">
                   {chartType === 'line' ? (
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 10 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 70, bottom: 0, left: 5 }}>
                       <defs>
                         <linearGradient id="camlyPriceGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.6} />
@@ -316,18 +375,49 @@ export function CamlyMarketPrice() {
                         </linearGradient>
                         <filter id="lineGlow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                       </defs>
-                      <YAxis domain={['dataMin', 'dataMax']} hide padding={{ top: 15, bottom: 15 }} />
+                      <XAxis 
+                        dataKey="timeLabel" 
+                        tick={{ fontSize: 9, fill: '#888' }} 
+                        tickLine={false} 
+                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} 
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis 
+                        domain={['dataMin', 'dataMax']} 
+                        orientation="right"
+                        tick={{ fontSize: 9, fill: '#C9A227', fontWeight: 'bold' }} 
+                        tickFormatter={(v) => `$${v.toFixed(8)}`} 
+                        tickLine={false} 
+                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} 
+                        width={65}
+                        padding={{ top: 15, bottom: 15 }}
+                      />
                       <Tooltip content={<CustomCandleTooltip />} />
                       {indicator === 'boll' && (<><Area type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" fill="none" dot={false} /><Area type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={1.5} fill="none" dot={false} /><Area type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" fill="none" dot={false} /></>)}
                       <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={2.5} fill="url(#camlyPriceGrad)" dot={false} activeDot={{ r: 6, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={1000} style={{ filter: 'url(#lineGlow)' }} />
                     </ComposedChart>
                   ) : (
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 10 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 70, bottom: 0, left: 5 }}>
                       <defs>
                         <linearGradient id="candleGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                         <linearGradient id="candleRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
                       </defs>
-                      <YAxis domain={[minPrice * 0.998, maxPrice * 1.002]} hide />
+                      <XAxis 
+                        dataKey="timeLabel" 
+                        tick={{ fontSize: 9, fill: '#888' }} 
+                        tickLine={false} 
+                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} 
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis 
+                        domain={[minPrice * 0.998, maxPrice * 1.002]} 
+                        orientation="right"
+                        tick={{ fontSize: 9, fill: '#C9A227', fontWeight: 'bold' }} 
+                        tickFormatter={(v) => `$${v.toFixed(8)}`} 
+                        tickLine={false} 
+                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} 
+                        width={65}
+                      />
                       <Tooltip content={<CustomCandleTooltip />} />
                       {indicator === 'boll' && (<><Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" dot={false} /><Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={1.5} dot={false} /><Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1} strokeDasharray="4 2" dot={false} /></>)}
                       <Bar dataKey="close" shape={() => null} />
@@ -338,34 +428,68 @@ export function CamlyMarketPrice() {
                         const toY = (price: number) => ((maxPrice * 1.002 - price) / yRange) * 100;
                         return (
                           <g key={index}>
-                            <line x1={`${x + barWidth / 2}%`} y1={`${toY(entry.high)}%`} x2={`${x + barWidth / 2}%`} y2={`${toY(entry.low)}%`} stroke={entry.isUp ? '#22c55e' : '#ef4444'} strokeWidth={1} opacity={0.8} />
-                            <rect x={`${x + barWidth * 0.1}%`} y={`${toY(Math.max(entry.open, entry.close))}%`} width={`${barWidth * 0.8}%`} height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.3)}%`} fill={entry.isUp ? 'url(#candleGreen)' : 'url(#candleRed)'} rx={1} />
+                            {/* Wick */}
+                            <line 
+                              x1={`${x + barWidth / 2}%`} 
+                              y1={`${toY(entry.high)}%`} 
+                              x2={`${x + barWidth / 2}%`} 
+                              y2={`${toY(entry.low)}%`} 
+                              stroke={entry.isUp ? '#22c55e' : '#ef4444'} 
+                              strokeWidth={1.5} 
+                              opacity={0.9} 
+                            />
+                            {/* Candle Body */}
+                            <rect 
+                              x={`${x + barWidth * 0.15}%`} 
+                              y={`${toY(Math.max(entry.open, entry.close))}%`} 
+                              width={`${barWidth * 0.7}%`} 
+                              height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.4)}%`} 
+                              fill={entry.isUp ? 'url(#candleGreen)' : 'url(#candleRed)'} 
+                              rx={1}
+                              stroke={entry.isUp ? '#16a34a' : '#dc2626'}
+                              strokeWidth={0.5}
+                            />
                           </g>
                         );
                       })}
                     </ComposedChart>
                   )}
                 </ResponsiveContainer>
+                
+                {/* Current Price Label on Right */}
+                <div 
+                  className={cn(
+                    "absolute right-0 px-2 py-1 rounded-l-lg text-[10px] font-black shadow-lg",
+                    isPositiveChange 
+                      ? "bg-emerald-500 text-white" 
+                      : "bg-rose-500 text-white"
+                  )}
+                  style={{ top: '50%', transform: 'translateY(-50%)' }}
+                >
+                  ${currentPrice.toFixed(8)}
+                </div>
               </div>
 
+              {/* Indicator Panel */}
               {indicator !== 'none' && indicator !== 'boll' && (
                 <div className="h-14 mt-2 border-t border-treasury-gold/30 pt-2">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Activity className="w-3 h-3 text-treasury-gold" />
                     <span className="text-[9px] font-bold text-treasury-gold uppercase">{indicator}</span>
+                    {indicator === 'rsi' && <span className="text-[8px] text-muted-foreground">(70=Overbought, 30=Oversold)</span>}
                   </div>
                   <ResponsiveContainer width="100%" height={35}>
                     {indicator === 'rsi' ? (
-                      <ComposedChart data={chartData} margin={{ top: 2, right: 10, bottom: 0, left: 10 }}>
+                      <ComposedChart data={chartData} margin={{ top: 2, right: 70, bottom: 0, left: 5 }}>
                         <defs><linearGradient id="rsiGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} /><stop offset="100%" stopColor="#a855f7" stopOpacity={0.05} /></linearGradient></defs>
-                        <YAxis domain={[0, 100]} hide />
+                        <YAxis domain={[0, 100]} orientation="right" tick={{ fontSize: 8, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
                         <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={0.8} />
                         <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={0.8} />
                         <Area type="monotone" dataKey="rsi" stroke="#a855f7" strokeWidth={1.5} fill="url(#rsiGrad)" dot={false} />
                       </ComposedChart>
                     ) : (
-                      <ComposedChart data={chartData} margin={{ top: 2, right: 10, bottom: 0, left: 10 }}>
-                        <YAxis domain={['auto', 'auto']} hide />
+                      <ComposedChart data={chartData} margin={{ top: 2, right: 70, bottom: 0, left: 5 }}>
+                        <YAxis domain={['auto', 'auto']} orientation="right" tick={{ fontSize: 8, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
                         <ReferenceLine y={0} stroke="#666" strokeWidth={0.5} />
                         <Bar dataKey="macdHist">{chartData.map((entry, index) => (<Cell key={index} fill={entry.macdHist >= 0 ? '#22c55e' : '#ef4444'} opacity={0.7} />))}</Bar>
                         <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={1.5} dot={false} />
@@ -376,6 +500,7 @@ export function CamlyMarketPrice() {
                 </div>
               )}
 
+              {/* Volume Bars */}
               <div className="h-10 mt-2 flex items-end gap-0.5 border-t border-treasury-gold/20 pt-2">
                 {chartData.filter((_, i) => i % Math.max(1, Math.floor(chartData.length / 50)) === 0).map((d, i, arr) => {
                   const maxVolume = Math.max(...arr.map(x => x.volume));
@@ -385,12 +510,14 @@ export function CamlyMarketPrice() {
               </div>
             </div>
 
+            {/* CoinGecko Button */}
             <Button className="w-full gap-2 bg-gradient-to-r from-treasury-gold via-amber-500 to-yellow-500 hover:from-amber-600 hover:via-treasury-gold hover:to-amber-500 text-white font-bold text-sm py-3 h-11 shadow-xl shadow-treasury-gold/30 transition-all duration-300 hover:shadow-treasury-gold/50 hover:scale-[1.02]" asChild>
               <a href="https://www.coingecko.com/en/coins/camly-coin" target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="w-4 h-4" />Xem trên CoinGecko<span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-[9px] font-bold">LIVE</span>
               </a>
             </Button>
 
+            {/* Footer Status */}
             <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50" />
@@ -428,7 +555,7 @@ export function CamlyMarketPrice() {
                     </DialogTitle>
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-2xl font-black bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent">
-                        ${priceData?.price_usd?.toFixed(8) || '0.00002247'}
+                        ${currentPrice.toFixed(8)}
                       </span>
                       <span className={cn("flex items-center gap-1 px-2 py-1 rounded-full text-sm font-bold", isPositiveChange ? "bg-emerald-500/20 text-emerald-500" : "bg-rose-500/20 text-rose-500")}>
                         {isPositiveChange ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
@@ -450,8 +577,8 @@ export function CamlyMarketPrice() {
                     ))}
                   </div>
                   <div className="flex bg-treasury-gold/10 rounded-lg p-1 border border-treasury-gold/30">
-                    {(['24H', '7D', '30D'] as const).map((range) => (
-                      <button key={range} onClick={() => setChartRange(range)} className={cn("px-3 py-1.5 rounded-md text-xs font-bold", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}>{range}</button>
+                    {allRanges.map((range) => (
+                      <button key={range} onClick={() => setChartRange(range)} className={cn("px-2.5 py-1.5 rounded-md text-xs font-bold", chartRange === range ? "bg-gradient-to-r from-treasury-gold to-amber-500 text-white shadow-md" : "text-muted-foreground hover:bg-treasury-gold/20")}>{range}</button>
                     ))}
                   </div>
                   <button onClick={() => setIsFullscreen(false)} className="p-2 rounded-full bg-muted hover:bg-muted/80 text-muted-foreground"><X className="w-5 h-5" /></button>
@@ -461,10 +588,10 @@ export function CamlyMarketPrice() {
 
             {/* Fullscreen Chart Area */}
             <div className="flex-1 p-4">
-              <div className="h-full bg-gradient-to-br from-background/80 to-background/60 rounded-xl border border-treasury-gold/30 p-4">
+              <div className="h-full bg-gradient-to-br from-background/80 to-background/60 rounded-xl border border-treasury-gold/30 p-4 relative">
                 <ResponsiveContainer width="100%" height={indicator !== 'none' && indicator !== 'boll' ? '75%' : '85%'}>
                   {chartType === 'line' ? (
-                    <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 90, bottom: 20, left: 20 }}>
                       <defs>
                         <linearGradient id="camlyPriceGradFull" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.5} />
@@ -473,20 +600,20 @@ export function CamlyMarketPrice() {
                         </linearGradient>
                         <filter id="lineGlowFull"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                       </defs>
-                      <XAxis dataKey="timeLabel" tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} interval="preserveStartEnd" />
-                      <YAxis domain={['dataMin', 'dataMax']} tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(v) => `$${v.toFixed(8)}`} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} width={90} padding={{ top: 20, bottom: 20 }} />
+                      <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
+                      <YAxis domain={['dataMin', 'dataMax']} orientation="right" tick={{ fontSize: 11, fill: '#C9A227', fontWeight: 'bold' }} tickFormatter={(v) => `$${v.toFixed(8)}`} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} width={85} padding={{ top: 20, bottom: 20 }} />
                       <Tooltip content={<CustomCandleTooltip />} />
                       {indicator === 'boll' && (<><Area type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} /><Area type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} fill="none" dot={false} /><Area type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" fill="none" dot={false} /></>)}
                       <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={3} fill="url(#camlyPriceGradFull)" dot={false} activeDot={{ r: 8, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={1000} style={{ filter: 'url(#lineGlowFull)' }} />
                     </ComposedChart>
                   ) : (
-                    <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 90, bottom: 20, left: 20 }}>
                       <defs>
                         <linearGradient id="candleGreenFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                         <linearGradient id="candleRedFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
                       </defs>
-                      <XAxis dataKey="timeLabel" tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} interval="preserveStartEnd" />
-                      <YAxis domain={[minPrice * 0.997, maxPrice * 1.003]} tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(v) => `$${v.toFixed(8)}`} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.2 }} width={90} />
+                      <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
+                      <YAxis domain={[minPrice * 0.997, maxPrice * 1.003]} orientation="right" tick={{ fontSize: 11, fill: '#C9A227', fontWeight: 'bold' }} tickFormatter={(v) => `$${v.toFixed(8)}`} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} width={85} />
                       <Tooltip content={<CustomCandleTooltip />} />
                       {indicator === 'boll' && (<><Line type="monotone" dataKey="bollUpper" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} /><Line type="monotone" dataKey="bollMid" stroke="#a855f7" strokeWidth={2} dot={false} /><Line type="monotone" dataKey="bollLower" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 3" dot={false} /></>)}
                       <Bar dataKey="close" shape={() => null} />
@@ -497,14 +624,27 @@ export function CamlyMarketPrice() {
                         const toY = (price: number) => ((maxPrice * 1.003 - price) / yRange) * 100;
                         return (
                           <g key={index}>
-                            <line x1={`${x + barWidth / 2}%`} y1={`${toY(entry.high)}%`} x2={`${x + barWidth / 2}%`} y2={`${toY(entry.low)}%`} stroke={entry.isUp ? '#22c55e' : '#ef4444'} strokeWidth={1.5} opacity={0.9} />
-                            <rect x={`${x + barWidth * 0.15}%`} y={`${toY(Math.max(entry.open, entry.close))}%`} width={`${barWidth * 0.7}%`} height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.2)}%`} fill={entry.isUp ? 'url(#candleGreenFull)' : 'url(#candleRedFull)'} rx={2} />
+                            <line x1={`${x + barWidth / 2}%`} y1={`${toY(entry.high)}%`} x2={`${x + barWidth / 2}%`} y2={`${toY(entry.low)}%`} stroke={entry.isUp ? '#22c55e' : '#ef4444'} strokeWidth={2} opacity={0.95} />
+                            <rect x={`${x + barWidth * 0.15}%`} y={`${toY(Math.max(entry.open, entry.close))}%`} width={`${barWidth * 0.7}%`} height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.3)}%`} fill={entry.isUp ? 'url(#candleGreenFull)' : 'url(#candleRedFull)'} rx={2} stroke={entry.isUp ? '#16a34a' : '#dc2626'} strokeWidth={0.8} />
                           </g>
                         );
                       })}
                     </ComposedChart>
                   )}
                 </ResponsiveContainer>
+
+                {/* Current Price Label - Fullscreen */}
+                <div 
+                  className={cn(
+                    "absolute right-4 px-3 py-2 rounded-lg text-sm font-black shadow-xl",
+                    isPositiveChange 
+                      ? "bg-emerald-500 text-white" 
+                      : "bg-rose-500 text-white"
+                  )}
+                  style={{ top: '40%', transform: 'translateY(-50%)' }}
+                >
+                  ${currentPrice.toFixed(8)}
+                </div>
 
                 {/* Fullscreen Indicator Panel */}
                 {indicator !== 'none' && indicator !== 'boll' && (
@@ -517,18 +657,17 @@ export function CamlyMarketPrice() {
                     </div>
                     <ResponsiveContainer width="100%" height="70%">
                       {indicator === 'rsi' ? (
-                        <ComposedChart data={chartData} margin={{ top: 5, right: 30, bottom: 5, left: 30 }}>
+                        <ComposedChart data={chartData} margin={{ top: 5, right: 90, bottom: 5, left: 20 }}>
                           <defs><linearGradient id="rsiGradFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} /><stop offset="100%" stopColor="#a855f7" stopOpacity={0.05} /></linearGradient></defs>
-                          <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
-                          <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="4 4" strokeWidth={1} label={{ value: '70', position: 'right', fontSize: 10, fill: '#ef4444' }} />
-                          <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="4 4" strokeWidth={1} label={{ value: '30', position: 'right', fontSize: 10, fill: '#22c55e' }} />
-                          <ReferenceLine y={50} stroke="#666" strokeDasharray="2 4" strokeWidth={0.5} />
+                          <YAxis domain={[0, 100]} orientation="right" tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
+                          <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
+                          <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={1} />
                           <Area type="monotone" dataKey="rsi" stroke="#a855f7" strokeWidth={2} fill="url(#rsiGradFull)" dot={false} />
                         </ComposedChart>
                       ) : (
-                        <ComposedChart data={chartData} margin={{ top: 5, right: 30, bottom: 5, left: 30 }}>
-                          <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
-                          <ReferenceLine y={0} stroke="#666" strokeWidth={1} />
+                        <ComposedChart data={chartData} margin={{ top: 5, right: 90, bottom: 5, left: 20 }}>
+                          <YAxis domain={['auto', 'auto']} orientation="right" tick={{ fontSize: 10, fill: '#888' }} tickLine={false} axisLine={false} width={30} />
+                          <ReferenceLine y={0} stroke="#666" strokeWidth={0.5} />
                           <Bar dataKey="macdHist">{chartData.map((entry, index) => (<Cell key={index} fill={entry.macdHist >= 0 ? '#22c55e' : '#ef4444'} opacity={0.7} />))}</Bar>
                           <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={2} dot={false} />
                           <Line type="monotone" dataKey="macdSignal" stroke="#f97316" strokeWidth={2} dot={false} />
@@ -538,12 +677,12 @@ export function CamlyMarketPrice() {
                   </div>
                 )}
 
-                {/* Fullscreen Volume */}
-                <div className="h-12 mt-3 flex items-end gap-0.5 border-t border-treasury-gold/20 pt-2">
-                  {chartData.map((d, i, arr) => {
+                {/* Fullscreen Volume Bars */}
+                <div className="h-16 mt-2 flex items-end gap-0.5 border-t border-treasury-gold/20 pt-2">
+                  {chartData.filter((_, i) => i % Math.max(1, Math.floor(chartData.length / 80)) === 0).map((d, i, arr) => {
                     const maxVolume = Math.max(...arr.map(x => x.volume));
                     const heightPercent = (d.volume / maxVolume) * 100;
-                    return (<div key={i} className={cn("flex-1 rounded-t transition-all", d.isUp ? "bg-emerald-500/60 hover:bg-emerald-500" : "bg-rose-500/60 hover:bg-rose-500")} style={{ height: `${Math.max(heightPercent, 5)}%` }} />);
+                    return (<div key={i} className={cn("flex-1 rounded-t transition-all duration-300", d.isUp ? "bg-emerald-500/70 hover:bg-emerald-500" : "bg-rose-500/70 hover:bg-rose-500")} style={{ height: `${Math.max(heightPercent, 8)}%` }} />);
                   })}
                 </div>
               </div>
