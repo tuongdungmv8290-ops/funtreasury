@@ -827,8 +827,6 @@ export function CamlyMarketPrice() {
                           tickCount={7}
                         />
                         <Tooltip content={<CustomCandleTooltip />} />
-                        <ReferenceLine y={maxPrice} stroke="#22c55e" strokeDasharray="8 4" strokeWidth={1.5} />
-                        <ReferenceLine y={minPrice} stroke="#ef4444" strokeDasharray="8 4" strokeWidth={1.5} />
                         <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={2} />
                         
                         {/* MA Lines */}
@@ -869,8 +867,6 @@ export function CamlyMarketPrice() {
                           tickCount={7}
                         />
                         <Tooltip content={<CustomCandleTooltip />} />
-                        <ReferenceLine y={maxPrice} stroke="#22c55e" strokeDasharray="8 4" strokeWidth={1.5} />
-                        <ReferenceLine y={minPrice} stroke="#ef4444" strokeDasharray="8 4" strokeWidth={1.5} />
                         <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={2} />
                         
                         {/* MA Lines */}
