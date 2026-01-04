@@ -142,13 +142,13 @@ function TokenSkeleton() {
   );
 }
 
-// Fallback prices (used when API returns prices or as backup)
+// Fallback prices (used when API returns prices or as backup) - CAMLY ~$0.000022
 const FALLBACK_PRICES: Record<string, number> = {
-  'BTC': 94000,
-  'BTCB': 94000,
-  'BNB': 700,
+  'BTC': 97000,
+  'BTCB': 97000,
+  'BNB': 710,
   'USDT': 1,
-  'CAMLY': 0.000023,
+  'CAMLY': 0.000022,
 };
 
 export function TokenBalancesCard() {
