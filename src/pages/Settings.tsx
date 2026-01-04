@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste, Copy, Bell, AlertTriangle } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste, Copy, Bell, AlertTriangle, Lock } from 'lucide-react';
 import { useTransactionAlerts } from '@/hooks/useTransactionAlerts';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
@@ -20,6 +20,8 @@ import { useTokenContracts } from '@/hooks/useTokenContracts';
 import { useApiSettings } from '@/hooks/useApiSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { TwoFactorSetup } from '@/components/security/TwoFactorSetup';
+import { WalletConnect } from '@/components/security/WalletConnect';
 
 
 // Chain display names
@@ -1221,6 +1223,24 @@ const Settings = () => {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Advanced Security Section */}
+        <div className="treasury-card mb-6 bg-white">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+              <Lock className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Advanced Security</h2>
+              <p className="text-sm text-muted-foreground">Bảo mật nâng cao cho Bulk Transfer</p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <TwoFactorSetup />
+            <WalletConnect />
           </div>
         </div>
       </main>

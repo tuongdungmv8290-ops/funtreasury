@@ -5,11 +5,12 @@ import { TransactionChart } from '@/components/dashboard/TransactionChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { PortfolioHistoryChart } from '@/components/dashboard/PortfolioHistoryChart';
+import { BulkTransferSection } from '@/components/dashboard/BulkTransferSection';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
 import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -320,6 +321,11 @@ const Index = () => {
         {/* Portfolio History Chart */}
         <div className="mb-6 md:mb-8">
           <PortfolioHistoryChart />
+        </div>
+
+        {/* Bulk Transfer Section */}
+        <div className="mb-6 md:mb-8">
+          <BulkTransferSection />
         </div>
 
         {/* Charts, Token Balances and Recent Transactions */}
