@@ -3,6 +3,7 @@ import { Header } from '@/components/layout/Header';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
 import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
+import { useViewMode } from '@/contexts/ViewModeContext';
 import { formatCurrency, shortenAddress } from '@/lib/mockData';
 import {
   ArrowUpRight,
@@ -133,6 +134,7 @@ const getFileNameDate = (): string => {
 };
 
 const Transactions = () => {
+  const { isViewOnly } = useViewMode();
   const [search, setSearch] = useState('');
   const [walletFilter, setWalletFilter] = useState<string>('all');
   const [directionFilter, setDirectionFilter] = useState<string>('all');
