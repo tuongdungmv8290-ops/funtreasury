@@ -238,46 +238,90 @@ const calculateIndicators = (data: any[], closePrices: number[], highPrices: num
   return data;
 };
 
-// Enhanced tooltip with detailed time
+// Enhanced tooltip with detailed time - positioned away from chart
 const CustomCandleTooltip = ({ active, payload }: any) => {
   if (!active || !payload || !payload.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;
   
   return (
-    <div className="bg-card/98 backdrop-blur-xl border-2 border-treasury-gold rounded-xl p-3 shadow-2xl shadow-treasury-gold/30">
+    <div className="bg-card/98 backdrop-blur-xl border-2 border-treasury-gold rounded-xl p-3 shadow-2xl shadow-treasury-gold/30 pointer-events-none z-50">
       <div className="flex items-center gap-2 mb-2 pb-2 border-b border-treasury-gold/40">
-        <span className="text-xs">📅</span>
+        <span className="text-xs">🕐</span>
         <span className="text-sm font-black text-treasury-gold">{data.fullDateTime}</span>
       </div>
-      <div className="space-y-1.5">
-        <div className="flex justify-between items-center gap-4">
-          <span className="text-xs text-muted-foreground">Open:</span>
-          <span className="font-mono font-bold text-sm">${data.open?.toFixed(8)}</span>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+        <div className="flex justify-between items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">O:</span>
+          <span className="font-mono font-bold text-xs">${data.open?.toFixed(8)}</span>
         </div>
-        <div className="flex justify-between items-center gap-4">
-          <span className="text-xs text-muted-foreground">High:</span>
-          <span className="font-mono font-bold text-sm text-emerald-500">${data.high?.toFixed(8)}</span>
+        <div className="flex justify-between items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">H:</span>
+          <span className="font-mono font-bold text-xs text-emerald-500">${data.high?.toFixed(8)}</span>
         </div>
-        <div className="flex justify-between items-center gap-4">
-          <span className="text-xs text-muted-foreground">Low:</span>
-          <span className="font-mono font-bold text-sm text-rose-500">${data.low?.toFixed(8)}</span>
+        <div className="flex justify-between items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">L:</span>
+          <span className="font-mono font-bold text-xs text-rose-500">${data.low?.toFixed(8)}</span>
         </div>
-        <div className="flex justify-between items-center gap-4">
-          <span className="text-xs text-muted-foreground">Close:</span>
-          <span className={cn("font-mono font-black text-sm", data.isUp ? "text-emerald-500" : "text-rose-500")}>${data.close?.toFixed(8)}</span>
+        <div className="flex justify-between items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">C:</span>
+          <span className={cn("font-mono font-black text-xs", data.isUp ? "text-emerald-500" : "text-rose-500")}>${data.close?.toFixed(8)}</span>
         </div>
       </div>
       <div className="mt-2 pt-2 border-t border-treasury-gold/40 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground">📊 Vol:</span>
-          <span className="text-xs font-bold">{formatNumber(data.volume, { compact: true })}</span>
+          <span className="text-[9px] text-muted-foreground">Vol:</span>
+          <span className="text-[10px] font-bold">{formatNumber(data.volume, { compact: true })}</span>
         </div>
-        <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-full", data.isUp ? "bg-emerald-500/25 text-emerald-500" : "bg-rose-500/25 text-rose-500")}>
+        <span className={cn("text-[9px] font-black px-1.5 py-0.5 rounded-full", data.isUp ? "bg-emerald-500/25 text-emerald-500" : "bg-rose-500/25 text-rose-500")}>
           {data.isUp ? '▲ BUY' : '▼ SELL'}
         </span>
       </div>
     </div>
+  );
+};
+
+// Custom Candlestick shape for proper rendering
+const CandlestickShape = (props: any) => {
+  const { x, y, width, height, payload } = props;
+  if (!payload) return null;
+  
+  const { open, close, high, low, isUp } = payload;
+  const color = isUp ? '#22c55e' : '#ef4444';
+  const candleWidth = Math.max(width * 0.6, 3);
+  const candleX = x + (width - candleWidth) / 2;
+  
+  // Calculate positions based on chart dimensions
+  const chartHeight = height || 100;
+  const priceRange = high - low;
+  if (priceRange === 0) return null;
+  
+  const bodyTop = Math.min(open, close);
+  const bodyBottom = Math.max(open, close);
+  const bodyHeight = Math.max(((bodyBottom - bodyTop) / priceRange) * chartHeight, 1);
+  const bodyY = y;
+  
+  return (
+    <g>
+      {/* Wick */}
+      <line
+        x1={x + width / 2}
+        y1={y - ((high - Math.max(open, close)) / priceRange) * chartHeight}
+        x2={x + width / 2}
+        y2={y + bodyHeight + ((Math.min(open, close) - low) / priceRange) * chartHeight}
+        stroke={color}
+        strokeWidth={1}
+      />
+      {/* Body */}
+      <rect
+        x={candleX}
+        y={bodyY}
+        width={candleWidth}
+        height={Math.max(bodyHeight, 2)}
+        fill={color}
+        rx={1}
+      />
+    </g>
   );
 };
 
@@ -527,11 +571,11 @@ export function CamlyMarketPrice() {
                 ))}
               </div>
               
-              {/* Main Chart - Bitget Style with Y-axis prices */}
-              <div className={cn("h-40 transition-all duration-300 ease-out relative", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
+              {/* Main Chart - Clean layout with proper spacing */}
+              <div className={cn("h-44 transition-all duration-300 ease-out", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
                 <ResponsiveContainer width="100%" height="100%">
                   {chartType === 'line' ? (
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 70, bottom: 5, left: 5 }}>
+                    <ComposedChart data={chartData} margin={{ top: 8, right: 8, bottom: 5, left: 5 }}>
                       <defs>
                         <linearGradient id="camlyPriceGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.4} />
@@ -542,21 +586,25 @@ export function CamlyMarketPrice() {
                         dataKey="timeLabel" 
                         tick={{ fontSize: 8, fill: '#888' }}
                         tickLine={false} 
-                        axisLine={{ stroke: '#333', strokeOpacity: 0.3 }} 
+                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} 
                         interval="preserveStartEnd"
+                        height={20}
                       />
                       <YAxis 
-                        domain={[minPrice * 0.996, maxPrice * 1.004]} 
-                        orientation="right"
-                        tick={{ fontSize: 8, fill: '#888' }}
-                        tickFormatter={(value) => value.toFixed(8)}
+                        domain={[minPrice * 0.997, maxPrice * 1.003]} 
+                        orientation="left"
+                        tick={{ fontSize: 7, fill: '#888' }}
+                        tickFormatter={(value) => `$${value.toFixed(8)}`}
                         tickLine={false}
                         axisLine={false}
-                        width={65}
+                        width={75}
                         tickCount={4}
                       />
-                      <Tooltip content={<CustomCandleTooltip />} />
-                      <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} />
+                      <Tooltip 
+                        content={<CustomCandleTooltip />}
+                        cursor={{ stroke: '#C9A227', strokeWidth: 1, strokeDasharray: '3 3' }}
+                        wrapperStyle={{ zIndex: 100 }}
+                      />
                       
                       {/* MA Lines */}
                       {activeIndicators.includes('ma') && (
@@ -579,30 +627,30 @@ export function CamlyMarketPrice() {
                       <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={2} fill="url(#camlyPriceGrad)" dot={false} activeDot={{ r: 4, fill: '#C9A227', stroke: '#fff', strokeWidth: 2 }} animationDuration={600} />
                     </ComposedChart>
                   ) : (
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 70, bottom: 5, left: 5 }}>
-                      <defs>
-                        <linearGradient id="candleGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
-                        <linearGradient id="candleRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
-                      </defs>
+                    <ComposedChart data={chartData} margin={{ top: 8, right: 8, bottom: 5, left: 5 }}>
                       <XAxis 
                         dataKey="timeLabel" 
                         tick={{ fontSize: 8, fill: '#888' }} 
                         tickLine={false} 
-                        axisLine={{ stroke: '#333', strokeOpacity: 0.3 }} 
+                        axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} 
                         interval="preserveStartEnd"
+                        height={20}
                       />
                       <YAxis 
-                        domain={[minPrice * 0.994, maxPrice * 1.006]} 
-                        orientation="right"
-                        tick={{ fontSize: 8, fill: '#888' }}
-                        tickFormatter={(value) => value.toFixed(8)}
+                        domain={[minPrice * 0.995, maxPrice * 1.005]} 
+                        orientation="left"
+                        tick={{ fontSize: 7, fill: '#888' }}
+                        tickFormatter={(value) => `$${value.toFixed(8)}`}
                         tickLine={false}
                         axisLine={false}
-                        width={65}
+                        width={75}
                         tickCount={4}
                       />
-                      <Tooltip content={<CustomCandleTooltip />} />
-                      <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={1} />
+                      <Tooltip 
+                        content={<CustomCandleTooltip />}
+                        cursor={{ stroke: '#C9A227', strokeWidth: 1, strokeDasharray: '3 3' }}
+                        wrapperStyle={{ zIndex: 100 }}
+                      />
                       
                       {/* MA Lines */}
                       {activeIndicators.includes('ma') && (
@@ -622,73 +670,96 @@ export function CamlyMarketPrice() {
                         </>
                       )}
                       
-                      <Bar dataKey="close" shape={() => null} animationDuration={500} />
-                      {chartData.map((entry, index) => {
-                        const barWidth = 100 / chartData.length;
-                        const x = index * barWidth;
-                        const yRange = maxPrice * 1.002 - minPrice * 0.998;
-                        const toY = (price: number) => ((maxPrice * 1.002 - price) / yRange) * 100;
-                        return (
-                          <g key={index}>
-                            <line 
-                              x1={`${x + barWidth / 2}%`} 
-                              y1={`${toY(entry.high)}%`} 
-                              x2={`${x + barWidth / 2}%`} 
-                              y2={`${toY(entry.low)}%`} 
-                              stroke={entry.isUp ? '#22c55e' : '#ef4444'} 
-                              strokeWidth={1} 
-                            />
-                            <rect 
-                              x={`${x + barWidth * 0.2}%`} 
-                              y={`${toY(Math.max(entry.open, entry.close))}%`} 
-                              width={`${barWidth * 0.6}%`} 
-                              height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.3)}%`} 
-                              fill={entry.isUp ? '#22c55e' : '#ef4444'} 
-                            />
-                          </g>
-                        );
-                      })}
+                      {/* Candlestick bars using proper Bar component */}
+                      <Bar 
+                        dataKey="close" 
+                        shape={(props: any) => {
+                          const { x, y, width, height, payload, index } = props;
+                          if (!payload) return null;
+                          
+                          const { open, close, high, low, isUp } = payload;
+                          const color = isUp ? '#22c55e' : '#ef4444';
+                          const candleWidth = Math.max(width * 0.7, 2);
+                          const candleX = x + (width - candleWidth) / 2;
+                          
+                          // Get chart bounds from props or calculate
+                          const yAxisDomain = [minPrice * 0.995, maxPrice * 1.005];
+                          const priceToY = (price: number) => {
+                            const [domainMin, domainMax] = yAxisDomain;
+                            const chartTop = 8;
+                            const chartHeight = 116; // Approximate usable chart height
+                            return chartTop + ((domainMax - price) / (domainMax - domainMin)) * chartHeight;
+                          };
+                          
+                          const wickTop = priceToY(high);
+                          const wickBottom = priceToY(low);
+                          const bodyTop = priceToY(Math.max(open, close));
+                          const bodyBottom = priceToY(Math.min(open, close));
+                          const bodyHeight = Math.max(bodyBottom - bodyTop, 2);
+                          
+                          return (
+                            <g key={index}>
+                              {/* Wick line */}
+                              <line
+                                x1={x + width / 2}
+                                y1={wickTop}
+                                x2={x + width / 2}
+                                y2={wickBottom}
+                                stroke={color}
+                                strokeWidth={1}
+                              />
+                              {/* Body rectangle */}
+                              <rect
+                                x={candleX}
+                                y={bodyTop}
+                                width={candleWidth}
+                                height={bodyHeight}
+                                fill={color}
+                                rx={1}
+                              />
+                            </g>
+                          );
+                        }}
+                        animationDuration={500}
+                      />
                     </ComposedChart>
                   )}
                 </ResponsiveContainer>
-                
-                {/* Current Price Badge - Floating on right */}
-                <div 
-                  className={cn(
-                    "absolute right-0 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[9px] font-bold rounded-l-md shadow-lg z-10",
-                    isPositiveChange 
-                      ? "bg-emerald-500 text-white" 
-                      : "bg-rose-500 text-white"
-                  )}
-                >
-                  {currentPrice.toFixed(8)}
+              </div>
+              
+              {/* Current Price Display - Separate section below chart */}
+              <div className="flex items-center justify-between mt-2 px-1">
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "px-2 py-1 rounded-md text-[10px] font-mono font-bold",
+                    isPositiveChange ? "bg-emerald-500/20 text-emerald-500 border border-emerald-500/30" : "bg-rose-500/20 text-rose-500 border border-rose-500/30"
+                  )}>
+                    Giá hiện tại: ${currentPrice.toFixed(8)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+                  <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-500 rounded">MA5</span>
+                  <span className="px-1.5 py-0.5 bg-orange-500/20 text-orange-500 rounded">MA10</span>
+                  <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-500 rounded">MA20</span>
                 </div>
               </div>
               
-              {/* Volume Bars - Separate Section */}
+              {/* Volume Bars - Clean Separate Section */}
               {activeIndicators.includes('vol') && (
-                <div className="h-12 mt-1 border-t border-treasury-gold/20 pt-1">
-                  <div className="text-[9px] text-muted-foreground mb-0.5 flex items-center gap-1">
-                    <span className="font-bold text-treasury-gold">Vol</span>
+                <div className="h-14 mt-2 pt-2 border-t border-treasury-gold/30 bg-muted/20 rounded-lg px-1">
+                  <div className="text-[9px] text-muted-foreground mb-1 flex items-center justify-between">
+                    <span className="font-bold text-treasury-gold flex items-center gap-1">📊 Volume</span>
+                    <span className="font-mono text-[8px]">{formatNumber(chartData[chartData.length - 1]?.volume || 0, { compact: true })}</span>
                   </div>
-                  <ResponsiveContainer width="100%" height="85%">
-                    <ComposedChart data={chartData} margin={{ top: 0, right: 55, bottom: 0, left: 5 }}>
+                  <ResponsiveContainer width="100%" height="75%">
+                    <ComposedChart data={chartData} margin={{ top: 0, right: 5, bottom: 0, left: 5 }}>
                       <XAxis dataKey="timeLabel" hide />
-                      <YAxis 
-                        domain={[0, 'dataMax']} 
-                        orientation="right"
-                        tick={{ fontSize: 7, fill: '#888' }}
-                        tickFormatter={(v) => formatNumber(v, { compact: true })}
-                        tickLine={false}
-                        axisLine={false}
-                        width={50}
-                        tickCount={2}
-                      />
-                      <Bar dataKey="volume" animationDuration={400}>
+                      <YAxis hide domain={[0, 'dataMax']} />
+                      <Bar dataKey="volume" animationDuration={400} radius={[2, 2, 0, 0]}>
                         {chartData.map((entry, index) => (
                           <Cell 
                             key={index} 
-                            fill={entry.isUp ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)'} 
+                            fill={entry.isUp ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)'} 
                           />
                         ))}
                       </Bar>
@@ -802,11 +873,11 @@ export function CamlyMarketPrice() {
                   </div>
                 </div>
                 
-                {/* Main Chart - Increased right margin for Y-axis */}
+                {/* Main Chart - Clean layout with proper spacing */}
                 <div className={cn("flex-1 transition-all duration-300 ease-out", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}>
                   <ResponsiveContainer width="100%" height="100%">
                     {chartType === 'line' ? (
-                      <ComposedChart data={chartData} margin={{ top: 10, right: 90, bottom: 20, left: 10 }}>
+                      <ComposedChart data={chartData} margin={{ top: 10, right: 20, bottom: 25, left: 10 }}>
                         <defs>
                           <linearGradient id="camlyPriceGradFull" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor={isPositiveChange ? '#10b981' : '#f43f5e'} stopOpacity={0.5} />
@@ -815,19 +886,29 @@ export function CamlyMarketPrice() {
                           </linearGradient>
                           <filter id="lineGlowFull"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                         </defs>
-                        <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
+                        <XAxis 
+                          dataKey="timeLabel" 
+                          tick={{ fontSize: 10, fill: '#888' }} 
+                          tickLine={false} 
+                          axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} 
+                          interval="preserveStartEnd" 
+                          height={25}
+                        />
                         <YAxis 
                           domain={[minPrice * 0.997, maxPrice * 1.003]} 
-                          orientation="right"
-                          tick={{ fontSize: 10, fill: '#888' }}
-                          tickFormatter={(value) => value.toFixed(8)}
+                          orientation="left"
+                          tick={{ fontSize: 9, fill: '#888' }}
+                          tickFormatter={(value) => `$${value.toFixed(8)}`}
                           tickLine={false}
                           axisLine={false}
-                          width={80}
-                          tickCount={7}
+                          width={90}
+                          tickCount={6}
                         />
-                        <Tooltip content={<CustomCandleTooltip />} />
-                        <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={2} />
+                        <Tooltip 
+                          content={<CustomCandleTooltip />}
+                          cursor={{ stroke: '#C9A227', strokeWidth: 1, strokeDasharray: '3 3' }}
+                          wrapperStyle={{ zIndex: 100 }}
+                        />
                         
                         {/* MA Lines */}
                         {activeIndicators.includes('ma') && (
@@ -850,24 +931,34 @@ export function CamlyMarketPrice() {
                         <Area type="monotone" dataKey="price" stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeWidth={3} fill="url(#camlyPriceGradFull)" dot={false} activeDot={{ r: 8, fill: '#C9A227', stroke: '#fff', strokeWidth: 3 }} animationDuration={800} animationEasing="ease-out" style={{ filter: 'url(#lineGlowFull)' }} />
                       </ComposedChart>
                     ) : (
-                      <ComposedChart data={chartData} margin={{ top: 10, right: 90, bottom: 20, left: 10 }}>
+                      <ComposedChart data={chartData} margin={{ top: 10, right: 20, bottom: 25, left: 10 }}>
                         <defs>
                           <linearGradient id="candleGreenFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#22c55e" /><stop offset="100%" stopColor="#16a34a" /></linearGradient>
                           <linearGradient id="candleRedFull" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" /><stop offset="100%" stopColor="#dc2626" /></linearGradient>
                         </defs>
-                        <XAxis dataKey="timeLabel" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} interval="preserveStartEnd" />
+                        <XAxis 
+                          dataKey="timeLabel" 
+                          tick={{ fontSize: 10, fill: '#888' }} 
+                          tickLine={false} 
+                          axisLine={{ stroke: '#C9A227', strokeOpacity: 0.3 }} 
+                          interval="preserveStartEnd"
+                          height={25}
+                        />
                         <YAxis 
-                          domain={[minPrice * 0.996, maxPrice * 1.004]} 
-                          orientation="right"
-                          tick={{ fontSize: 10, fill: '#888' }}
-                          tickFormatter={(value) => value.toFixed(8)}
+                          domain={[minPrice * 0.995, maxPrice * 1.005]} 
+                          orientation="left"
+                          tick={{ fontSize: 9, fill: '#888' }}
+                          tickFormatter={(value) => `$${value.toFixed(8)}`}
                           tickLine={false}
                           axisLine={false}
-                          width={80}
-                          tickCount={7}
+                          width={90}
+                          tickCount={6}
                         />
-                        <Tooltip content={<CustomCandleTooltip />} />
-                        <ReferenceLine y={currentPrice} stroke={isPositiveChange ? '#22c55e' : '#ef4444'} strokeDasharray="4 2" strokeWidth={2} />
+                        <Tooltip 
+                          content={<CustomCandleTooltip />}
+                          cursor={{ stroke: '#C9A227', strokeWidth: 1, strokeDasharray: '3 3' }}
+                          wrapperStyle={{ zIndex: 100 }}
+                        />
                         
                         {/* MA Lines */}
                         {activeIndicators.includes('ma') && (
@@ -887,19 +978,60 @@ export function CamlyMarketPrice() {
                           </>
                         )}
                         
-                        <Bar dataKey="close" shape={() => null} animationDuration={600} animationEasing="ease-out" />
-                        {chartData.map((entry, index) => {
-                          const barWidth = 100 / chartData.length;
-                          const x = index * barWidth;
-                          const yRange = maxPrice * 1.004 - minPrice * 0.996;
-                          const toY = (price: number) => ((maxPrice * 1.004 - price) / yRange) * 100;
-                          return (
-                            <g key={index}>
-                              <line x1={`${x + barWidth / 2}%`} y1={`${toY(entry.high)}%`} x2={`${x + barWidth / 2}%`} y2={`${toY(entry.low)}%`} stroke={entry.isUp ? '#22c55e' : '#ef4444'} strokeWidth={2} opacity={0.95} />
-                              <rect x={`${x + barWidth * 0.2}%`} y={`${toY(Math.max(entry.open, entry.close))}%`} width={`${barWidth * 0.6}%`} height={`${Math.max(Math.abs(toY(entry.open) - toY(entry.close)), 0.4)}%`} fill={entry.isUp ? 'url(#candleGreenFull)' : 'url(#candleRedFull)'} rx={2} stroke={entry.isUp ? '#16a34a' : '#dc2626'} strokeWidth={0.8} />
-                            </g>
-                          );
-                        })}
+                        {/* Candlestick bars using proper Bar component */}
+                        <Bar 
+                          dataKey="close" 
+                          shape={(props: any) => {
+                            const { x, y, width, payload, index } = props;
+                            if (!payload) return null;
+                            
+                            const { open, close, high, low, isUp } = payload;
+                            const color = isUp ? '#22c55e' : '#ef4444';
+                            const candleWidth = Math.max(width * 0.7, 3);
+                            const candleX = x + (width - candleWidth) / 2;
+                            
+                            // Calculate positions based on chart domain
+                            const yAxisDomain = [minPrice * 0.995, maxPrice * 1.005];
+                            const chartTop = 10;
+                            const chartHeight = 350; // Approximate for fullscreen
+                            const priceToY = (price: number) => {
+                              const [domainMin, domainMax] = yAxisDomain;
+                              return chartTop + ((domainMax - price) / (domainMax - domainMin)) * chartHeight;
+                            };
+                            
+                            const wickTop = priceToY(high);
+                            const wickBottom = priceToY(low);
+                            const bodyTop = priceToY(Math.max(open, close));
+                            const bodyBottom = priceToY(Math.min(open, close));
+                            const bodyHeight = Math.max(bodyBottom - bodyTop, 2);
+                            
+                            return (
+                              <g key={index}>
+                                {/* Wick line */}
+                                <line
+                                  x1={x + width / 2}
+                                  y1={wickTop}
+                                  x2={x + width / 2}
+                                  y2={wickBottom}
+                                  stroke={color}
+                                  strokeWidth={1.5}
+                                />
+                                {/* Body rectangle */}
+                                <rect
+                                  x={candleX}
+                                  y={bodyTop}
+                                  width={candleWidth}
+                                  height={bodyHeight}
+                                  fill={isUp ? 'url(#candleGreenFull)' : 'url(#candleRedFull)'}
+                                  rx={2}
+                                  stroke={isUp ? '#16a34a' : '#dc2626'}
+                                  strokeWidth={0.5}
+                                />
+                              </g>
+                            );
+                          }}
+                          animationDuration={600}
+                        />
                       </ComposedChart>
                     )}
                   </ResponsiveContainer>
