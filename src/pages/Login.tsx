@@ -14,7 +14,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 // Validation schemas
 const emailSchema = z.string().email('Email không hợp lệ');
-const passwordSchema = z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự');
+const passwordSchema = z.string()
+  .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+  .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất 1 chữ hoa')
+  .regex(/[a-z]/, 'Mật khẩu phải có ít nhất 1 chữ thường')
+  .regex(/[0-9]/, 'Mật khẩu phải có ít nhất 1 số');
 
 const Login = () => {
   const navigate = useNavigate();
@@ -258,7 +262,7 @@ const Login = () => {
                     <Input
                       id="signup-password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Ít nhất 6 ký tự"
+                      placeholder="Ít nhất 8 ký tự, chữ hoa, thường, số"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10"
