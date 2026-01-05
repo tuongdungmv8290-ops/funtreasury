@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { useViewMode } from '@/contexts/ViewModeContext';
 
 interface EditableNoteProps {
   value: string | null;
@@ -16,6 +17,7 @@ interface EditableNoteProps {
 }
 
 export function EditableNote({ value, onSave, isLoading }: EditableNoteProps) {
+  const { isViewOnly } = useViewMode();
   const [isOpen, setIsOpen] = useState(false);
   const [editValue, setEditValue] = useState(value || '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -43,6 +45,19 @@ export function EditableNote({ value, onSave, isLoading }: EditableNoteProps) {
     return (
       <div className="flex items-center gap-2 py-1">
         <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // View only mode - just display the value
+  if (isViewOnly) {
+    return (
+      <div className={cn(
+        "flex items-center gap-1.5 px-2 py-1 text-sm",
+        value ? "text-foreground" : "text-muted-foreground"
+      )}>
+        <FileText className="w-3.5 h-3.5 shrink-0" />
+        <span className="truncate max-w-[120px]">{value || '-'}</span>
       </div>
     );
   }

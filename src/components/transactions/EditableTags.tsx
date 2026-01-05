@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useViewMode } from '@/contexts/ViewModeContext';
 
 interface EditableTagsProps {
   value: string[] | null;
@@ -30,6 +31,7 @@ const SUGGESTED_TAGS = [
 ];
 
 export function EditableTags({ value, onSave, isLoading }: EditableTagsProps) {
+  const { isViewOnly } = useViewMode();
   const [isOpen, setIsOpen] = useState(false);
   const [tags, setTags] = useState<string[]>(value || []);
   const [newTag, setNewTag] = useState('');
@@ -68,6 +70,31 @@ export function EditableTags({ value, onSave, isLoading }: EditableTagsProps) {
     return (
       <div className="flex items-center gap-2 py-1">
         <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // View only mode - just display the tags
+  if (isViewOnly) {
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-1">
+        {value && value.length > 0 ? (
+          <div className="flex items-center gap-1 flex-wrap max-w-[150px]">
+            {value.slice(0, 2).map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary border border-primary/30"
+              >
+                {tag}
+              </span>
+            ))}
+            {value.length > 2 && (
+              <span className="text-xs text-muted-foreground">+{value.length - 2}</span>
+            )}
+          </div>
+        ) : (
+          <span className="text-sm text-muted-foreground">-</span>
+        )}
       </div>
     );
   }

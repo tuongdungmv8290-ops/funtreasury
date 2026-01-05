@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useViewMode } from '@/contexts/ViewModeContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Eye, EyeOff, Lock, Mail, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Validation schemas
 const emailSchema = z.string().email('Email không hợp lệ');
@@ -18,6 +20,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signIn, signUp, loading } = useAuth();
+  const { enterViewMode } = useViewMode();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -193,9 +196,40 @@ const Login = () => {
                       Đang đăng nhập...
                     </>
                   ) : (
-                    'Đăng nhập'
+                    'Đăng nhập Admin'
                   )}
                 </Button>
+                
+                {/* View Only Button */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">hoặc</span>
+                  </div>
+                </div>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-medium"
+                      onClick={() => {
+                        enterViewMode();
+                        toast.success('Chế độ Chỉ Xem đã được kích hoạt!');
+                        navigate('/');
+                      }}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      👁️ Chỉ Xem (View Only)
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p>Xem realtime balances, biểu đồ CAMLY, transactions... không cần đăng nhập!</p>
+                  </TooltipContent>
+                </Tooltip>
               </form>
             </TabsContent>
 
