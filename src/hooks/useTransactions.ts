@@ -33,8 +33,8 @@ export interface TransactionFilters {
   days?: number;
 }
 
-// List of valid tokens to show in transaction history
-const VALID_TOKEN_SYMBOLS = ['CAMLY', 'BNB', 'USDT', 'USDC', 'BTC', 'BTCB', 'ETH', 'MATIC'];
+// List of valid tokens to show in transaction history - expanded for Treasury
+const VALID_TOKEN_SYMBOLS = ['CAMLY', 'BNB', 'USDT', 'USDC', 'BTC', 'BTCB', 'ETH', 'MATIC', 'FUN'];
 
 // Detect spam/scam token symbols (Unicode tricks, special characters)
 function isValidTokenSymbol(symbol: string): boolean {
