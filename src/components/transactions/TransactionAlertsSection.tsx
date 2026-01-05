@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { AlertTriangle, Bell, Save, RefreshCw, Eye } from 'lucide-react';
 import { useTransactionAlerts } from '@/hooks/useTransactionAlerts';
 import { useViewMode } from '@/contexts/ViewModeContext';
+import { toast } from 'sonner';
 
 interface TransactionAlertsSectionProps {
   viewOnly?: boolean;
@@ -79,7 +80,14 @@ export const TransactionAlertsSection = ({ viewOnly = false }: TransactionAlerts
 
       <div className="space-y-6">
         {/* Enable/Disable Alert */}
-        <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20">
+        <div 
+          className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 cursor-pointer"
+          onClick={() => {
+            if (isReadOnly) {
+              toast.info('🔒 Chế độ Chỉ Xem - Đăng nhập để chỉnh sửa cài đặt', { duration: 2000 });
+            }
+          }}
+        >
           <div>
             <Label htmlFor="alertEnabled" className="text-foreground font-medium">Enable Transaction Alerts</Label>
             <p className="text-sm text-muted-foreground">
@@ -96,7 +104,14 @@ export const TransactionAlertsSection = ({ viewOnly = false }: TransactionAlerts
         </div>
 
         {/* Threshold */}
-        <div className="space-y-2">
+        <div 
+          className="space-y-2"
+          onClick={() => {
+            if (isReadOnly) {
+              toast.info('🔒 Chế độ Chỉ Xem - Đăng nhập để chỉnh sửa ngưỡng cảnh báo', { duration: 2000 });
+            }
+          }}
+        >
           <Label htmlFor="alertThreshold" className="text-foreground font-medium">
             Ngưỡng cảnh báo (USD)
           </Label>

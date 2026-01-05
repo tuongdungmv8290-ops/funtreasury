@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ViewModeProvider } from "@/contexts/ViewModeContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ViewOnlyWatermark } from "@/components/ViewOnlyWatermark";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Transactions from "./pages/Transactions";
@@ -24,6 +25,7 @@ const App = () => (
         <BrowserRouter>
           <ViewModeProvider>
             <AuthProvider>
+              <ViewOnlyWatermark />
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route
