@@ -1,26 +1,39 @@
-import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, Settings, Wallet, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, ArrowLeftRight, Settings, Wallet, LogOut, Eye, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useViewMode } from '@/contexts/ViewModeContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { NotificationCenter } from './NotificationCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Badge } from '@/components/ui/badge';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
 ];
 
 export function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { signOut, user } = useAuth();
+  const { isViewOnly, exitViewMode } = useViewMode();
 
   const handleLogout = async () => {
-    await signOut();
-    toast.success('Đã đăng xuất thành công');
+    if (isViewOnly) {
+      exitViewMode();
+      toast.success('Đã thoát chế độ Chỉ Xem');
+      navigate('/login');
+    } else {
+      await signOut();
+      toast.success('Đã đăng xuất thành công');
+    }
   };
+
+  // Filter nav items based on view mode
+  const visibleNavItems = navItems.filter(item => !item.adminOnly || !isViewOnly);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
@@ -38,9 +51,17 @@ export function Header() {
           </div>
         </Link>
 
+        {/* View Only Badge */}
+        {isViewOnly && (
+          <Badge variant="outline" className="hidden sm:flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1">
+            <Eye className="w-3 h-3" />
+            Chế độ Chỉ Xem
+          </Badge>
+        )}
+
         {/* Navigation */}
         <nav className="hidden md:flex items-center gap-1 bg-secondary/50 p-1 rounded-xl">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             
@@ -66,11 +87,11 @@ export function Header() {
           {/* Theme Toggle */}
           <ThemeToggle />
           
-          {/* Notification Center */}
-          {user && <NotificationCenter />}
+          {/* Notification Center - only for logged in users */}
+          {user && !isViewOnly && <NotificationCenter />}
           
           {/* User info & Logout */}
-          {user && (
+          {user && !isViewOnly && (
             <div className="hidden sm:flex items-center gap-3">
               <span className="text-sm text-muted-foreground truncate max-w-[150px]">
                 {user.email}
@@ -87,9 +108,36 @@ export function Header() {
             </div>
           )}
 
+          {/* View Only mode - Login button */}
+          {isViewOnly && (
+            <div className="hidden sm:flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  exitViewMode();
+                  navigate('/login');
+                }}
+                className="border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <LogIn className="h-4 w-4 mr-1" />
+                Đăng nhập Admin
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                Thoát
+              </Button>
+            </div>
+          )}
+
           {/* Mobile Navigation */}
           <nav className="flex md:hidden items-center gap-1 bg-secondary/50 p-1 rounded-xl">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               
@@ -108,7 +156,7 @@ export function Header() {
                 </Link>
               );
             })}
-            {user && (
+            {(user || isViewOnly) && (
               <button
                 onClick={handleLogout}
                 className="flex items-center justify-center w-10 h-10 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"

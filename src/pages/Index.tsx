@@ -11,7 +11,7 @@ import { CamlyTradesCard } from '@/components/dashboard/CamlyTradesCard';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/mockData';
-import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown } from 'lucide-react';
+import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown, Eye } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -22,8 +22,11 @@ import { vi } from 'date-fns/locale';
 import { useTransactionNotifications } from '@/hooks/useTransactionNotifications';
 import { useTreasuryReport, ReportFilters } from '@/hooks/useTreasuryReport';
 import { ReportFilterDialog } from '@/components/reports/ReportFilterDialog';
+import { useViewMode } from '@/contexts/ViewModeContext';
+import { Badge } from '@/components/ui/badge';
 
 const Index = () => {
+  const { isViewOnly } = useViewMode();
   const [dateRange, setDateRange] = useState<7 | 30>(30);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
@@ -174,42 +177,53 @@ const Index = () => {
                 30 Days
               </button>
             </div>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline"
-                className="gap-2 border-treasury-gold/50 text-treasury-gold hover:bg-treasury-gold/10"
-                onClick={() => setShowReportDialog(true)}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <FileDown className="w-4 h-4" />
-                )}
-                <span className="hidden sm:inline">Export PDF</span>
-              </Button>
-              <div className="flex flex-col items-end gap-1">
+            {/* Admin actions - hidden in View Only mode */}
+            {!isViewOnly && (
+              <div className="flex items-center gap-2">
                 <Button 
-                  className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg hover:shadow-xl transition-all px-4 md:px-6"
-                  onClick={handleSyncNow}
-                  disabled={isSyncing}
+                  variant="outline"
+                  className="gap-2 border-treasury-gold/50 text-treasury-gold hover:bg-treasury-gold/10"
+                  onClick={() => setShowReportDialog(true)}
+                  disabled={isGenerating}
                 >
-                  {isSyncing ? (
+                  {isGenerating ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <RefreshCw className="w-4 h-4" />
+                    <FileDown className="w-4 h-4" />
                   )}
-                  <span className="hidden sm:inline">Sync Now</span>
-                  <span className="sm:hidden">Sync</span>
+                  <span className="hidden sm:inline">Export PDF</span>
                 </Button>
-                {getLastSyncedText() && (
-                  <span className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    Last synced: {getLastSyncedText()}
-                  </span>
-                )}
+                <div className="flex flex-col items-end gap-1">
+                  <Button 
+                    className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg hover:shadow-xl transition-all px-4 md:px-6"
+                    onClick={handleSyncNow}
+                    disabled={isSyncing}
+                  >
+                    {isSyncing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4" />
+                    )}
+                    <span className="hidden sm:inline">Sync Now</span>
+                    <span className="sm:hidden">Sync</span>
+                  </Button>
+                  {getLastSyncedText() && (
+                    <span className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Last synced: {getLastSyncedText()}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+            
+            {/* View Only indicator */}
+            {isViewOnly && (
+              <Badge variant="outline" className="flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1.5">
+                <Eye className="w-3.5 h-3.5" />
+                Chế độ Chỉ Xem
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -339,10 +353,12 @@ const Index = () => {
           <PortfolioHistoryChart />
         </div>
 
-        {/* Bulk Transfer Section */}
-        <div className="mb-6 md:mb-8">
-          <BulkTransferSection />
-        </div>
+        {/* Bulk Transfer Section - Admin only */}
+        {!isViewOnly && (
+          <div className="mb-6 md:mb-8">
+            <BulkTransferSection />
+          </div>
+        )}
 
         {/* Charts, Token Balances and Recent Transactions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

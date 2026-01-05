@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Loader2, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useViewMode } from '@/contexts/ViewModeContext';
 
 interface EditableCategoryProps {
   value: string | null;
@@ -10,6 +11,7 @@ interface EditableCategoryProps {
 }
 
 export function EditableCategory({ value, onSave, isLoading }: EditableCategoryProps) {
+  const { isViewOnly } = useViewMode();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value || '');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +60,18 @@ export function EditableCategory({ value, onSave, isLoading }: EditableCategoryP
         className="h-7 w-28 text-sm bg-white border-primary/50 focus:border-primary"
         placeholder="Category..."
       />
+    );
+  }
+
+  // View only mode - just display the value
+  if (isViewOnly) {
+    return (
+      <div className={cn(
+        "px-2 py-1 text-sm",
+        value ? "text-foreground" : "text-muted-foreground"
+      )}>
+        {value || '-'}
+      </div>
     );
   }
 
