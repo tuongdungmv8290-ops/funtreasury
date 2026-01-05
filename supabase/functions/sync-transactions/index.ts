@@ -268,17 +268,47 @@ serve(async (req) => {
         headers.set('X-API-Key', moralisApiKey.trim());
         headers.set('Accept', 'application/json');
 
+        // Fetch token contracts from database for proper symbol mapping
+        const { data: tokenContracts } = await supabase
+          .from('token_contracts')
+          .select('contract_address, symbol');
+        
+        // Build token contract address to symbol map
+        const tokenContractsMap: Record<string, string> = {};
+        if (tokenContracts) {
+          for (const tc of tokenContracts) {
+            if (tc.contract_address) {
+              tokenContractsMap[tc.contract_address.toLowerCase()] = tc.symbol;
+            }
+          }
+        }
+        console.log(`Loaded ${Object.keys(tokenContractsMap).length} token contracts for mapping`);
+
+        // Token prices for USD value calculation
+        const tokenPrices: Record<string, number> = {
+          'CAMLY': 0.000022,
+          'BNB': 710,
+          'USDT': 1,
+          'USDC': 1,
+          'BTCB': 97000,
+          'BTC': 97000,
+          'ETH': 3500,
+          'MATIC': 0.5,
+          'FUN': 0.01,
+        };
+
         // Fetch ERC20 token transfers with from_block for incremental sync
         // Use pagination with cursor - loop until no more results
         const fromBlockParam = lastBlockSynced > 0 ? `&from_block=${lastBlockSynced + 1}` : '';
         let erc20Transfers: ERC20Transfer[] = [];
         let erc20Cursor: string | null = null;
         let pageCount = 0;
-        const MAX_PAGES = 10; // Safety limit: 10 pages x 1000 = 10,000 transactions max per sync
+        const MAX_PAGES = 20; // Increased: 20 pages x 100 = 2,000 transactions max per sync
         
         do {
           const cursorParam = erc20Cursor ? `&cursor=${erc20Cursor}` : '';
-          const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=1000${fromBlockParam}${cursorParam}`;
+          // Moralis free tier limit is 100 per request
+          const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=100${fromBlockParam}${cursorParam}`;
           console.log(`Calling Moralis ERC20 API (page ${pageCount + 1}): ${transfersUrl}`);
           
           const response = await fetch(transfersUrl, {
@@ -309,7 +339,8 @@ serve(async (req) => {
         
         do {
           const cursorParam = nativeCursor ? `&cursor=${nativeCursor}` : '';
-          const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=1000${fromBlockParam}${cursorParam}`;
+          // Moralis free tier limit is 100 per request
+          const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=100${fromBlockParam}${cursorParam}`;
           console.log(`Calling Moralis Native API (page ${pageCount + 1}): ${nativeUrl}`);
           
           const nativeResponse = await fetch(nativeUrl, {
@@ -362,6 +393,20 @@ serve(async (req) => {
             amount = 0;
           }
 
+          // Map token symbol from token_contracts if available
+          let tokenSymbol = tx.token_symbol || 'UNKNOWN';
+          if (tx.token_address) {
+            const mappedSymbol = tokenContractsMap[tx.token_address.toLowerCase()];
+            if (mappedSymbol) {
+              tokenSymbol = mappedSymbol;
+              console.log(`Mapped token ${tx.token_address} to ${mappedSymbol}`);
+            }
+          }
+
+          // Calculate USD value based on token price
+          const tokenPrice = tokenPrices[tokenSymbol.toUpperCase()] || 0;
+          const usdValue = amount * tokenPrice;
+
           const transactionData = {
             wallet_id: wallet.id,
             tx_hash: tx.transaction_hash,
@@ -371,9 +416,9 @@ serve(async (req) => {
             to_address: tx.to_address || '',
             direction: direction,
             token_address: tx.token_address || null,
-            token_symbol: tx.token_symbol || 'UNKNOWN',
+            token_symbol: tokenSymbol,
             amount: amount,
-            usd_value: 0,
+            usd_value: usdValue,
             gas_fee: 0,
             status: 'success'
           };
@@ -415,6 +460,10 @@ serve(async (req) => {
             amount = 0;
           }
 
+          // Calculate USD value for native token
+          const nativePrice = tokenPrices[nativeSymbol.toUpperCase()] || 0;
+          const nativeUsdValue = amount * nativePrice;
+
           const transactionData = {
             wallet_id: wallet.id,
             tx_hash: tx.hash, // Use 'hash' for native transfers
@@ -426,7 +475,7 @@ serve(async (req) => {
             token_address: null,
             token_symbol: nativeSymbol,
             amount: amount,
-            usd_value: 0,
+            usd_value: nativeUsdValue,
             gas_fee: 0,
             status: 'success'
           };
