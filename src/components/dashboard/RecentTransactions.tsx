@@ -6,7 +6,10 @@ import { useTransactions } from '@/hooks/useTransactions';
 
 export function RecentTransactions() {
   const { data: transactions, isLoading } = useTransactions({ days: 30 });
-  const recentTxs = transactions?.slice(0, 5) || [];
+  // Filter để chỉ hiển thị CAMLY và USDT với amount > 0
+  const recentTxs = transactions
+    ?.filter(tx => tx.amount > 0 && ['CAMLY', 'USDT'].includes(tx.token_symbol.toUpperCase()))
+    .slice(0, 5) || [];
 
   return (
     <div className="treasury-card animate-fade-in" style={{ animationDelay: '500ms' }}>

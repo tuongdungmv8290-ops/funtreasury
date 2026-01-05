@@ -33,23 +33,16 @@ export interface TransactionFilters {
   days?: number;
 }
 
-// List of valid tokens to show in transaction history - expanded for Treasury
-const VALID_TOKEN_SYMBOLS = ['CAMLY', 'BNB', 'USDT', 'USDC', 'BTC', 'BTCB', 'ETH', 'MATIC', 'FUN'];
+// List of valid tokens to show in transaction history - CHỈ CAMLY và USDT
+const VALID_TOKEN_SYMBOLS = ['CAMLY', 'USDT'];
 
 // Detect spam/scam token symbols (Unicode tricks, special characters)
 function isValidTokenSymbol(symbol: string): boolean {
   if (!symbol) return false;
   const upperSymbol = symbol.toUpperCase().trim();
   
-  // Only allow known tokens
-  if (VALID_TOKEN_SYMBOLS.includes(upperSymbol)) return true;
-  
-  // Filter out fake tokens with Unicode tricks (e.g., ꓴꓢꓓꓔ)
-  // Valid symbols should only contain A-Z, 0-9
-  const validPattern = /^[A-Z0-9]{1,10}$/;
-  if (!validPattern.test(upperSymbol)) return false;
-  
-  return false; // Only show known tokens for now
+  // Only allow CAMLY and USDT
+  return VALID_TOKEN_SYMBOLS.includes(upperSymbol);
 }
 
 export function useTransactions(filters?: TransactionFilters) {
@@ -86,6 +79,8 @@ export function useTransactions(filters?: TransactionFilters) {
       let transactions = (data || [])
         // Filter out spam/scam tokens
         .filter(tx => isValidTokenSymbol(tx.token_symbol))
+        // Filter out transactions with amount = 0 or very small
+        .filter(tx => Number(tx.amount) > 0)
         .map(tx => ({
           id: tx.id,
           wallet_id: tx.wallet_id,
