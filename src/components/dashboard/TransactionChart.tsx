@@ -19,7 +19,8 @@ export function TransactionChart() {
     });
 
     (transactions || []).forEach((tx) => {
-      if (tx.status !== 'success') return;
+      // Bỏ qua giao dịch failed hoặc amount = 0
+      if (tx.status !== 'success' || tx.amount <= 0) return;
       
       const txDate = new Date(tx.timestamp);
       const dayIndex = last14Days.findIndex((d) => {
