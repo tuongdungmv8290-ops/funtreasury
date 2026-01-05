@@ -100,6 +100,14 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
+      // Refresh session to ensure valid token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+        setIsSyncing(false);
+        return;
+      }
+      
       const { data, error } = await supabase.functions.invoke('sync-transactions');
       if (error) throw error;
       
