@@ -17,6 +17,9 @@ import {
   Loader2,
   Filter,
   ChevronDown,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -41,7 +44,10 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Transaction } from '@/hooks/useTransactions';
 
-const ITEMS_PER_PAGE = 10;
+type SortField = 'timestamp' | 'token_symbol' | 'amount' | 'usd_value' | 'direction';
+type SortOrder = 'asc' | 'desc';
+
+const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 // Format date as DD/MM/YYYY HH:mm for CSV
 const formatDateCSV = (date: Date): string => {
@@ -119,8 +125,11 @@ const Transactions = () => {
   const [directionFilter, setDirectionFilter] = useState<string>('all');
   const [tokenFilter, setTokenFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [sortField, setSortField] = useState<SortField>('timestamp');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   const { data: wallets } = useWallets();
   const { data: transactions, isLoading } = useTransactions({
@@ -157,18 +166,73 @@ const Transactions = () => {
     return Array.from(tokenSet);
   }, [transactions]);
 
-  const filteredTransactions = transactions || [];
+  // Sort transactions
+  const sortedTransactions = useMemo(() => {
+    if (!transactions) return [];
+    
+    return [...transactions].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortField) {
+        case 'timestamp':
+          comparison = a.timestamp.getTime() - b.timestamp.getTime();
+          break;
+        case 'token_symbol':
+          comparison = a.token_symbol.localeCompare(b.token_symbol);
+          break;
+        case 'amount':
+          comparison = a.amount - b.amount;
+          break;
+        case 'usd_value':
+          comparison = a.usd_value - b.usd_value;
+          break;
+        case 'direction':
+          comparison = a.direction.localeCompare(b.direction);
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [transactions, sortField, sortOrder]);
 
   const paginatedTransactions = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredTransactions.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredTransactions, currentPage]);
+    const start = (currentPage - 1) * pageSize;
+    return sortedTransactions.slice(start, start + pageSize);
+  }, [sortedTransactions, currentPage, pageSize]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(sortedTransactions.length / pageSize));
+
+  // Reset page when filters or page size change
+  const handlePageSizeChange = (newSize: string) => {
+    setPageSize(Number(newSize));
+    setCurrentPage(1);
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground/50" />;
+    }
+    return sortOrder === 'asc' 
+      ? <ArrowUp className="w-3.5 h-3.5 text-treasury-gold" />
+      : <ArrowDown className="w-3.5 h-3.5 text-treasury-gold" />;
+  };
 
   const copyToClipboard = async (text: string, id: string) => {
     await navigator.clipboard.writeText(text);
     setCopiedId(id);
+    toast({
+      title: "✅ Đã copy!",
+      description: text.slice(0, 20) + "...",
+    });
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -246,7 +310,7 @@ const Transactions = () => {
 
   // Export filtered transactions (currently visible after filters)
   const exportFilteredCSV = () => {
-    if (filteredTransactions.length === 0) {
+    if (sortedTransactions.length === 0) {
       toast({
         title: "Không có dữ liệu",
         description: "Không có transactions nào để export",
@@ -255,8 +319,8 @@ const Transactions = () => {
       return;
     }
     
-    const csv = generateCSV(filteredTransactions);
-    downloadCSV(csv, filteredTransactions.length);
+    const csv = generateCSV(sortedTransactions);
+    downloadCSV(csv, sortedTransactions.length);
   };
 
   // Export ALL transactions from database
@@ -322,15 +386,15 @@ const Transactions = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container py-8">
+      <main className="container py-8 max-w-[1600px]">
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-1">
-              <span className="gold-text">Transactions</span>
+              <span className="gold-text">📊 Transactions</span>
             </h1>
             <p className="text-muted-foreground">
-              {filteredTransactions.length} transactions found
+              {sortedTransactions.length} transactions found • Excel-style view
             </p>
           </div>
           
@@ -358,7 +422,7 @@ const Transactions = () => {
                 <div className="flex flex-col">
                   <span className="font-medium">Export Filtered</span>
                   <span className="text-xs text-muted-foreground">
-                    {filteredTransactions.length} transactions
+                    {sortedTransactions.length} transactions
                   </span>
                 </div>
               </DropdownMenuItem>
@@ -379,21 +443,21 @@ const Transactions = () => {
           </DropdownMenu>
         </div>
 
-        {/* Filters */}
-        <div className="treasury-card mb-6">
+        {/* Filters - Excel-style toolbar */}
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-treasury-gold/20 rounded-lg p-4 mb-4 shadow-sm">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search by hash, token, address..."
+                placeholder="🔍 Search by hash, token, address..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-white border-border focus:border-primary focus:ring-primary/20"
+                className="pl-10 bg-white border-treasury-gold/30 focus:border-treasury-gold focus:ring-treasury-gold/20"
               />
             </div>
             <div className="flex flex-wrap gap-3">
               <Select value={walletFilter} onValueChange={setWalletFilter}>
-                <SelectTrigger className="w-[160px] bg-white border-border hover:border-primary/50 transition-colors">
+                <SelectTrigger className="w-[160px] bg-white border-treasury-gold/30 hover:border-treasury-gold transition-colors">
                   <SelectValue placeholder="All Wallets" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-border shadow-lg">
@@ -407,18 +471,18 @@ const Transactions = () => {
               </Select>
 
               <Select value={directionFilter} onValueChange={setDirectionFilter}>
-                <SelectTrigger className="w-[140px] bg-white border-border hover:border-primary/50 transition-colors">
+                <SelectTrigger className="w-[140px] bg-white border-treasury-gold/30 hover:border-treasury-gold transition-colors">
                   <SelectValue placeholder="All Directions" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-border shadow-lg">
                   <SelectItem value="all">All Directions</SelectItem>
-                  <SelectItem value="IN">Inflow</SelectItem>
-                  <SelectItem value="OUT">Outflow</SelectItem>
+                  <SelectItem value="IN">↓ Inflow</SelectItem>
+                  <SelectItem value="OUT">↑ Outflow</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={tokenFilter} onValueChange={setTokenFilter}>
-                <SelectTrigger className="w-[120px] bg-white border-border hover:border-primary/50 transition-colors">
+                <SelectTrigger className="w-[120px] bg-white border-treasury-gold/30 hover:border-treasury-gold transition-colors">
                   <SelectValue placeholder="All Tokens" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-border shadow-lg">
@@ -430,61 +494,125 @@ const Transactions = () => {
                   ))}
                 </SelectContent>
               </Select>
+
+              <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="w-[110px] bg-white border-treasury-gold/30 hover:border-treasury-gold transition-colors">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-border shadow-lg">
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <SelectItem key={size} value={size.toString()}>
+                      {size} / page
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
 
-        {/* Transactions Table */}
-        <div className="treasury-card overflow-hidden bg-white">
+        {/* Transactions Table - Excel Style */}
+        <div className="bg-white rounded-lg border border-treasury-gold/20 shadow-lg overflow-hidden">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-treasury-gold" />
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-10 h-10 animate-spin text-treasury-gold" />
+              <span className="ml-3 text-muted-foreground">Loading transactions...</span>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-secondary/50">
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Date</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Wallet</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Direction</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Token</th>
-                      <th className="text-right py-4 px-4 text-sm font-semibold text-foreground">Amount</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">From/To</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Tx Hash</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Status</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Category</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Note</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-foreground">Tags</th>
+              <div className="overflow-x-auto max-h-[calc(100vh-320px)]">
+                <table className="w-full min-w-[1400px]">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-gradient-to-r from-treasury-gold/10 to-amber-100 border-b-2 border-treasury-gold/30">
+                      <th 
+                        className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        onClick={() => handleSort('timestamp')}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          Date {getSortIcon('timestamp')}
+                        </div>
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                        Wallet
+                      </th>
+                      <th 
+                        className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        onClick={() => handleSort('direction')}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          Direction {getSortIcon('direction')}
+                        </div>
+                      </th>
+                      <th 
+                        className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        onClick={() => handleSort('token_symbol')}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          Token {getSortIcon('token_symbol')}
+                        </div>
+                      </th>
+                      <th 
+                        className="text-right py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        onClick={() => handleSort('amount')}
+                      >
+                        <div className="flex items-center justify-end gap-1.5">
+                          Amount {getSortIcon('amount')}
+                        </div>
+                      </th>
+                      <th 
+                        className="text-right py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        onClick={() => handleSort('usd_value')}
+                      >
+                        <div className="flex items-center justify-end gap-1.5">
+                          USD Value {getSortIcon('usd_value')}
+                        </div>
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                        From/To
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                        Tx Hash
+                      </th>
+                      <th className="text-center py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                        Status
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                        Category
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                        Note
+                      </th>
+                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                        Tags
+                      </th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-border/50">
                     {paginatedTransactions.map((tx, index) => (
                       <tr
                         key={tx.id}
                         className={cn(
-                          "border-b border-border/50 hover:bg-primary/5 transition-colors group",
-                          index % 2 === 0 ? "bg-white" : "bg-secondary/30"
+                          "hover:bg-treasury-gold/5 transition-colors group",
+                          index % 2 === 0 ? "bg-white" : "bg-amber-50/30"
                         )}
                       >
-                        <td className="py-4 px-4">
-                          <span className="text-sm text-foreground">
+                        <td className="py-3 px-4">
+                          <span className="text-sm text-foreground font-medium">
                             {formatDate(tx.timestamp)}
                           </span>
                         </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm text-muted-foreground font-medium">
+                        <td className="py-3 px-4">
+                          <span className="text-sm text-muted-foreground font-medium bg-secondary/50 px-2 py-0.5 rounded">
                             {getWalletShortName(tx.wallet_id)}
                           </span>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-4">
                           <div
                             className={cn(
-                              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold',
+                              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold',
                               tx.direction === 'IN'
-                                ? 'bg-inflow/10 text-inflow border border-inflow/20'
-                                : 'bg-outflow/10 text-outflow border border-outflow/20'
+                                ? 'bg-inflow/15 text-inflow border border-inflow/30'
+                                : 'bg-outflow/15 text-outflow border border-outflow/30'
                             )}
                           >
                             {tx.direction === 'IN' ? (
@@ -492,33 +620,33 @@ const Transactions = () => {
                             ) : (
                               <ArrowUpRight className="w-3 h-3" />
                             )}
-                            {tx.direction === 'IN' ? 'In' : 'Out'}
+                            {tx.direction}
                           </div>
                         </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm font-semibold text-foreground">
+                        <td className="py-3 px-4">
+                          <span className="text-sm font-bold text-foreground bg-treasury-gold/10 px-2 py-0.5 rounded">
                             {tx.token_symbol}
                           </span>
                         </td>
-                        <td className="py-4 px-4 text-right">
-                          <div>
-                            <p
-                              className={cn(
-                                'text-sm font-mono font-semibold',
-                                tx.direction === 'IN' ? 'text-inflow' : 'text-outflow'
-                              )}
-                            >
-                              {tx.direction === 'IN' ? '+' : '-'}
-                              {tx.amount.toLocaleString()}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatCurrency(tx.usd_value)}
-                            </p>
-                          </div>
+                        <td className="py-3 px-4 text-right">
+                          <p
+                            className={cn(
+                              'text-sm font-mono font-bold',
+                              tx.direction === 'IN' ? 'text-inflow' : 'text-outflow'
+                            )}
+                          >
+                            {tx.direction === 'IN' ? '+' : '-'}
+                            {tx.amount.toLocaleString('en-US', { maximumFractionDigits: 4 })}
+                          </p>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-4 text-right">
+                          <p className="text-sm font-semibold text-foreground">
+                            {formatCurrency(tx.usd_value)}
+                          </p>
+                        </td>
+                        <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground font-mono">
+                            <span className="text-sm text-muted-foreground font-mono bg-secondary/50 px-2 py-0.5 rounded">
                               {shortenAddress(
                                 tx.direction === 'IN' ? tx.from_address : tx.to_address
                               )}
@@ -531,59 +659,72 @@ const Transactions = () => {
                                 )
                               }
                               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
+                              title="Copy full address"
                             >
                               {copiedId === `addr-${tx.id}` ? (
                                 <CheckCircle className="w-3.5 h-3.5 text-inflow" />
                               ) : (
-                                <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                                <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
                               )}
                             </button>
                           </div>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground font-mono">
                               {shortenAddress(tx.tx_hash)}
                             </span>
                             <a
-                              href={`https://bscscan.com/tx/${tx.tx_hash}`}
+                              href={getExplorerLink(tx.tx_hash)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
+                              className="p-1 hover:bg-treasury-gold/10 rounded transition-colors"
+                              title="View on BscScan"
                             >
-                              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                              <ExternalLink className="w-3.5 h-3.5 text-treasury-gold hover:text-treasury-gold-dark" />
                             </a>
+                            <button
+                              onClick={() => copyToClipboard(tx.tx_hash, `hash-${tx.id}`)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
+                              title="Copy tx hash"
+                            >
+                              {copiedId === `hash-${tx.id}` ? (
+                                <CheckCircle className="w-3.5 h-3.5 text-inflow" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
+                              )}
+                            </button>
                           </div>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-4 text-center">
                           <span
                             className={cn(
-                              'inline-flex px-2.5 py-1 rounded-full text-xs font-semibold',
+                              'inline-flex px-2.5 py-1 rounded-full text-xs font-bold',
                               tx.status === 'success'
-                                ? 'bg-inflow/10 text-inflow'
+                                ? 'bg-inflow/15 text-inflow'
                                 : tx.status === 'failed'
-                                ? 'bg-outflow/10 text-outflow'
-                                : 'bg-primary/10 text-primary'
+                                ? 'bg-outflow/15 text-outflow'
+                                : 'bg-primary/15 text-primary'
                             )}
                           >
-                            {tx.status}
+                            {tx.status === 'success' ? '✓' : tx.status === 'failed' ? '✗' : '⏳'} {tx.status}
                           </span>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-4">
                           <EditableCategory
                             value={tx.metadata?.category || null}
                             onSave={(category) => handleUpdateCategory(tx.id, category)}
                             isLoading={savingTxId === tx.id && updateMetadata.isPending}
                           />
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-4">
                           <EditableNote
                             value={tx.metadata?.note || null}
                             onSave={(note) => handleUpdateNote(tx.id, note)}
                             isLoading={savingTxId === tx.id && updateMetadata.isPending}
                           />
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-3 px-4">
                           <EditableTags
                             value={tx.metadata?.tags || null}
                             onSave={(tags) => handleUpdateTags(tx.id, tags)}
@@ -592,38 +733,95 @@ const Transactions = () => {
                         </td>
                       </tr>
                     ))}
+                    {paginatedTransactions.length === 0 && (
+                      <tr>
+                        <td colSpan={12} className="py-12 text-center text-muted-foreground">
+                          <div className="flex flex-col items-center gap-2">
+                            <Search className="w-8 h-8 text-muted-foreground/50" />
+                            <p>No transactions found</p>
+                            <p className="text-sm">Try adjusting your filters</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Pagination */}
-              <div className="flex items-center justify-between px-4 py-4 border-t border-border bg-secondary/30">
+              {/* Pagination - Excel-style footer */}
+              <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t-2 border-treasury-gold/20 bg-gradient-to-r from-amber-50 to-yellow-50 gap-3">
                 <p className="text-sm text-muted-foreground">
-                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
-                  {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} of{' '}
-                  {filteredTransactions.length} results
+                  Showing <span className="font-bold text-foreground">{(currentPage - 1) * pageSize + 1}</span> to{' '}
+                  <span className="font-bold text-foreground">{Math.min(currentPage * pageSize, sortedTransactions.length)}</span> of{' '}
+                  <span className="font-bold text-treasury-gold">{sortedTransactions.length}</span> transactions
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="bg-white hover:bg-treasury-gold/10 border-treasury-gold/30 text-xs"
+                  >
+                    First
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="bg-white hover:bg-secondary border-border"
+                    className="bg-white hover:bg-treasury-gold/10 border-treasury-gold/30"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm text-foreground font-medium px-3 py-1 bg-white rounded border border-border">
-                    {currentPage} / {totalPages}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={cn(
+                            "min-w-[36px]",
+                            currentPage === pageNum 
+                              ? "bg-treasury-gold hover:bg-treasury-gold-light text-treasury-dark font-bold" 
+                              : "bg-white hover:bg-treasury-gold/10 border-treasury-gold/30"
+                          )}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="bg-white hover:bg-secondary border-border"
+                    className="bg-white hover:bg-treasury-gold/10 border-treasury-gold/30"
                   >
                     <ChevronRight className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="bg-white hover:bg-treasury-gold/10 border-treasury-gold/30 text-xs"
+                  >
+                    Last
                   </Button>
                 </div>
               </div>
