@@ -41,6 +41,8 @@ import {
 import { EditableCategory } from '@/components/transactions/EditableCategory';
 import { EditableNote } from '@/components/transactions/EditableNote';
 import { EditableTags } from '@/components/transactions/EditableTags';
+import { TransactionAlertsSection } from '@/components/transactions/TransactionAlertsSection';
+import { ManualSheetSection } from '@/components/transactions/ManualSheetSection';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Transaction } from '@/hooks/useTransactions';
@@ -419,49 +421,52 @@ const Transactions = () => {
             </p>
           </div>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-light text-treasury-dark hover:from-treasury-gold-light hover:to-treasury-gold shadow-lg font-semibold"
-                disabled={isExporting}
-              >
-                {isExporting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-                Export to CSV
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white border-border shadow-xl">
-              <DropdownMenuItem 
-                onClick={exportFilteredCSV}
-                className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
-              >
-                <Filter className="w-4 h-4 mr-2 text-treasury-gold" />
-                <div className="flex flex-col">
-                  <span className="font-medium">Export Filtered</span>
-                  <span className="text-xs text-muted-foreground">
-                    {sortedTransactions.length} transactions
-                  </span>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={exportAllCSV}
-                className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
-                disabled={isExporting}
-              >
-                <Download className="w-4 h-4 mr-2 text-treasury-gold" />
-                <div className="flex flex-col">
-                  <span className="font-medium">Export All</span>
-                  <span className="text-xs text-muted-foreground">
-                    All transactions in database
-                  </span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Hide Export CSV in View Only mode to protect data */}
+          {!isViewOnly && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-light text-treasury-dark hover:from-treasury-gold-light hover:to-treasury-gold shadow-lg font-semibold"
+                  disabled={isExporting}
+                >
+                  {isExporting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4" />
+                  )}
+                  Export to CSV
+                  <ChevronDown className="w-4 h-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-white border-border shadow-xl">
+                <DropdownMenuItem 
+                  onClick={exportFilteredCSV}
+                  className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+                >
+                  <Filter className="w-4 h-4 mr-2 text-treasury-gold" />
+                  <div className="flex flex-col">
+                    <span className="font-medium">Export Filtered</span>
+                    <span className="text-xs text-muted-foreground">
+                      {sortedTransactions.length} transactions
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={exportAllCSV}
+                  className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+                  disabled={isExporting}
+                >
+                  <Download className="w-4 h-4 mr-2 text-treasury-gold" />
+                  <div className="flex flex-col">
+                    <span className="font-medium">Export All</span>
+                    <span className="text-xs text-muted-foreground">
+                      All transactions in database
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Filters - Excel-style toolbar */}
@@ -849,6 +854,14 @@ const Transactions = () => {
             </>
           )}
         </div>
+
+        {/* Admin Only: Transaction Alerts & Manual Sheet Sections */}
+        {!isViewOnly && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <TransactionAlertsSection />
+            <ManualSheetSection />
+          </div>
+        )}
       </main>
     </div>
   );

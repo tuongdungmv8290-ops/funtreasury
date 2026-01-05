@@ -12,8 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste, Copy, Bell, AlertTriangle, Lock, Table2 } from 'lucide-react';
-import { useTransactionAlerts } from '@/hooks/useTransactionAlerts';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste, Copy, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
@@ -39,7 +38,6 @@ const Settings = () => {
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
   const { contracts, isLoading: isLoadingContracts, updateAllContracts, getContractBySymbol } = useTokenContracts();
   const { settings: apiSettings, isLoading: isLoadingApiSettings, updateSettingAsync, getSettingByKey } = useApiSettings();
-  const { alertConfig, isLoading: isLoadingAlerts, updateAlert, isUpdating: isUpdatingAlert } = useTransactionAlerts();
   const queryClient = useQueryClient();
   
   // Local state for form
@@ -77,14 +75,6 @@ const Settings = () => {
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
   const [adminList, setAdminList] = useState<{ user_id: string; email?: string }[]>([]);
   const [isLoadingAdmins, setIsLoadingAdmins] = useState(false);
-
-  // Transaction Alerts state
-  const [alertEnabled, setAlertEnabled] = useState(true);
-  const [alertThreshold, setAlertThreshold] = useState('100');
-  const [alertDirection, setAlertDirection] = useState('all');
-  const [alertToken, setAlertToken] = useState('all');
-  const [isAlertsInitialized, setIsAlertsInitialized] = useState(false);
-
   // Flags to track if form has been initialized (prevent overwriting user input)
   const [isWalletsInitialized, setIsWalletsInitialized] = useState(false);
   const [isContractsInitialized, setIsContractsInitialized] = useState(false);
@@ -238,31 +228,9 @@ const Settings = () => {
     }
   }, [apiSettings, isApiKeyInitialized, getSettingByKey]);
 
-  // Populate Transaction Alerts when loaded - ONLY ONCE
-  useEffect(() => {
-    if (alertConfig && !isAlertsInitialized) {
-      setAlertEnabled(alertConfig.enabled);
-      setAlertThreshold(String(alertConfig.threshold_usd));
-      setAlertDirection(alertConfig.direction);
-      setAlertToken(alertConfig.token_symbol || 'all');
-      setIsAlertsInitialized(true);
-      console.log('Alert config initialized:', alertConfig);
-    }
-  }, [alertConfig, isAlertsInitialized]);
-
   // State for saving
   const [isSavingContracts, setIsSavingContracts] = useState(false);
   const [isSavingApiKey, setIsSavingApiKey] = useState(false);
-
-  // Save Transaction Alerts
-  const handleSaveAlerts = () => {
-    updateAlert({
-      enabled: alertEnabled,
-      threshold_usd: parseFloat(alertThreshold) || 100,
-      direction: alertDirection,
-      token_symbol: alertToken === 'all' ? null : alertToken
-    });
-  };
 
   // Save only wallet settings with chain switch detection
   const handleSaveWallets = async () => {
@@ -1001,170 +969,6 @@ const Settings = () => {
                 {isSyncing ? 'Syncing...' : 'Sync Now'}
               </Button>
             </div>
-          </div>
-        </div>
-
-        {/* Transaction Alerts */}
-        <div className="treasury-card mb-6 bg-white">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-sm">
-              <AlertTriangle className="w-6 h-6 text-amber-500" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground">Transaction Alerts</h2>
-              <p className="text-sm text-muted-foreground">Cảnh báo khi có giao dịch lớn (Bước 7.4)</p>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {/* Enable/Disable Alert */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20">
-              <div>
-                <Label htmlFor="alertEnabled" className="text-foreground font-medium">Enable Transaction Alerts</Label>
-                <p className="text-sm text-muted-foreground">
-                  Nhận thông báo khi có giao dịch vượt ngưỡng
-                </p>
-              </div>
-              <Switch
-                id="alertEnabled"
-                checked={alertEnabled}
-                onCheckedChange={setAlertEnabled}
-                className="data-[state=checked]:bg-amber-500"
-              />
-            </div>
-
-            {/* Threshold */}
-            <div className="space-y-2">
-              <Label htmlFor="alertThreshold" className="text-foreground font-medium">
-                Ngưỡng cảnh báo (USD)
-              </Label>
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-amber-500">$</span>
-                <Input
-                  id="alertThreshold"
-                  type="number"
-                  value={alertThreshold}
-                  onChange={(e) => setAlertThreshold(e.target.value)}
-                  placeholder="100"
-                  disabled={!alertEnabled}
-                  className="w-40 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20 shadow-sm text-lg font-bold disabled:opacity-50"
-                />
-                <span className="text-sm text-muted-foreground">
-                  Chỉ cảnh báo giao dịch &gt; ${alertThreshold || '100'}
-                </span>
-              </div>
-            </div>
-
-            {/* Direction Filter */}
-            <div className="space-y-2">
-              <Label htmlFor="alertDirection" className="text-foreground font-medium">
-                Loại giao dịch
-              </Label>
-              <Select value={alertDirection} onValueChange={setAlertDirection} disabled={!alertEnabled}>
-                <SelectTrigger className="w-full md:w-[200px] bg-white border-border hover:border-amber-500/50 transition-colors shadow-sm disabled:opacity-50">
-                  <SelectValue placeholder="Chọn loại" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-border shadow-lg z-50">
-                  <SelectItem value="all">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary"></span>
-                      Tất cả (IN + OUT)
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="in">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-inflow"></span>
-                      Chỉ nhận (IN)
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="out">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-outflow"></span>
-                      Chỉ chuyển (OUT)
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Token Filter */}
-            <div className="space-y-2">
-              <Label htmlFor="alertToken" className="text-foreground font-medium">
-                Token cụ thể
-              </Label>
-              <Select value={alertToken} onValueChange={setAlertToken} disabled={!alertEnabled}>
-                <SelectTrigger className="w-full md:w-[200px] bg-white border-border hover:border-amber-500/50 transition-colors shadow-sm disabled:opacity-50">
-                  <SelectValue placeholder="Chọn token" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-border shadow-lg z-50">
-                  <SelectItem value="all">Tất cả tokens</SelectItem>
-                  <SelectItem value="CAMLY">CAMLY</SelectItem>
-                  <SelectItem value="USDT">USDT</SelectItem>
-                  <SelectItem value="BTCB">BTCB</SelectItem>
-                  <SelectItem value="BNB">BNB</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Save Button */}
-            <div className="pt-2">
-              <Button
-                onClick={handleSaveAlerts}
-                disabled={isUpdatingAlert}
-                className="gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700 shadow-lg"
-              >
-                {isUpdatingAlert ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
-                Lưu Alert Settings
-              </Button>
-            </div>
-
-            {/* Preview Current Config */}
-            {alertEnabled && (
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 mt-4">
-                <div className="flex items-center gap-2 text-amber-600 font-medium mb-2">
-                  <Bell className="w-4 h-4" />
-                  Đang theo dõi:
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {alertDirection === 'all' ? 'Mọi giao dịch' : alertDirection === 'in' ? 'Giao dịch nhận' : 'Giao dịch chuyển'}
-                  {' '}{alertToken !== 'all' ? `token ${alertToken}` : 'tất cả tokens'}
-                  {' '}có giá trị &gt; <span className="font-bold text-amber-600">${alertThreshold || '100'}</span>
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Bảng Thủ Công Section */}
-        <div className="treasury-card mb-6 bg-white">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-treasury-gold to-treasury-gold-dark flex items-center justify-center shadow-lg">
-              <Table2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold gold-text">📊 Bảng Thủ Công</h2>
-              <p className="text-sm text-muted-foreground">Quản lý giao dịch thủ công trực tiếp trên Google Sheets</p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-gradient-to-r from-treasury-gold/10 to-treasury-gold/5 border border-treasury-gold/30">
-            <p className="text-sm text-muted-foreground mb-4">
-              Nhấn nút bên dưới để mở Google Sheets và nhập giao dịch thủ công. Dữ liệu sẽ được đồng bộ với hệ thống.
-            </p>
-            <Button
-              className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg hover:shadow-xl transition-all px-6"
-              onClick={() => {
-                window.open('https://docs.google.com/spreadsheets/d/1KePMTNAyHd1rCKEgiQ2f7HyGcPNQmhgzh9CkomsaYyc/edit?usp=sharing', '_blank');
-                toast.success('📊 Đã mở Bảng Thủ Công trên Google Sheets!', { duration: 3000 });
-              }}
-            >
-              <ExternalLink className="w-4 h-4" />
-              Mở Google Sheets
-            </Button>
           </div>
         </div>
 
