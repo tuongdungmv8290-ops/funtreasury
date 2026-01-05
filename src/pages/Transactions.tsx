@@ -49,7 +49,7 @@ type SortOrder = 'asc' | 'desc';
 
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
-// Format date as DD/MM/YYYY HH:mm for CSV
+// Format date as DD/MM/YYYY HH:mm for CSV (Excel compatible)
 const formatDateCSV = (date: Date): string => {
   const day = date.getDate().toString().padStart(2, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -69,7 +69,16 @@ const formatDate = (date: Date): string => {
   });
 };
 
-// Format USD value as $1,234.56
+// Format USD value for CSV - raw number for Excel calculations
+const formatUSDValueCSV = (value: number): string => {
+  if (value === 0 || value === null || value === undefined) {
+    return '0.00';
+  }
+  // Return raw number without $ for Excel calculations
+  return value.toFixed(2);
+};
+
+// Format USD value for display with $
 const formatUSDValue = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -79,17 +88,17 @@ const formatUSDValue = (value: number): string => {
   }).format(value);
 };
 
-// Format token amount with proper decimals
+// Format token amount for CSV - raw number for Excel calculations
 const formatTokenAmountCSV = (amount: number, symbol: string): string => {
-  if (symbol === 'CAMLY' || amount >= 1000000) {
-    return new Intl.NumberFormat('en-US', {
-      maximumFractionDigits: 0,
-    }).format(amount);
+  if (amount === 0 || amount === null || amount === undefined) {
+    return '0';
   }
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 6,
-  }).format(amount);
+  // Return raw number for Excel - use precision based on token
+  if (symbol === 'CAMLY' || amount >= 1000000) {
+    return Math.round(amount).toString();
+  }
+  // Keep decimal precision for other tokens
+  return amount.toFixed(6).replace(/\.?0+$/, '');
 };
 
 // Shorten address for CSV display
@@ -103,11 +112,15 @@ const getExplorerLink = (txHash: string): string => {
   return `https://bscscan.com/tx/${txHash}`;
 };
 
-// Escape CSV values properly (with double quotes for Excel)
-const escapeCSV = (value: string): string => {
-  if (!value) return '';
-  // Always wrap in quotes for Excel compatibility
-  return `"${value.replace(/"/g, '""')}"`;
+// Escape CSV values properly - handle special characters for Excel
+const escapeCSV = (value: string | null | undefined): string => {
+  if (value === null || value === undefined || value === '') return '';
+  const str = String(value);
+  // If contains comma, newline, or double quote - wrap in quotes
+  if (str.includes(',') || str.includes('\n') || str.includes('"') || str.includes('\r')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
 };
 
 // Get current date formatted for filename
@@ -246,8 +259,11 @@ const Transactions = () => {
     return wallet?.name?.replace('Treasury Wallet ', 'W') || 'Unknown';
   };
 
-  // Generate CSV content from transactions - Excel-friendly format
+  // Generate CSV content from transactions - Excel-friendly format with proper separator
   const generateCSV = (txList: Transaction[]): string => {
+    // Use semicolon as separator for better Excel compatibility (especially non-US locales)
+    const sep = ',';
+    
     // Headers with clear labels for Excel
     const headers = [
       'Date',
@@ -268,26 +284,29 @@ const Transactions = () => {
       'Tags',
     ];
     
-    const rows = txList.map((tx) => [
-      escapeCSV(formatDateCSV(tx.timestamp)),
-      escapeCSV(getWalletName(tx.wallet_id)),
-      tx.direction,
-      tx.token_symbol,
-      formatTokenAmountCSV(tx.amount, tx.token_symbol),
-      formatUSDValue(tx.usd_value),
-      shortenAddressCSV(tx.from_address),
-      shortenAddressCSV(tx.to_address),
-      escapeCSV(tx.from_address),
-      escapeCSV(tx.to_address),
-      escapeCSV(getExplorerLink(tx.tx_hash)),
-      escapeCSV(tx.tx_hash),
-      tx.status,
-      escapeCSV(tx.metadata?.category || ''),
-      escapeCSV(tx.metadata?.note || ''),
-      escapeCSV((tx.metadata?.tags || []).join(', ')),
-    ]);
+    const rows = txList.map((tx) => {
+      // Wrap all text fields properly for Excel
+      return [
+        formatDateCSV(tx.timestamp),           // Date - no quotes needed
+        escapeCSV(getWalletName(tx.wallet_id)), // Wallet Name
+        tx.direction,                           // Direction - IN/OUT
+        tx.token_symbol,                        // Token symbol
+        formatTokenAmountCSV(tx.amount, tx.token_symbol), // Amount as number
+        formatUSDValueCSV(tx.usd_value),       // USD Value as number (no $ symbol)
+        shortenAddressCSV(tx.from_address),    // From short
+        shortenAddressCSV(tx.to_address),      // To short
+        escapeCSV(tx.from_address),            // From full
+        escapeCSV(tx.to_address),              // To full
+        getExplorerLink(tx.tx_hash),           // Explorer link
+        tx.tx_hash,                            // Tx Hash
+        tx.status,                             // Status
+        escapeCSV(tx.metadata?.category || ''), // Category
+        escapeCSV(tx.metadata?.note || ''),    // Note
+        escapeCSV((tx.metadata?.tags || []).join('; ')), // Tags with semicolon separator
+      ];
+    });
 
-    return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    return [headers.join(sep), ...rows.map((row) => row.join(sep))].join('\r\n');
   };
 
   // Download CSV file with BOM for Excel UTF-8 support
