@@ -19,12 +19,24 @@ interface ERC20Transfer {
 }
 
 interface NativeTransfer {
-  hash: string; // Native uses 'hash' not 'transaction_hash'
+  hash: string;
   block_number: string;
   block_timestamp: string;
   from_address: string;
   to_address: string;
   value: string;
+}
+
+interface BSCScanTransfer {
+  hash: string;
+  blockNumber: string;
+  timeStamp: string;
+  from: string;
+  to: string;
+  value: string;
+  tokenSymbol: string;
+  tokenDecimal: string;
+  contractAddress: string;
 }
 
 interface WalletData {
@@ -49,13 +61,13 @@ interface MoralisResponse {
 // Map chain names to Moralis chain format
 function getMoralisChain(chain: string): string {
   const chainMap: Record<string, string> = {
-    'BNB': '0x38',      // BSC Mainnet
-    'ETH': '0x1',       // Ethereum Mainnet
-    'POLYGON': '0x89',  // Polygon Mainnet
-    'ARB': '0xa4b1',    // Arbitrum One
-    'BASE': '0x2105',   // Base Mainnet
+    'BNB': '0x38',
+    'ETH': '0x1',
+    'POLYGON': '0x89',
+    'ARB': '0xa4b1',
+    'BASE': '0x2105',
   };
-  return chainMap[chain] || '0x38'; // Default to BSC
+  return chainMap[chain] || '0x38';
 }
 
 // Get native token symbol for chain
@@ -68,6 +80,42 @@ function getNativeSymbol(chain: string): string {
     'BASE': 'ETH',
   };
   return symbols[chain] || 'BNB';
+}
+
+// Fetch ERC20 transfers from BSCScan as fallback
+async function fetchFromBSCScan(address: string, bscscanApiKey: string): Promise<BSCScanTransfer[]> {
+  const url = `https://api.bscscan.com/api?module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${bscscanApiKey}`;
+  console.log(`Calling BSCScan API: ${url.replace(bscscanApiKey, '***')}`);
+  
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.status === '1' && Array.isArray(data.result)) {
+      console.log(`BSCScan returned ${data.result.length} transfers`);
+      return data.result;
+    }
+    console.log(`BSCScan returned status: ${data.status}, message: ${data.message}`);
+    return [];
+  } catch (error) {
+    console.error('BSCScan API error:', error);
+    return [];
+  }
+}
+
+// Convert BSCScan transfer to ERC20Transfer format
+function convertBSCScanToERC20(bscTx: BSCScanTransfer): ERC20Transfer {
+  return {
+    transaction_hash: bscTx.hash,
+    block_number: bscTx.blockNumber,
+    block_timestamp: new Date(parseInt(bscTx.timeStamp) * 1000).toISOString(),
+    from_address: bscTx.from,
+    to_address: bscTx.to,
+    value: bscTx.value,
+    token_symbol: bscTx.tokenSymbol,
+    token_address: bscTx.contractAddress,
+    token_decimals: bscTx.tokenDecimal,
+  };
 }
 
 serve(async (req) => {
@@ -136,7 +184,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 1. Get Moralis API key - prioritize env variable, fallback to database
+    // 1. Get Moralis API key
     console.log('Fetching Moralis API key...');
     let moralisApiKey = Deno.env.get('MORALIS_API_KEY');
     
@@ -149,30 +197,26 @@ serve(async (req) => {
 
       if (apiError) {
         console.error('Error fetching API key:', apiError);
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'Không thể đọc API key từ database'
-        }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
       }
-      
       moralisApiKey = apiSettings?.key_value || null;
     }
 
-    if (!moralisApiKey) {
-      console.error('Moralis API key not found');
+    // Get BSCScan API key for fallback
+    const bscscanApiKey = Deno.env.get('BSCSCAN_API_KEY');
+    console.log(`BSCScan API key available: ${bscscanApiKey ? 'yes' : 'no'}`);
+
+    if (!moralisApiKey && !bscscanApiKey) {
+      console.error('No API keys found (Moralis or BSCScan)');
       return new Response(JSON.stringify({
         success: false,
-        error: 'Chưa cấu hình Moralis API Key. Vui lòng vào Settings để thêm.'
+        error: 'Chưa cấu hình Moralis hoặc BSCScan API Key. Vui lòng vào Settings để thêm.'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    console.log('Moralis API key found');
+    console.log(`Moralis API key: ${moralisApiKey ? 'found' : 'not found'}`);
 
     // 2. Get wallet addresses from database
     console.log('Fetching wallet addresses...');
@@ -206,7 +250,7 @@ serve(async (req) => {
 
     let totalNewTransactions = 0;
     let totalDuplicatesRemoved = 0;
-    const syncResults: { wallet: string; newTxCount: number; duplicatesRemoved: number; error?: string }[] = [];
+    const syncResults: { wallet: string; newTxCount: number; duplicatesRemoved: number; error?: string; source?: string }[] = [];
 
     // Check and remove duplicates first
     console.log('Checking for duplicate transactions...');
@@ -215,7 +259,6 @@ serve(async (req) => {
     if (!dupCheckError && duplicates && duplicates.length > 0) {
       console.log(`Found ${duplicates.length} duplicate transaction groups`);
       
-      // For each duplicate group, keep the oldest and delete the rest
       for (const dup of duplicates) {
         const { data: dupTxs } = await supabase
           .from('transactions')
@@ -224,7 +267,6 @@ serve(async (req) => {
           .order('created_at', { ascending: true });
         
         if (dupTxs && dupTxs.length > 1) {
-          // Keep first (oldest), delete the rest
           const idsToDelete = dupTxs.slice(1).map(t => t.id);
           const { error: deleteError } = await supabase
             .from('transactions')
@@ -240,6 +282,19 @@ serve(async (req) => {
     }
     console.log(`Total duplicates removed: ${totalDuplicatesRemoved}`);
 
+    // CAMLY contract address for validation
+    const CAMLY_CONTRACT = '0x0910320181889fefde0bb1ca63962b0a8882e413';
+    // USDT contract on BSC
+    const USDT_CONTRACT = '0x55d398326f99059ff775485246999027b3197955';
+    
+    // Token prices for USD value calculation
+    const tokenPrices: Record<string, number> = {
+      'CAMLY': 0.000022,
+      'BNB': 710,
+      'USDT': 1,
+      'USDC': 1,
+    };
+
     // 3. Sync each wallet
     for (const wallet of wallets as WalletData[]) {
       if (!wallet.address || !wallet.address.startsWith('0x')) {
@@ -254,7 +309,7 @@ serve(async (req) => {
         const moralisChain = getMoralisChain(wallet.chain);
         const nativeSymbol = getNativeSymbol(wallet.chain);
         
-        // Get last synced block and cursor for incremental sync
+        // Get last synced block
         const { data: syncStateData } = await supabase
           .from('sync_state')
           .select('last_block_synced, last_cursor')
@@ -263,124 +318,108 @@ serve(async (req) => {
         
         const lastBlockSynced = syncStateData?.last_block_synced || 0;
         console.log(`Last synced block for ${wallet.name}: ${lastBlockSynced}`);
-        
-        const headers = new Headers();
-        headers.set('X-API-Key', moralisApiKey.trim());
-        headers.set('Accept', 'application/json');
 
-        // Fetch token contracts from database for proper symbol mapping
-        const { data: tokenContracts } = await supabase
-          .from('token_contracts')
-          .select('contract_address, symbol');
-        
-        // Build token contract address to symbol map - start with hardcoded CAMLY
-        const tokenContractsMap: Record<string, string> = {
-          '0x0910320181889fefde0bb1ca63962b0a8882e413': 'CAMLY', // CAMLY contract on BSC
-        };
-        if (tokenContracts) {
-          for (const tc of tokenContracts) {
-            if (tc.contract_address) {
-              tokenContractsMap[tc.contract_address.toLowerCase()] = tc.symbol;
-            }
-          }
-        }
-        console.log(`Token contracts map: ${JSON.stringify(tokenContractsMap)}`);
-
-        // Token prices for USD value calculation
-        const tokenPrices: Record<string, number> = {
-          'CAMLY': 0.000022,
-          'BNB': 710,
-          'USDT': 1,
-          'USDC': 1,
-          'BTCB': 97000,
-          'BTC': 97000,
-          'ETH': 3500,
-          'MATIC': 0.5,
-          'FUN': 0.01,
-        };
-
-        // Fetch ERC20 token transfers with from_block for incremental sync
-        // Use pagination with cursor - loop until no more results
-        const fromBlockParam = lastBlockSynced > 0 ? `&from_block=${lastBlockSynced + 1}` : '';
         let erc20Transfers: ERC20Transfer[] = [];
-        let erc20Cursor: string | null = null;
-        let pageCount = 0;
-        const MAX_PAGES = 30; // Increased: 30 pages x 100 = 3,000 transactions max per sync
-        
-        do {
-          const cursorParam = erc20Cursor ? `&cursor=${erc20Cursor}` : '';
-          // Moralis free tier limit is 100 per request
-          const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=100${fromBlockParam}${cursorParam}`;
-          console.log(`Calling Moralis ERC20 API (page ${pageCount + 1}): ${transfersUrl}`);
+        let usedSource = 'Moralis';
+        let moralisQuotaExceeded = false;
+
+        // Try Moralis first
+        if (moralisApiKey) {
+          const headers = new Headers();
+          headers.set('X-API-Key', moralisApiKey.trim());
+          headers.set('Accept', 'application/json');
+
+          const fromBlockParam = lastBlockSynced > 0 ? `&from_block=${lastBlockSynced + 1}` : '';
+          let erc20Cursor: string | null = null;
+          let pageCount = 0;
+          const MAX_PAGES = 30;
           
-          const response = await fetch(transfersUrl, {
-            method: 'GET',
-            headers: headers
-          });
+          do {
+            const cursorParam = erc20Cursor ? `&cursor=${erc20Cursor}` : '';
+            const transfersUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}/erc20/transfers?chain=${moralisChain}&limit=100${fromBlockParam}${cursorParam}`;
+            console.log(`Calling Moralis ERC20 API (page ${pageCount + 1})`);
+            
+            const response = await fetch(transfersUrl, {
+              method: 'GET',
+              headers: headers
+            });
 
-          if (response.ok) {
-            const data: MoralisResponse = await response.json();
-            const pageTransfers = (data.result || []) as ERC20Transfer[];
-            erc20Transfers = [...erc20Transfers, ...pageTransfers];
-            erc20Cursor = data.cursor || null;
-            console.log(`Page ${pageCount + 1}: ${pageTransfers.length} ERC20 transfers, cursor: ${erc20Cursor ? 'yes' : 'no'}`);
-          } else {
-            const errorText = await response.text();
-            console.error(`Moralis ERC20 API error for ${wallet.name}:`, response.status, errorText);
-            break;
-          }
-          pageCount++;
-        } while (erc20Cursor && pageCount < MAX_PAGES);
-        
-        console.log(`Total ERC20 transfers for ${wallet.name}: ${erc20Transfers.length}`);
+            if (response.ok) {
+              const data: MoralisResponse = await response.json();
+              const pageTransfers = (data.result || []) as ERC20Transfer[];
+              erc20Transfers = [...erc20Transfers, ...pageTransfers];
+              erc20Cursor = data.cursor || null;
+              console.log(`Page ${pageCount + 1}: ${pageTransfers.length} ERC20 transfers`);
+            } else if (response.status === 401) {
+              console.log('Moralis API quota exceeded (401), switching to BSCScan fallback...');
+              moralisQuotaExceeded = true;
+              break;
+            } else {
+              const errorText = await response.text();
+              console.error(`Moralis ERC20 API error:`, response.status, errorText);
+              moralisQuotaExceeded = true;
+              break;
+            }
+            pageCount++;
+          } while (erc20Cursor && pageCount < MAX_PAGES);
+        } else {
+          moralisQuotaExceeded = true;
+        }
 
-        // Fetch native token (BNB/ETH) transfers with pagination
-        let nativeTransfers: NativeTransfer[] = [];
-        let nativeCursor: string | null = null;
-        pageCount = 0;
-        
-        do {
-          const cursorParam = nativeCursor ? `&cursor=${nativeCursor}` : '';
-          // Moralis free tier limit is 100 per request
-          const nativeUrl = `https://deep-index.moralis.io/api/v2.2/${wallet.address}?chain=${moralisChain}&limit=100${fromBlockParam}${cursorParam}`;
-          console.log(`Calling Moralis Native API (page ${pageCount + 1}): ${nativeUrl}`);
+        // Fallback to BSCScan if Moralis failed or quota exceeded
+        if ((moralisQuotaExceeded || erc20Transfers.length === 0) && bscscanApiKey && wallet.chain === 'BNB') {
+          console.log(`Using BSCScan fallback for ${wallet.name}...`);
+          usedSource = 'BSCScan';
           
-          const nativeResponse = await fetch(nativeUrl, {
-            method: 'GET',
-            headers: headers
-          });
+          const bscTransfers = await fetchFromBSCScan(wallet.address, bscscanApiKey);
+          
+          // Filter only CAMLY and USDT tokens, then convert to ERC20Transfer format
+          erc20Transfers = bscTransfers
+            .filter(tx => {
+              const contractLower = tx.contractAddress?.toLowerCase();
+              const symbolUpper = tx.tokenSymbol?.toUpperCase();
+              
+              // Only keep CAMLY (by contract or symbol) and USDT
+              const isCAMLY = contractLower === CAMLY_CONTRACT.toLowerCase() || symbolUpper === 'CAMLY';
+              const isUSDT = contractLower === USDT_CONTRACT.toLowerCase() || symbolUpper === 'USDT';
+              
+              return isCAMLY || isUSDT;
+            })
+            .map(convertBSCScanToERC20);
+          
+          console.log(`BSCScan filtered to ${erc20Transfers.length} CAMLY/USDT transactions`);
+        }
 
-          if (nativeResponse.ok) {
-            const nativeData: MoralisResponse = await nativeResponse.json();
-            // Filter only transactions with value (native token transfers)
-            const pageTransfers = ((nativeData.result || []) as NativeTransfer[]).filter((tx: NativeTransfer) => 
-              tx.value && tx.value !== '0' && tx.hash
-            );
-            nativeTransfers = [...nativeTransfers, ...pageTransfers];
-            nativeCursor = nativeData.cursor || null;
-            console.log(`Page ${pageCount + 1}: ${pageTransfers.length} native transfers, cursor: ${nativeCursor ? 'yes' : 'no'}`);
-          } else {
-            console.error(`Moralis Native API error for ${wallet.name}:`, nativeResponse.status);
-            break;
-          }
-          pageCount++;
-        } while (nativeCursor && pageCount < MAX_PAGES);
-        
-        console.log(`Total native transfers for ${wallet.name}: ${nativeTransfers.length}`);
+        console.log(`Total ERC20 transfers for ${wallet.name}: ${erc20Transfers.length} (source: ${usedSource})`);
 
-        if (erc20Transfers.length === 0 && nativeTransfers.length === 0) {
-          console.log(`No new transfers found for ${wallet.name}`);
-          syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0 });
+        if (erc20Transfers.length === 0) {
+          console.log(`No transfers found for ${wallet.name}`);
+          syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0, source: usedSource });
           continue;
         }
 
-        // 4. Process and upsert transactions
+        // 4. Process and upsert transactions - ONLY CAMLY and USDT
         let newTxCount = 0;
 
-        // Process ERC20 transfers
         for (const tx of erc20Transfers) {
           if (!tx.transaction_hash) {
-            console.log('Skipping ERC20 tx without hash');
+            console.log('Skipping tx without hash');
+            continue;
+          }
+
+          // Determine token symbol - prioritize contract address matching
+          let tokenSymbol = tx.token_symbol || 'UNKNOWN';
+          const contractLower = tx.token_address?.toLowerCase();
+          
+          if (contractLower === CAMLY_CONTRACT.toLowerCase()) {
+            tokenSymbol = 'CAMLY';
+          } else if (contractLower === USDT_CONTRACT.toLowerCase()) {
+            tokenSymbol = 'USDT';
+          }
+
+          // Filter: only process CAMLY and USDT
+          const symbolUpper = tokenSymbol.toUpperCase();
+          if (symbolUpper !== 'CAMLY' && symbolUpper !== 'USDT') {
             continue;
           }
 
@@ -395,18 +434,14 @@ serve(async (req) => {
             amount = 0;
           }
 
-          // Map token symbol from token_contracts if available
-          let tokenSymbol = tx.token_symbol || 'UNKNOWN';
-          if (tx.token_address) {
-            const mappedSymbol = tokenContractsMap[tx.token_address.toLowerCase()];
-            if (mappedSymbol) {
-              tokenSymbol = mappedSymbol;
-              console.log(`Mapped token ${tx.token_address} to ${mappedSymbol}`);
-            }
+          // Skip zero amount transactions
+          if (amount <= 0) {
+            console.log(`Skipping zero amount tx: ${tx.transaction_hash}`);
+            continue;
           }
 
-          // Calculate USD value based on token price
-          const tokenPrice = tokenPrices[tokenSymbol.toUpperCase()] || 0;
+          // Calculate USD value
+          const tokenPrice = tokenPrices[symbolUpper] || 0;
           const usdValue = amount * tokenPrice;
 
           const transactionData = {
@@ -418,7 +453,7 @@ serve(async (req) => {
             to_address: tx.to_address || '',
             direction: direction,
             token_address: tx.token_address || null,
-            token_symbol: tokenSymbol,
+            token_symbol: symbolUpper,
             amount: amount,
             usd_value: usdValue,
             gas_fee: 0,
@@ -438,82 +473,24 @@ serve(async (req) => {
               .insert(transactionData);
 
             if (insertError) {
-              console.error(`Error inserting ERC20 tx ${tx.transaction_hash}:`, insertError);
+              console.error(`Error inserting tx ${tx.transaction_hash}:`, insertError);
             } else {
               newTxCount++;
-            }
-          }
-        }
-
-        // Process native transfers (BNB/ETH) - uses 'hash' field
-        for (const tx of nativeTransfers) {
-          if (!tx.hash) {
-            console.log('Skipping native tx without hash');
-            continue;
-          }
-
-          const direction = tx.to_address?.toLowerCase() === wallet.address.toLowerCase() ? 'IN' : 'OUT';
-          
-          // Native token has 18 decimals
-          let amount = 0;
-          try {
-            amount = parseFloat(tx.value) / Math.pow(10, 18);
-          } catch {
-            amount = 0;
-          }
-
-          // Calculate USD value for native token
-          const nativePrice = tokenPrices[nativeSymbol.toUpperCase()] || 0;
-          const nativeUsdValue = amount * nativePrice;
-
-          const transactionData = {
-            wallet_id: wallet.id,
-            tx_hash: tx.hash, // Use 'hash' for native transfers
-            block_number: parseInt(tx.block_number) || 0,
-            timestamp: tx.block_timestamp || new Date().toISOString(),
-            from_address: tx.from_address || '',
-            to_address: tx.to_address || '',
-            direction: direction,
-            token_address: null,
-            token_symbol: nativeSymbol,
-            amount: amount,
-            usd_value: nativeUsdValue,
-            gas_fee: 0,
-            status: 'success'
-          };
-
-          // Check if transaction already exists
-          const { data: existing } = await supabase
-            .from('transactions')
-            .select('id')
-            .eq('tx_hash', tx.hash)
-            .maybeSingle();
-
-          if (!existing) {
-            const { error: insertError } = await supabase
-              .from('transactions')
-              .insert(transactionData);
-
-            if (insertError) {
-              console.error(`Error inserting native tx ${tx.hash}:`, insertError);
-            } else {
-              newTxCount++;
+              console.log(`Inserted ${symbolUpper} tx: ${amount.toLocaleString()} ${symbolUpper}, direction: ${direction}`);
             }
           }
         }
 
         console.log(`Added ${newTxCount} new transactions for ${wallet.name}`);
-        syncResults.push({ wallet: wallet.name, newTxCount, duplicatesRemoved: 0 });
+        syncResults.push({ wallet: wallet.name, newTxCount, duplicatesRemoved: 0, source: usedSource });
         totalNewTransactions += newTxCount;
 
-        // 5. Update sync state with new max block
+        // 5. Update sync state
         const maxBlockNumber = Math.max(
           ...erc20Transfers.map(t => parseInt(t.block_number) || 0),
-          ...nativeTransfers.map(t => parseInt(t.block_number) || 0),
-          lastBlockSynced // Keep existing block if no new transactions
+          lastBlockSynced
         );
 
-        // Only update if we have a higher block number
         if (maxBlockNumber > lastBlockSynced) {
           const { error: syncStateError } = await supabase
             .from('sync_state')
@@ -532,7 +509,6 @@ serve(async (req) => {
             console.log(`Updated last_block_synced for ${wallet.name}: ${lastBlockSynced} → ${maxBlockNumber}`);
           }
         } else {
-          // Just update last_sync_at
           await supabase
             .from('sync_state')
             .upsert({
@@ -556,7 +532,30 @@ serve(async (req) => {
       }
     }
 
-    console.log(`=== Sync Complete: ${totalNewTransactions} new transactions, ${totalDuplicatesRemoved} duplicates removed ===`);
+    // 6. Clean up: Delete spam tokens and zero-amount transactions
+    console.log('Cleaning up spam transactions...');
+    
+    // Delete zero amount transactions
+    const { error: zeroError } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('amount', 0);
+    
+    if (!zeroError) {
+      console.log('Deleted zero amount transactions');
+    }
+    
+    // Delete non-CAMLY/USDT tokens
+    const { error: spamError } = await supabase
+      .from('transactions')
+      .delete()
+      .not('token_symbol', 'in', '("CAMLY","USDT")');
+    
+    if (!spamError) {
+      console.log('Deleted spam token transactions');
+    }
+
+    console.log(`=== Sync Complete: ${totalNewTransactions} new transactions, ${totalDuplicatesRemoved} cleaned up ===`);
 
     return new Response(JSON.stringify({
       success: true,
