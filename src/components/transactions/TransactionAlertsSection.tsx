@@ -10,10 +10,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { AlertTriangle, Bell, Save, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Bell, Save, RefreshCw, Eye } from 'lucide-react';
 import { useTransactionAlerts } from '@/hooks/useTransactionAlerts';
+import { useViewMode } from '@/contexts/ViewModeContext';
 
-export const TransactionAlertsSection = () => {
+interface TransactionAlertsSectionProps {
+  viewOnly?: boolean;
+}
+
+export const TransactionAlertsSection = ({ viewOnly = false }: TransactionAlertsSectionProps) => {
+  const { isViewOnly: contextViewOnly } = useViewMode();
+  const isReadOnly = viewOnly || contextViewOnly;
   const { alertConfig, isLoading, updateAlert, isUpdating } = useTransactionAlerts();
   
   const [alertEnabled, setAlertEnabled] = useState(true);
@@ -53,15 +60,21 @@ export const TransactionAlertsSection = () => {
   }
 
   return (
-    <div className="treasury-card bg-white">
+    <div className={`treasury-card bg-white ${isReadOnly ? 'opacity-90' : ''}`}>
       <div className="flex items-center gap-3 mb-6">
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-sm">
           <AlertTriangle className="w-6 h-6 text-amber-500" />
         </div>
-        <div>
+        <div className="flex-1">
           <h2 className="text-xl font-bold text-foreground">Transaction Alerts</h2>
           <p className="text-sm text-muted-foreground">Cảnh báo khi có giao dịch lớn (Bước 7.4)</p>
         </div>
+        {isReadOnly && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">
+            <Eye className="w-3 h-3" />
+            Chỉ xem
+          </div>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -77,6 +90,7 @@ export const TransactionAlertsSection = () => {
             id="alertEnabled"
             checked={alertEnabled}
             onCheckedChange={setAlertEnabled}
+            disabled={isReadOnly}
             className="data-[state=checked]:bg-amber-500"
           />
         </div>
@@ -94,7 +108,7 @@ export const TransactionAlertsSection = () => {
               value={alertThreshold}
               onChange={(e) => setAlertThreshold(e.target.value)}
               placeholder="100"
-              disabled={!alertEnabled}
+              disabled={!alertEnabled || isReadOnly}
               className="w-40 bg-white border-border focus:border-amber-500 focus:ring-amber-500/20 shadow-sm text-lg font-bold disabled:opacity-50"
             />
             <span className="text-sm text-muted-foreground">
@@ -108,7 +122,7 @@ export const TransactionAlertsSection = () => {
           <Label htmlFor="alertDirection" className="text-foreground font-medium">
             Loại giao dịch
           </Label>
-          <Select value={alertDirection} onValueChange={setAlertDirection} disabled={!alertEnabled}>
+          <Select value={alertDirection} onValueChange={setAlertDirection} disabled={!alertEnabled || isReadOnly}>
             <SelectTrigger className="w-full md:w-[200px] bg-white border-border hover:border-amber-500/50 transition-colors shadow-sm disabled:opacity-50">
               <SelectValue placeholder="Chọn loại" />
             </SelectTrigger>
@@ -140,7 +154,7 @@ export const TransactionAlertsSection = () => {
           <Label htmlFor="alertToken" className="text-foreground font-medium">
             Token cụ thể
           </Label>
-          <Select value={alertToken} onValueChange={setAlertToken} disabled={!alertEnabled}>
+          <Select value={alertToken} onValueChange={setAlertToken} disabled={!alertEnabled || isReadOnly}>
             <SelectTrigger className="w-full md:w-[200px] bg-white border-border hover:border-amber-500/50 transition-colors shadow-sm disabled:opacity-50">
               <SelectValue placeholder="Chọn token" />
             </SelectTrigger>
@@ -154,21 +168,23 @@ export const TransactionAlertsSection = () => {
           </Select>
         </div>
 
-        {/* Save Button */}
-        <div className="pt-2">
-          <Button
-            onClick={handleSaveAlerts}
-            disabled={isUpdating}
-            className="gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700 shadow-lg"
-          >
-            {isUpdating ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            Lưu Alert Settings
-          </Button>
-        </div>
+        {/* Save Button - Only show for admin */}
+        {!isReadOnly && (
+          <div className="pt-2">
+            <Button
+              onClick={handleSaveAlerts}
+              disabled={isUpdating}
+              className="gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700 shadow-lg"
+            >
+              {isUpdating ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              Lưu Alert Settings
+            </Button>
+          </div>
+        )}
 
         {/* Preview Current Config */}
         {alertEnabled && (

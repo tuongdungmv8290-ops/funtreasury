@@ -855,13 +855,11 @@ const Transactions = () => {
           )}
         </div>
 
-        {/* Admin Only: Transaction Alerts & Manual Sheet Sections */}
-        {!isViewOnly && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-            <TransactionAlertsSection />
-            <ManualSheetSection />
-          </div>
-        )}
+        {/* Transaction Alerts & Manual Sheet Sections - Visible to all, editable by admin only */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          <TransactionAlertsSection viewOnly={isViewOnly} />
+          <ManualSheetSection viewOnly={isViewOnly} />
+        </div>
       </main>
     </div>
   );
