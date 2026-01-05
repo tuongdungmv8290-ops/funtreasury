@@ -273,8 +273,10 @@ serve(async (req) => {
           .from('token_contracts')
           .select('contract_address, symbol');
         
-        // Build token contract address to symbol map
-        const tokenContractsMap: Record<string, string> = {};
+        // Build token contract address to symbol map - start with hardcoded CAMLY
+        const tokenContractsMap: Record<string, string> = {
+          '0x0910320181889fefde0bb1ca63962b0a8882e413': 'CAMLY', // CAMLY contract on BSC
+        };
         if (tokenContracts) {
           for (const tc of tokenContracts) {
             if (tc.contract_address) {
@@ -282,7 +284,7 @@ serve(async (req) => {
             }
           }
         }
-        console.log(`Loaded ${Object.keys(tokenContractsMap).length} token contracts for mapping`);
+        console.log(`Token contracts map: ${JSON.stringify(tokenContractsMap)}`);
 
         // Token prices for USD value calculation
         const tokenPrices: Record<string, number> = {
@@ -303,7 +305,7 @@ serve(async (req) => {
         let erc20Transfers: ERC20Transfer[] = [];
         let erc20Cursor: string | null = null;
         let pageCount = 0;
-        const MAX_PAGES = 20; // Increased: 20 pages x 100 = 2,000 transactions max per sync
+        const MAX_PAGES = 30; // Increased: 30 pages x 100 = 3,000 transactions max per sync
         
         do {
           const cursorParam = erc20Cursor ? `&cursor=${erc20Cursor}` : '';
