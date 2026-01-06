@@ -48,6 +48,7 @@ import { TransactionAlertsSection } from '@/components/transactions/TransactionA
 import { ManualSheetSection } from '@/components/transactions/ManualSheetSection';
 import { WalletSummaryCards } from '@/components/transactions/WalletSummaryCards';
 import { MonthlyReportDialog } from '@/components/reports/MonthlyReportDialog';
+import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Transaction } from '@/hooks/useTransactions';
@@ -962,6 +963,11 @@ const Transactions = () => {
               </div>
             </>
           )}
+        </div>
+
+        {/* Recent Transactions Section */}
+        <div className="mt-8">
+          <RecentTransactions />
         </div>
 
         {/* Transaction Alerts & Manual Sheet Sections - Visible to all, editable by admin only */}
