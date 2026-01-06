@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Activity, TrendingUp, TrendingDown, ExternalLink, Database, Radio } from 'lucide-react';
-import { formatNumber, formatUSD } from '@/lib/formatNumber';
+import { formatNumber, formatUSDT } from '@/lib/formatNumber';
 import { cn } from '@/lib/utils';
 import camlyLogo from '@/assets/camly-coin-logo.png';
 
@@ -102,7 +102,7 @@ export function CamlyTradesCard() {
                   <TableHead className="text-[11px] text-treasury-gold font-bold">Thời gian</TableHead>
                   <TableHead className="text-[11px] text-treasury-gold font-bold text-center w-20">Loại</TableHead>
                   <TableHead className="text-[11px] text-treasury-gold font-bold text-right">CAMLY</TableHead>
-                  <TableHead className="text-[11px] text-treasury-gold font-bold text-right">USD</TableHead>
+                  <TableHead className="text-[11px] text-treasury-gold font-bold text-right">USDT</TableHead>
                   <TableHead className="text-[11px] text-treasury-gold font-bold text-right">Tx Hash</TableHead>
                 </TableRow>
               </TableHeader>
@@ -148,7 +148,7 @@ export function CamlyTradesCard() {
                         "text-[12px] font-bold",
                         trade.type === 'buy' ? "text-emerald-600" : "text-red-500"
                       )}>
-                        {formatUSD(trade.valueUsd)}
+                        {formatUSDT(trade.valueUsd)}
                       </span>
                     </TableCell>
                     <TableCell className="py-2.5 text-right">

@@ -131,13 +131,17 @@ serve(async (req) => {
 
     if (recentTrades.length === 0) {
       console.log('Using demo trade data');
-      recentTrades = [
-        { txHash: '0x1a2b...3c4d', type: 'buy', amount: 45000000, priceUsd: currentPrice, valueUsd: 1022, timestamp: new Date(Date.now() - 300000).toISOString(), maker: '0x8a2f...b3c' },
-        { txHash: '0x5e6f...7g8h', type: 'sell', amount: 20000000, priceUsd: currentPrice, valueUsd: 454, timestamp: new Date(Date.now() - 900000).toISOString(), maker: '0x3c4b...2d1' },
-        { txHash: '0x9i0j...1k2l', type: 'buy', amount: 80000000, priceUsd: currentPrice, valueUsd: 1817, timestamp: new Date(Date.now() - 1800000).toISOString(), maker: '0x5e1d...7a9' },
-        { txHash: '0x3m4n...5o6p', type: 'buy', amount: 15000000, priceUsd: currentPrice, valueUsd: 340, timestamp: new Date(Date.now() - 3600000).toISOString(), maker: '0x9f2a...8e5' },
-        { txHash: '0x7q8r...9s0t', type: 'sell', amount: 35000000, priceUsd: currentPrice, valueUsd: 795, timestamp: new Date(Date.now() - 7200000).toISOString(), maker: '0x2b3c...4d5e' },
-      ];
+      // Demo data với valueUsd tính chính xác: amount × currentPrice
+      const demoAmounts = [4910000, 17230000, 9150000, 43770000, 19370000, 8520000, 31640000, 12890000];
+      recentTrades = demoAmounts.map((amount, i) => ({
+        txHash: `0x${Math.random().toString(16).slice(2, 6)}...${Math.random().toString(16).slice(2, 6)}`,
+        type: (i % 3 === 0 ? 'buy' : 'sell') as 'buy' | 'sell',
+        amount: amount,
+        priceUsd: currentPrice,
+        valueUsd: amount * currentPrice, // Tính chính xác: 4.91M × 0.000022 = ~$108
+        timestamp: new Date(Date.now() - i * 600000).toISOString(),
+        maker: `0x${Math.random().toString(16).slice(2, 6)}...${Math.random().toString(16).slice(2, 6)}`
+      }));
     }
 
     return new Response(
