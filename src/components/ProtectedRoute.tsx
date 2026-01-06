@@ -1,6 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -9,7 +8,6 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
-  const { isViewOnly } = useViewMode();
   const location = useLocation();
 
   if (loading) {
@@ -23,8 +21,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  // Allow access if user is authenticated OR in view-only mode
-  if (!user && !isViewOnly) {
+  // Require authentication - no view-only bypass
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
