@@ -2,11 +2,50 @@ import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
 import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import camlyLogo from '@/assets/camly-logo.jpeg';
 
 const CHAIN_ICONS: Record<string, string> = {
   'BNB': '🔶',
   'BTC': '₿',
   'ETH': '⟠',
+};
+
+const TOKEN_LOGOS: Record<string, string> = {
+  'CAMLY': camlyLogo,
+  'BNB': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
+  'USDT': 'https://cryptologos.cc/logos/tether-usdt-logo.png',
+  'BTC': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+  'BTCB': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+  'ETH': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+};
+
+const TOKEN_NAMES: Record<string, string> = {
+  'CAMLY': 'CAMLY COIN',
+  'USDT': 'Tether USD',
+  'BTC': 'Bitcoin',
+  'BTCB': 'Bitcoin BEP20',
+  'BNB': 'BNB Chain',
+  'ETH': 'Ethereum',
+};
+
+const TokenLogo = ({ symbol, size = 32 }: { symbol: string; size?: number }) => {
+  const logoUrl = TOKEN_LOGOS[symbol] || 'https://cryptologos.cc/logos/placeholder.png';
+  
+  return (
+    <div 
+      className="rounded-full overflow-hidden border-2 border-treasury-gold/30 shadow-md hover:scale-105 transition-transform"
+      style={{ width: size, height: size }}
+    >
+      <img
+        src={logoUrl}
+        alt={symbol}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = 'https://cryptologos.cc/logos/placeholder.png';
+        }}
+      />
+    </div>
+  );
 };
 
 export function WalletSummaryCards() {
@@ -76,23 +115,29 @@ export function WalletSummaryCards() {
 
             {/* Token Details */}
             <div className="space-y-4">
-              {wallet.tokens.map((token) => {
+            {wallet.tokens.map((token) => {
                 const isBtcWallet = wallet.wallet_chain === 'BTC';
-                const tokenIcon = token.token_symbol === 'CAMLY' ? '📈' : token.token_symbol === 'BTC' ? '₿' : '💵';
                 
                 return (
-                  <div key={token.token_symbol} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "text-xs font-bold px-2 py-0.5 rounded-full",
-                        token.token_symbol === 'CAMLY' 
-                          ? "bg-treasury-gold/20 text-treasury-gold-dark" 
-                          : token.token_symbol === 'BTC'
-                          ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                      )}>
-                        {tokenIcon} {token.token_symbol}
-                      </span>
+                  <div key={token.token_symbol} className="space-y-3">
+                    {/* Token Header with Logo */}
+                    <div className="flex items-center gap-3">
+                      <TokenLogo symbol={token.token_symbol} size={36} />
+                      <div className="flex flex-col">
+                        <span className={cn(
+                          "text-base font-bold",
+                          token.token_symbol === 'CAMLY' 
+                            ? "text-treasury-gold-dark dark:text-treasury-gold" 
+                            : token.token_symbol === 'BTC' || token.token_symbol === 'BTCB'
+                            ? "text-orange-600 dark:text-orange-400"
+                            : "text-emerald-600 dark:text-emerald-400"
+                        )}>
+                          {token.token_symbol}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {TOKEN_NAMES[token.token_symbol] || token.token_symbol}
+                        </span>
+                      </div>
                     </div>
                     
                     {/* BTC wallet - show balance only */}
