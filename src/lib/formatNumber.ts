@@ -65,11 +65,34 @@ export function formatTokenAmount(value: number, symbol?: string): string {
 }
 
 /**
- * Format USD value với $ prefix và màu sắc
+ * Format USD value với $ prefix
  * Ví dụ: 7966.45 → $7,966.45
  */
 export function formatUSD(value: number): string {
   return '$' + formatNumber(value, { minDecimals: 2, maxDecimals: 2 });
+}
+
+/**
+ * Format USDT value - compact cho số lớn, 2 decimals, không có prefix
+ * Ví dụ: 108.02 → 108.02
+ *        1500000 → 1.50M
+ */
+export function formatUSDT(value: number): string {
+  if (isNaN(value) || !isFinite(value)) return '0.00';
+  
+  // Số lớn >= 1M dùng compact format
+  if (value >= 1_000_000) {
+    return (value / 1_000_000).toFixed(2) + 'M';
+  }
+  // Số >= 1000 dùng comma separator
+  if (value >= 1000) {
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+  // Số nhỏ hiển thị đầy đủ 2 decimals
+  return value.toFixed(2);
 }
 
 /**
