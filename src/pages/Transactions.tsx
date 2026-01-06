@@ -43,6 +43,7 @@ import { EditableNote } from '@/components/transactions/EditableNote';
 import { EditableTags } from '@/components/transactions/EditableTags';
 import { TransactionAlertsSection } from '@/components/transactions/TransactionAlertsSection';
 import { ManualSheetSection } from '@/components/transactions/ManualSheetSection';
+import { WalletSummaryCards } from '@/components/transactions/WalletSummaryCards';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Transaction } from '@/hooks/useTransactions';
@@ -265,10 +266,9 @@ const Transactions = () => {
 
   // Generate CSV content from transactions - Excel-friendly format with proper separator
   const generateCSV = (txList: Transaction[]): string => {
-    // Use semicolon as separator for better Excel compatibility (especially non-US locales)
     const sep = ',';
     
-    // Headers with clear labels for Excel
+    // Headers - Xóa 2 cột trùng lặp From/To (Short)
     const headers = [
       'Date',
       'Wallet Name',
@@ -276,10 +276,8 @@ const Transactions = () => {
       'Token',
       'Amount',
       'USD Value',
-      'From (Short)',
-      'To (Short)',
-      'From (Full)',
-      'To (Full)',
+      'From',
+      'To',
       'Explorer Link',
       'Tx Hash',
       'Status',
@@ -289,24 +287,25 @@ const Transactions = () => {
     ];
     
     const rows = txList.map((tx) => {
-      // Wrap all text fields properly for Excel
+      // Format amount with +/- sign like web display
+      const amountSign = tx.direction === 'IN' ? '+' : '-';
+      const formattedAmount = amountSign + formatTokenAmountCSV(tx.amount, tx.token_symbol);
+      
       return [
-        formatDateCSV(tx.timestamp),           // Date - no quotes needed
-        escapeCSV(getWalletName(tx.wallet_id)), // Wallet Name
-        tx.direction,                           // Direction - IN/OUT
-        tx.token_symbol,                        // Token symbol
-        formatTokenAmountCSV(tx.amount, tx.token_symbol), // Amount as number
-        formatUSDValueCSV(tx.usd_value),       // USD Value as number (no $ symbol)
-        shortenAddressCSV(tx.from_address),    // From short
-        shortenAddressCSV(tx.to_address),      // To short
-        escapeCSV(tx.from_address),            // From full
-        escapeCSV(tx.to_address),              // To full
-        getExplorerLink(tx.tx_hash),           // Explorer link
-        tx.tx_hash,                            // Tx Hash
-        tx.status,                             // Status
-        escapeCSV(tx.metadata?.category || ''), // Category
-        escapeCSV(tx.metadata?.note || ''),    // Note
-        escapeCSV((tx.metadata?.tags || []).join('; ')), // Tags with semicolon separator
+        formatDateCSV(tx.timestamp),
+        escapeCSV(getWalletName(tx.wallet_id)),
+        tx.direction,
+        tx.token_symbol,
+        formattedAmount,
+        '$' + formatUSDValueCSV(tx.usd_value),
+        escapeCSV(tx.from_address),
+        escapeCSV(tx.to_address),
+        getExplorerLink(tx.tx_hash),
+        tx.tx_hash,
+        tx.status,
+        escapeCSV(tx.metadata?.category || ''),
+        escapeCSV(tx.metadata?.note || ''),
+        escapeCSV((tx.metadata?.tags || []).join('; ')),
       ];
     });
 
@@ -536,6 +535,9 @@ const Transactions = () => {
             </div>
           </div>
         </div>
+
+        {/* Wallet Summary Cards */}
+        <WalletSummaryCards />
 
         {/* Transactions Table - Excel Style */}
         <div className="bg-white rounded-lg border border-treasury-gold/20 shadow-lg overflow-hidden">
