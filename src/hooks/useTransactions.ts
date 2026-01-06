@@ -36,6 +36,9 @@ export interface TransactionFilters {
 // List of valid tokens to show in transaction history - CHỈ CAMLY và USDT
 const VALID_TOKEN_SYMBOLS = ['CAMLY', 'USDT'];
 
+// Minimum USDT amount to show (filter dust spam)
+const MIN_USDT_AMOUNT = 1;
+
 // Detect spam/scam token symbols (Unicode tricks, special characters)
 function isValidTokenSymbol(symbol: string): boolean {
   if (!symbol) return false;
@@ -43,6 +46,20 @@ function isValidTokenSymbol(symbol: string): boolean {
   
   // Only allow CAMLY and USDT
   return VALID_TOKEN_SYMBOLS.includes(upperSymbol);
+}
+
+// Check if transaction is valid (not dust/spam)
+function isValidTransaction(tx: { token_symbol: string; amount: number }): boolean {
+  const amount = Number(tx.amount);
+  const symbol = tx.token_symbol?.toUpperCase();
+  
+  // Filter dust USDT (< 1 USDT)
+  if (symbol === 'USDT' && amount < MIN_USDT_AMOUNT) {
+    return false;
+  }
+  
+  // Keep all CAMLY with amount > 0
+  return amount > 0;
 }
 
 export function useTransactions(filters?: TransactionFilters) {
@@ -79,8 +96,8 @@ export function useTransactions(filters?: TransactionFilters) {
       let transactions = (data || [])
         // Filter out spam/scam tokens
         .filter(tx => isValidTokenSymbol(tx.token_symbol))
-        // Filter out transactions with amount = 0 or very small
-        .filter(tx => Number(tx.amount) > 0)
+        // Filter out dust/spam transactions (USDT < 1, amount = 0)
+        .filter(tx => isValidTransaction(tx))
         .map(tx => ({
           id: tx.id,
           wallet_id: tx.wallet_id,
