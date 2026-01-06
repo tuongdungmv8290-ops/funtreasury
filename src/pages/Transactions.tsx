@@ -21,6 +21,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  CalendarDays,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ import { EditableTags } from '@/components/transactions/EditableTags';
 import { TransactionAlertsSection } from '@/components/transactions/TransactionAlertsSection';
 import { ManualSheetSection } from '@/components/transactions/ManualSheetSection';
 import { WalletSummaryCards } from '@/components/transactions/WalletSummaryCards';
+import { MonthlyReportDialog } from '@/components/reports/MonthlyReportDialog';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Transaction } from '@/hooks/useTransactions';
@@ -148,6 +150,7 @@ const Transactions = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [sortField, setSortField] = useState<SortField>('timestamp');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [monthlyReportOpen, setMonthlyReportOpen] = useState(false);
 
   const { data: wallets } = useWallets();
   const { data: transactions, isLoading } = useTransactions({
@@ -460,6 +463,18 @@ const Transactions = () => {
                     <span className="font-medium">Export All</span>
                     <span className="text-xs text-muted-foreground">
                       All transactions in database
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setMonthlyReportOpen(true)}
+                  className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+                >
+                  <CalendarDays className="w-4 h-4 mr-2 text-treasury-gold" />
+                  <div className="flex flex-col">
+                    <span className="font-medium">📅 Monthly Report</span>
+                    <span className="text-xs text-muted-foreground">
+                      Báo cáo PDF theo tháng
                     </span>
                   </div>
                 </DropdownMenuItem>
@@ -863,6 +878,12 @@ const Transactions = () => {
           <ManualSheetSection viewOnly={isViewOnly} />
         </div>
       </main>
+
+      {/* Monthly Report Dialog */}
+      <MonthlyReportDialog 
+        open={monthlyReportOpen} 
+        onOpenChange={setMonthlyReportOpen} 
+      />
     </div>
   );
 };
