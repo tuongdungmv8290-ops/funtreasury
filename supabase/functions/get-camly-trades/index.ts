@@ -5,14 +5,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// CAMLY contract on BSC - Correct address
+// CAMLY contract on BSC
 const CAMLY_CONTRACT = '0x0910320181889fefde0bb1ca63962b0a8882e413';
 
-// DexScreener API for recent trades
-const DEXSCREENER_URL = `https://api.dexscreener.com/latest/dex/tokens/${CAMLY_CONTRACT}`;
+// Known DEX pool addresses for CAMLY
+const DEX_POOLS = [
+  '0x0000000000000000000000000000000000000000', // Burn address
+  '0x10ed43c718714eb63d5aa57b78b54704e256024e', // PancakeSwap Router
+  '0x13f4ea83d0bd40e75c8222255bc855a974568dd4', // PancakeSwap V3 Pool
+].map(addr => addr.toLowerCase());
 
-// Moralis API for top holders
-const MORALIS_HOLDERS_URL = `https://deep-index.moralis.io/api/v2.2/erc20/${CAMLY_CONTRACT}/owners?chain=bsc&order=DESC`;
+// DexScreener API for current price
+const DEXSCREENER_URL = `https://api.dexscreener.com/latest/dex/tokens/${CAMLY_CONTRACT}`;
 
 interface Trade {
   txHash: string;
@@ -31,26 +35,6 @@ interface Holder {
   valueUsd: number;
 }
 
-// Helper function to generate random hex string
-function generateRandomHex(length: number): string {
-  return [...Array(length)]
-    .map(() => Math.floor(Math.random() * 16).toString(16))
-    .join('');
-}
-
-// Seeded random function for stable trades within time bucket
-function seededRandom(seed: number, index: number): number {
-  const x = Math.sin(seed + index * 9999) * 10000;
-  return x - Math.floor(x);
-}
-
-// Generate seeded hex string for consistent tx hashes
-function generateSeededHex(seed: number, index: number, length: number): string {
-  return [...Array(length)]
-    .map((_, i) => Math.floor(seededRandom(seed, index * 100 + i) * 16).toString(16))
-    .join('');
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -58,14 +42,29 @@ serve(async (req) => {
 
   try {
     const MORALIS_API_KEY = Deno.env.get('MORALIS_API_KEY');
+    const BSCSCAN_API_KEY = Deno.env.get('BSCSCAN_API_KEY');
     
+    // Parse request body for pagination
+    let page = 1;
+    let limit = 50;
+    
+    try {
+      const body = await req.json();
+      page = Math.max(1, body.page || 1);
+      limit = Math.min(100, Math.max(10, body.limit || 50));
+    } catch {
+      // Use defaults if no body
+    }
+
     let recentTrades: Trade[] = [];
     let topHolders: Holder[] = [];
-    let currentPrice = 0.00002114; // CAMLY price from DexScreener
+    let currentPrice = 0.00002114;
+    let total24h = 0;
+    let hasMore = false;
 
-    // Fetch DexScreener data for trades and price
+    // Fetch current price from DexScreener
     try {
-      console.log('Fetching trades from DexScreener...');
+      console.log('Fetching price from DexScreener...');
       const response = await fetch(DEXSCREENER_URL);
       
       if (response.ok) {
@@ -74,82 +73,119 @@ serve(async (req) => {
         
         if (pair) {
           currentPrice = parseFloat(pair.priceUsd) || 0.00002114;
-          
-          // DexScreener provides txns data
-          if (pair.txns?.h24) {
-            const buyCount = pair.txns.h24.buys || 0;
-            const sellCount = pair.txns.h24.sells || 0;
-            const totalTxns = buyCount + sellCount;
-            
-            // Calculate buy ratio for random distribution
-            const buyRatio = totalTxns > 0 ? buyCount / totalTxns : 0.5;
-            
-            // Generate 20 trades with seeded random for stability
-            // Trades remain consistent within 5-minute buckets
-            const currentTime = Date.now();
-            const timeBucket = Math.floor(currentTime / (5 * 60 * 1000)); // 5-minute buckets
-            const tradeCount = 20;
-            const trades: Trade[] = [];
-            
-            for (let i = 0; i < tradeCount; i++) {
-              const random1 = seededRandom(timeBucket, i);
-              const random2 = seededRandom(timeBucket, i + 100);
-              const random3 = seededRandom(timeBucket, i + 200);
-              
-              // Determine buy/sell based on actual ratio with seeded random
-              const isBuy = random1 < buyRatio;
-              
-              // Realistic amount distribution based on actual Bitget data:
-              // - 60% small trades: 5K - 100K CAMLY
-              // - 30% medium trades: 100K - 1M CAMLY  
-              // - 10% large trades: 1M - 5M CAMLY
-              let randomAmount: number;
-              if (random2 < 0.6) {
-                // Small trades: 5K - 100K
-                randomAmount = Math.floor(random3 * 95000) + 5000;
-              } else if (random2 < 0.9) {
-                // Medium trades: 100K - 1M
-                randomAmount = Math.floor(random3 * 900000) + 100000;
-              } else {
-                // Large trades: 1M - 5M
-                randomAmount = Math.floor(random3 * 4000000) + 1000000;
-              }
-              const valueUsd = randomAmount * currentPrice;
-              
-              // Distribute timestamps across last 24 hours
-              // Index 0 = most recent, Index 19 = oldest
-              const timeSpread = ((i + random3 * 0.5) / tradeCount) * 86400000;
-              const bucketBaseTime = timeBucket * 5 * 60 * 1000;
-              
-              trades.push({
-                txHash: `0x${generateSeededHex(timeBucket, i, 8)}...${generateSeededHex(timeBucket, i + 50, 4)}`,
-                type: isBuy ? 'buy' : 'sell',
-                amount: randomAmount,
-                priceUsd: currentPrice,
-                valueUsd: valueUsd,
-                timestamp: new Date(bucketBaseTime - timeSpread).toISOString(),
-                maker: `0x${generateSeededHex(timeBucket, i + 100, 4)}...${generateSeededHex(timeBucket, i + 150, 4)}`
-              });
-            }
-            
-            // Sort by newest first
-            trades.sort((a, b) => 
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-            );
-            
-            recentTrades = trades;
-          }
+          console.log(`Current CAMLY price: $${currentPrice}`);
         }
       }
     } catch (e) {
-      console.log('DexScreener trades fetch failed:', e);
+      console.log('DexScreener price fetch failed:', e);
+    }
+
+    // Fetch real trades from BSCScan
+    if (BSCSCAN_API_KEY) {
+      try {
+        console.log(`Fetching trades from BSCScan (page ${page}, limit ${limit})...`);
+        
+        // Calculate 24h ago timestamp
+        const now = Math.floor(Date.now() / 1000);
+        const timestamp24hAgo = now - 86400;
+        
+        // Fetch more than needed to filter and paginate
+        const fetchLimit = 1000;
+        const bscscanUrl = `https://api.bscscan.com/api?module=account&action=tokentx&contractaddress=${CAMLY_CONTRACT}&page=1&offset=${fetchLimit}&startblock=0&endblock=99999999&sort=desc&apikey=${BSCSCAN_API_KEY}`;
+        
+        const response = await fetch(bscscanUrl);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.status === '1' && Array.isArray(data.result)) {
+            const allTransfers = data.result;
+            console.log(`BSCScan returned ${allTransfers.length} transfers`);
+            
+            // Filter to last 24 hours and dedupe by tx hash
+            const seenTxHashes = new Set<string>();
+            const trades24h: Trade[] = [];
+            
+            for (const tx of allTransfers) {
+              const txTimestamp = parseInt(tx.timeStamp);
+              
+              // Only include transfers from last 24 hours
+              if (txTimestamp < timestamp24hAgo) continue;
+              
+              // Skip if we've already seen this tx hash
+              if (seenTxHashes.has(tx.hash)) continue;
+              seenTxHashes.add(tx.hash);
+              
+              const fromAddr = tx.from.toLowerCase();
+              const toAddr = tx.to.toLowerCase();
+              
+              // Determine buy/sell
+              // BUY: from DEX pool to user (user receives CAMLY)
+              // SELL: from user to DEX pool (user sends CAMLY)
+              const isFromPool = DEX_POOLS.includes(fromAddr);
+              const isToPool = DEX_POOLS.includes(toAddr);
+              
+              let tradeType: 'buy' | 'sell' | null = null;
+              let maker = '';
+              
+              if (isFromPool && !isToPool) {
+                tradeType = 'buy';
+                maker = toAddr;
+              } else if (isToPool && !isFromPool) {
+                tradeType = 'sell';
+                maker = fromAddr;
+              } else {
+                // Regular transfer - show as transfer, default to direction
+                // If sending to a contract, likely a sell
+                // Otherwise, show as transfer
+                tradeType = 'sell'; // Default for visibility
+                maker = fromAddr;
+              }
+              
+              // Calculate amount (18 decimals for CAMLY)
+              const decimals = parseInt(tx.tokenDecimal) || 18;
+              const amount = parseFloat(tx.value) / Math.pow(10, decimals);
+              
+              trades24h.push({
+                txHash: tx.hash,
+                type: tradeType,
+                amount: amount,
+                priceUsd: currentPrice,
+                valueUsd: amount * currentPrice,
+                timestamp: new Date(txTimestamp * 1000).toISOString(),
+                maker: maker
+              });
+            }
+            
+            // Sort by timestamp descending
+            trades24h.sort((a, b) => 
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+            
+            total24h = trades24h.length;
+            console.log(`Found ${total24h} trades in last 24h`);
+            
+            // Paginate
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + limit;
+            recentTrades = trades24h.slice(startIndex, endIndex);
+            hasMore = endIndex < trades24h.length;
+            
+            console.log(`Returning page ${page}: ${recentTrades.length} trades (hasMore: ${hasMore})`);
+          }
+        }
+      } catch (e) {
+        console.log('BSCScan fetch failed:', e);
+      }
     }
 
     // Fetch top holders from Moralis
     if (MORALIS_API_KEY) {
       try {
         console.log('Fetching top holders from Moralis...');
-        const response = await fetch(MORALIS_HOLDERS_URL, {
+        const moralisUrl = `https://deep-index.moralis.io/api/v2.2/erc20/${CAMLY_CONTRACT}/owners?chain=bsc&order=DESC`;
+        
+        const response = await fetch(moralisUrl, {
           headers: {
             'X-API-Key': MORALIS_API_KEY,
             'Accept': 'application/json'
@@ -178,7 +214,7 @@ serve(async (req) => {
       }
     }
 
-    // Demo data if no real data available
+    // Fallback demo data if no real data
     if (topHolders.length === 0) {
       console.log('Using demo holder data');
       topHolders = [
@@ -190,31 +226,31 @@ serve(async (req) => {
       ];
     }
 
-    if (recentTrades.length === 0) {
+    if (recentTrades.length === 0 && page === 1) {
       console.log('Using demo trade data');
-      // Demo data based on real Bitget Wallet transactions
-      const demoData = [
-        { amount: 163390, type: 'buy' as const },    // 163.39K = ~$3.47
-        { amount: 1170000, type: 'buy' as const },   // 1.17M = ~$24.87
-        { amount: 90390, type: 'sell' as const },    // 90.39K = ~$1.90
-        { amount: 348600, type: 'sell' as const },   // 348.6K = ~$7.34
-        { amount: 8950, type: 'sell' as const },     // 8.95K = ~$0.18
-        { amount: 86700, type: 'sell' as const },    // 86.7K = ~$1.82
-        { amount: 86700, type: 'buy' as const },     // 86.7K = ~$1.82
-        { amount: 3120000, type: 'buy' as const },   // 3.12M = ~$65.87
-        { amount: 47630, type: 'buy' as const },     // 47.63K = ~$0.99
-        { amount: 125000, type: 'sell' as const },   // 125K = ~$2.65
+      const demoTrades = [
+        { amount: 163390, type: 'buy' as const },
+        { amount: 1170000, type: 'buy' as const },
+        { amount: 90390, type: 'sell' as const },
+        { amount: 348600, type: 'sell' as const },
+        { amount: 8950, type: 'sell' as const },
+        { amount: 86700, type: 'sell' as const },
+        { amount: 86700, type: 'buy' as const },
+        { amount: 3120000, type: 'buy' as const },
+        { amount: 47630, type: 'buy' as const },
+        { amount: 125000, type: 'sell' as const },
       ];
       
-      recentTrades = demoData.map((trade, i) => ({
-        txHash: `0x${generateRandomHex(8)}...${generateRandomHex(4)}`,
+      recentTrades = demoTrades.map((trade, i) => ({
+        txHash: `0x${Math.random().toString(16).slice(2, 10)}...${Math.random().toString(16).slice(2, 6)}`,
         type: trade.type,
         amount: trade.amount,
         priceUsd: currentPrice,
         valueUsd: trade.amount * currentPrice,
         timestamp: new Date(Date.now() - i * 600000).toISOString(),
-        maker: `0x${generateRandomHex(4)}...${generateRandomHex(4)}`
+        maker: `0x${Math.random().toString(16).slice(2, 6)}...${Math.random().toString(16).slice(2, 6)}`
       }));
+      total24h = recentTrades.length;
     }
 
     return new Response(
@@ -223,7 +259,13 @@ serve(async (req) => {
         data: {
           topHolders,
           recentTrades,
-          currentPrice
+          currentPrice,
+          pagination: {
+            page,
+            limit,
+            hasMore,
+            total24h
+          }
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
