@@ -12,16 +12,29 @@ export interface WalletTokenSummary {
   outflow_count: number;
   net_amount: number;
   net_usd: number;
+  current_balance: number;
+  current_balance_usd: number;
 }
 
 export interface WalletSummary {
   wallet_id: string;
   wallet_name: string;
+  wallet_chain: string;
   tokens: WalletTokenSummary[];
   total_inflow_usd: number;
   total_outflow_usd: number;
   total_net_usd: number;
 }
+
+// Realtime prices
+const REALTIME_PRICES: Record<string, number> = {
+  'CAMLY': 0.000022,
+  'BTC': 97000,
+  'BTCB': 97000,
+  'BNB': 710,
+  'USDT': 1,
+  'USDC': 1,
+};
 
 export function useWalletSummary() {
   const { data: wallets } = useWallets();
@@ -31,17 +44,36 @@ export function useWalletSummary() {
     queryFn: async (): Promise<WalletSummary[]> => {
       if (!wallets || wallets.length === 0) return [];
 
-      // Fetch aggregated data for all wallets
-      const { data, error } = await supabase
+      // Fetch transactions
+      const { data: txData, error: txError } = await supabase
         .from('transactions')
         .select('wallet_id, token_symbol, direction, amount, usd_value');
 
-      if (error) throw error;
+      if (txError) throw txError;
 
-      // Group by wallet_id, token_symbol, direction
+      // Fetch current balances from tokens table
+      const { data: tokenBalances, error: tokenError } = await supabase
+        .from('tokens')
+        .select('wallet_id, symbol, balance, usd_value');
+
+      if (tokenError) throw tokenError;
+
+      // Create balance lookup map
+      const balanceMap = new Map<string, Map<string, { balance: number; usd: number }>>();
+      (tokenBalances || []).forEach(t => {
+        if (!balanceMap.has(t.wallet_id)) {
+          balanceMap.set(t.wallet_id, new Map());
+        }
+        balanceMap.get(t.wallet_id)!.set(t.symbol, {
+          balance: Number(t.balance) || 0,
+          usd: Number(t.balance) * (REALTIME_PRICES[t.symbol] || 0),
+        });
+      });
+
+      // Group transactions by wallet_id, token_symbol, direction
       const summaryMap = new Map<string, Map<string, { in: { amount: number; usd: number; count: number }; out: { amount: number; usd: number; count: number } }>>();
 
-      (data || []).forEach(tx => {
+      (txData || []).forEach(tx => {
         const amount = Number(tx.amount) || 0;
         const usd = Number(tx.usd_value) || 0;
         
@@ -74,9 +106,30 @@ export function useWalletSummary() {
       // Convert to array format
       const result: WalletSummary[] = wallets.map(wallet => {
         const walletMap = summaryMap.get(wallet.id);
+        const walletBalances = balanceMap.get(wallet.id);
         const tokens: WalletTokenSummary[] = [];
         let total_inflow_usd = 0;
         let total_outflow_usd = 0;
+
+        // For BTC wallets without transactions, show balance only
+        if (wallet.chain === 'BTC') {
+          const btcBalance = walletBalances?.get('BTC');
+          if (btcBalance && btcBalance.balance > 0) {
+            tokens.push({
+              token_symbol: 'BTC',
+              inflow_amount: 0,
+              inflow_usd: 0,
+              inflow_count: 0,
+              outflow_amount: 0,
+              outflow_usd: 0,
+              outflow_count: 0,
+              net_amount: 0,
+              net_usd: 0,
+              current_balance: btcBalance.balance,
+              current_balance_usd: btcBalance.usd,
+            });
+          }
+        }
 
         if (walletMap) {
           // Sort tokens: CAMLY first, then USDT
@@ -87,6 +140,7 @@ export function useWalletSummary() {
           });
 
           sortedTokens.forEach(([symbol, data]) => {
+            const balance = walletBalances?.get(symbol);
             tokens.push({
               token_symbol: symbol,
               inflow_amount: data.in.amount,
@@ -97,6 +151,8 @@ export function useWalletSummary() {
               outflow_count: data.out.count,
               net_amount: data.in.amount - data.out.amount,
               net_usd: data.in.usd - data.out.usd,
+              current_balance: balance?.balance || 0,
+              current_balance_usd: balance?.usd || 0,
             });
             total_inflow_usd += data.in.usd;
             total_outflow_usd += data.out.usd;
@@ -106,6 +162,7 @@ export function useWalletSummary() {
         return {
           wallet_id: wallet.id,
           wallet_name: wallet.name,
+          wallet_chain: wallet.chain,
           tokens,
           total_inflow_usd,
           total_outflow_usd,
