@@ -4,6 +4,7 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
 import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
 import { useViewMode } from '@/contexts/ViewModeContext';
+import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatCurrency, shortenAddress } from '@/lib/mockData';
 import {
   ArrowUpRight,
@@ -22,6 +23,7 @@ import {
   ArrowUp,
   ArrowDown,
   CalendarDays,
+  Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -153,6 +155,7 @@ const Transactions = () => {
   const [monthlyReportOpen, setMonthlyReportOpen] = useState(false);
 
   const { data: wallets } = useWallets();
+  const { data: walletSummaries } = useWalletSummary();
   const { data: transactions, isLoading } = useTransactions({
     walletId: walletFilter !== 'all' ? walletFilter : undefined,
     direction: directionFilter !== 'all' ? (directionFilter as 'IN' | 'OUT') : undefined,
@@ -407,6 +410,83 @@ const Transactions = () => {
     }
   };
 
+  // Export Wallet Summary CSV
+  const exportWalletSummaryCSV = () => {
+    if (!walletSummaries || walletSummaries.length === 0) {
+      toast({
+        title: "Không có dữ liệu",
+        description: "Không có wallet summary nào để export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const sep = ',';
+    
+    // Headers for Wallet Summary
+    const headers = [
+      'Wallet',
+      'Token',
+      'Inflow Amount',
+      'Inflow USD',
+      'Outflow Amount',
+      'Outflow USD',
+      'Balance Amount',
+      'Balance USD',
+    ];
+
+    const rows: string[][] = [];
+
+    walletSummaries.forEach(wallet => {
+      wallet.tokens.forEach(token => {
+        // Format amounts based on token type
+        const formatAmount = (amount: number, symbol: string): string => {
+          if (symbol === 'USDT' || symbol === 'USDC') {
+            return amount.toFixed(2);
+          }
+          if (symbol === 'BTC') {
+            return amount.toFixed(6);
+          }
+          // CAMLY - large numbers
+          if (amount >= 1_000_000_000) {
+            return Math.round(amount).toString();
+          }
+          return Math.round(amount).toString();
+        };
+
+        const isBtcWallet = wallet.wallet_chain === 'BTC';
+
+        rows.push([
+          escapeCSV(wallet.wallet_name),
+          token.token_symbol,
+          isBtcWallet ? 'N/A' : formatAmount(token.inflow_amount, token.token_symbol),
+          isBtcWallet ? 'N/A' : '$' + token.inflow_usd.toFixed(2),
+          isBtcWallet ? 'N/A' : formatAmount(token.outflow_amount, token.token_symbol),
+          isBtcWallet ? 'N/A' : '$' + token.outflow_usd.toFixed(2),
+          formatAmount(token.current_balance, token.token_symbol),
+          '$' + token.current_balance_usd.toFixed(2),
+        ]);
+      });
+    });
+
+    const csvContent = [headers.join(sep), ...rows.map(row => row.join(sep))].join('\r\n');
+    
+    // Add BOM for Excel UTF-8 support
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `FUN-Treasury-Wallet-Summary-${getFileNameDate()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "✅ Export Wallet Summary thành công!",
+      description: `Đã export ${rows.length} dòng từ ${walletSummaries.length} ví Treasury`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -463,6 +543,18 @@ const Transactions = () => {
                     <span className="font-medium">Export All</span>
                     <span className="text-xs text-muted-foreground">
                       All transactions in database
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={exportWalletSummaryCSV}
+                  className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+                >
+                  <Wallet className="w-4 h-4 mr-2 text-treasury-gold" />
+                  <div className="flex flex-col">
+                    <span className="font-medium">📊 Wallet Summary</span>
+                    <span className="text-xs text-muted-foreground">
+                      Inflow/Outflow/Balance các ví
                     </span>
                   </div>
                 </DropdownMenuItem>
