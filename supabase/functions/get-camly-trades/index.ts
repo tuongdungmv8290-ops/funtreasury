@@ -5,8 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// CAMLY contract on BSC
-const CAMLY_CONTRACT = '0x31f8d38df6514b6cc3c360ace3a2efa7496214f6';
+// CAMLY contract on BSC - Correct address
+const CAMLY_CONTRACT = '0x0910320181889fefde0bb1ca63962b0a8882e413';
 
 // DexScreener API for recent trades
 const DEXSCREENER_URL = `https://api.dexscreener.com/latest/dex/tokens/${CAMLY_CONTRACT}`;
@@ -41,7 +41,7 @@ serve(async (req) => {
     
     let recentTrades: Trade[] = [];
     let topHolders: Holder[] = [];
-    let currentPrice = 0.00002272;
+    let currentPrice = 0.00002114; // CAMLY price from DexScreener
 
     // Fetch DexScreener data for trades and price
     try {
