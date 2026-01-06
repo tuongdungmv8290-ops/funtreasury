@@ -448,9 +448,15 @@ serve(async (req) => {
             amount = 0;
           }
 
-          // Skip zero amount transactions
+          // Skip zero amount transactions and dust USDT (< 1 USDT)
           if (amount <= 0) {
             console.log(`Skipping zero amount tx: ${tx.transaction_hash}`);
+            continue;
+          }
+          
+          // Skip dust USDT transactions (< 1 USDT = spam)
+          if (symbolUpper === 'USDT' && amount < 1) {
+            console.log(`Skipping dust USDT tx: ${amount} USDT`);
             continue;
           }
 
@@ -546,7 +552,7 @@ serve(async (req) => {
       }
     }
 
-    // 6. Clean up: Delete spam tokens and zero-amount transactions
+    // 6. Clean up: Delete spam tokens, zero-amount, and dust USDT transactions
     console.log('Cleaning up spam transactions...');
     
     // Delete zero amount transactions
@@ -557,6 +563,17 @@ serve(async (req) => {
     
     if (!zeroError) {
       console.log('Deleted zero amount transactions');
+    }
+    
+    // Delete dust USDT transactions (< 1 USDT = spam)
+    const { error: dustError } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('token_symbol', 'USDT')
+      .lt('amount', 1);
+    
+    if (!dustError) {
+      console.log('Deleted dust USDT transactions (< 1 USDT)');
     }
     
     // Delete non-CAMLY/USDT tokens
