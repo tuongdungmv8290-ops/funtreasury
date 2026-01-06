@@ -82,25 +82,38 @@ function getNativeSymbol(chain: string): string {
   return symbols[chain] || 'BNB';
 }
 
-// Fetch ERC20 transfers from BSCScan as fallback
-async function fetchFromBSCScan(address: string, bscscanApiKey: string): Promise<BSCScanTransfer[]> {
-  const url = `https://api.bscscan.com/api?module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${bscscanApiKey}`;
-  console.log(`Calling BSCScan API: ${url.replace(bscscanApiKey, '***')}`);
+// Fetch ERC20 transfers from Etherscan V2 as fallback (supports multi-chain)
+async function fetchFromEtherscanV2(address: string, apiKey: string, chainId: number = 56): Promise<BSCScanTransfer[]> {
+  // Etherscan API V2 - chainid=56 for BSC Mainnet, chainid=1 for Ethereum, etc.
+  const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&page=1&offset=3000&sort=desc&apikey=${apiKey}`;
+  console.log(`Calling Etherscan V2 API (chainid=${chainId}) for address: ${address.substring(0, 10)}...`);
   
   try {
     const response = await fetch(url);
     const data = await response.json();
     
     if (data.status === '1' && Array.isArray(data.result)) {
-      console.log(`BSCScan returned ${data.result.length} transfers`);
+      console.log(`Etherscan V2 returned ${data.result.length} transfers`);
       return data.result;
     }
-    console.log(`BSCScan returned status: ${data.status}, message: ${data.message}`);
+    console.log(`Etherscan V2 returned status: ${data.status}, message: ${data.message}`);
     return [];
   } catch (error) {
-    console.error('BSCScan API error:', error);
+    console.error('Etherscan V2 API error:', error);
     return [];
   }
+}
+
+// Get Etherscan chain ID from internal chain name
+function getEtherscanChainId(chain: string): number {
+  const chainIds: Record<string, number> = {
+    'BNB': 56,      // BSC Mainnet
+    'ETH': 1,       // Ethereum Mainnet
+    'POLYGON': 137, // Polygon Mainnet
+    'ARB': 42161,   // Arbitrum One
+    'BASE': 8453,   // Base
+  };
+  return chainIds[chain] || 56;
 }
 
 // Convert BSCScan transfer to ERC20Transfer format
@@ -201,15 +214,15 @@ serve(async (req) => {
       moralisApiKey = apiSettings?.key_value || null;
     }
 
-    // Get BSCScan API key for fallback
-    const bscscanApiKey = Deno.env.get('BSCSCAN_API_KEY');
-    console.log(`BSCScan API key available: ${bscscanApiKey ? 'yes' : 'no'}`);
+    // Get Etherscan API key for fallback (supports multi-chain via V2 API)
+    const etherscanApiKey = Deno.env.get('ETHERSCAN_API_KEY');
+    console.log(`Etherscan API key available: ${etherscanApiKey ? 'yes' : 'no'}`);
 
-    if (!moralisApiKey && !bscscanApiKey) {
-      console.error('No API keys found (Moralis or BSCScan)');
+    if (!moralisApiKey && !etherscanApiKey) {
+      console.error('No API keys found (Moralis or Etherscan)');
       return new Response(JSON.stringify({
         success: false,
-        error: 'Chưa cấu hình Moralis hoặc BSCScan API Key. Vui lòng vào Settings để thêm.'
+        error: 'Chưa cấu hình Moralis hoặc Etherscan API Key. Vui lòng vào Settings để thêm.'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -366,15 +379,16 @@ serve(async (req) => {
           moralisQuotaExceeded = true;
         }
 
-        // Fallback to BSCScan if Moralis failed or quota exceeded
-        if ((moralisQuotaExceeded || erc20Transfers.length === 0) && bscscanApiKey && wallet.chain === 'BNB') {
-          console.log(`Using BSCScan fallback for ${wallet.name}...`);
-          usedSource = 'BSCScan';
+        // Fallback to Etherscan V2 if Moralis failed or quota exceeded
+        if ((moralisQuotaExceeded || erc20Transfers.length === 0) && etherscanApiKey) {
+          const chainId = getEtherscanChainId(wallet.chain);
+          console.log(`Using Etherscan V2 fallback for ${wallet.name} (chainid=${chainId})...`);
+          usedSource = 'Etherscan V2';
           
-          const bscTransfers = await fetchFromBSCScan(wallet.address, bscscanApiKey);
+          const etherscanTransfers = await fetchFromEtherscanV2(wallet.address, etherscanApiKey, chainId);
           
           // Filter only CAMLY and USDT tokens, then convert to ERC20Transfer format
-          erc20Transfers = bscTransfers
+          erc20Transfers = etherscanTransfers
             .filter(tx => {
               const contractLower = tx.contractAddress?.toLowerCase();
               const symbolUpper = tx.tokenSymbol?.toUpperCase();
@@ -387,7 +401,7 @@ serve(async (req) => {
             })
             .map(convertBSCScanToERC20);
           
-          console.log(`BSCScan filtered to ${erc20Transfers.length} CAMLY/USDT transactions`);
+          console.log(`Etherscan V2 filtered to ${erc20Transfers.length} CAMLY/USDT transactions`);
         }
 
         console.log(`Total ERC20 transfers for ${wallet.name}: ${erc20Transfers.length} (source: ${usedSource})`);
