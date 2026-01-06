@@ -31,6 +31,13 @@ interface Holder {
   valueUsd: number;
 }
 
+// Helper function to generate random hex string
+function generateRandomHex(length: number): string {
+  return [...Array(length)]
+    .map(() => Math.floor(Math.random() * 16).toString(16))
+    .join('');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -53,30 +60,49 @@ serve(async (req) => {
         const pair = data.pairs?.[0];
         
         if (pair) {
-          currentPrice = parseFloat(pair.priceUsd) || 0.00002272;
+          currentPrice = parseFloat(pair.priceUsd) || 0.00002114;
           
           // DexScreener provides txns data
           if (pair.txns?.h24) {
             const buyCount = pair.txns.h24.buys || 0;
             const sellCount = pair.txns.h24.sells || 0;
-            
-            // Generate representative trades based on txn data
             const totalTxns = buyCount + sellCount;
-            for (let i = 0; i < Math.min(10, totalTxns); i++) {
-              const isBuy = i < buyCount;
-              const randomAmount = Math.floor(Math.random() * 50000000) + 1000000;
+            
+            // Calculate buy ratio for random distribution
+            const buyRatio = totalTxns > 0 ? buyCount / totalTxns : 0.5;
+            
+            // Generate 20 trades with random buy/sell based on actual ratio
+            const tradeCount = 20;
+            const trades: Trade[] = [];
+            
+            for (let i = 0; i < tradeCount; i++) {
+              // Randomly determine buy/sell based on actual ratio
+              const isBuy = Math.random() < buyRatio;
+              
+              // Random amount between 1M - 100M CAMLY
+              const randomAmount = Math.floor(Math.random() * 99000000) + 1000000;
               const valueUsd = randomAmount * currentPrice;
               
-              recentTrades.push({
-                txHash: `0x${Math.random().toString(16).slice(2, 10)}...`,
+              // Random time within last 24 hours
+              const randomTimeOffset = Math.floor(Math.random() * 86400000);
+              
+              trades.push({
+                txHash: `0x${generateRandomHex(8)}...${generateRandomHex(4)}`,
                 type: isBuy ? 'buy' : 'sell',
                 amount: randomAmount,
                 priceUsd: currentPrice,
                 valueUsd: valueUsd,
-                timestamp: new Date(Date.now() - i * 600000).toISOString(),
-                maker: `0x${Math.random().toString(16).slice(2, 8)}...${Math.random().toString(16).slice(2, 6)}`
+                timestamp: new Date(Date.now() - randomTimeOffset).toISOString(),
+                maker: `0x${generateRandomHex(4)}...${generateRandomHex(4)}`
               });
             }
+            
+            // Sort by newest first
+            trades.sort((a, b) => 
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+            
+            recentTrades = trades;
           }
         }
       }
@@ -131,16 +157,28 @@ serve(async (req) => {
 
     if (recentTrades.length === 0) {
       console.log('Using demo trade data');
-      // Demo data với valueUsd tính chính xác: amount × currentPrice
-      const demoAmounts = [4910000, 17230000, 9150000, 43770000, 19370000, 8520000, 31640000, 12890000];
-      recentTrades = demoAmounts.map((amount, i) => ({
-        txHash: `0x${Math.random().toString(16).slice(2, 6)}...${Math.random().toString(16).slice(2, 6)}`,
-        type: (i % 3 === 0 ? 'buy' : 'sell') as 'buy' | 'sell',
-        amount: amount,
+      // Demo data with mixed buy/sell transactions
+      const demoData = [
+        { amount: 37580000, type: 'buy' as const },
+        { amount: 32250000, type: 'sell' as const },
+        { amount: 19110000, type: 'buy' as const },
+        { amount: 24600000, type: 'sell' as const },
+        { amount: 45540000, type: 'buy' as const },
+        { amount: 37210000, type: 'sell' as const },
+        { amount: 49980000, type: 'buy' as const },
+        { amount: 18420000, type: 'sell' as const },
+        { amount: 52310000, type: 'buy' as const },
+        { amount: 41670000, type: 'sell' as const },
+      ];
+      
+      recentTrades = demoData.map((trade, i) => ({
+        txHash: `0x${generateRandomHex(8)}...${generateRandomHex(4)}`,
+        type: trade.type,
+        amount: trade.amount,
         priceUsd: currentPrice,
-        valueUsd: amount * currentPrice, // Tính chính xác: 4.91M × 0.000022 = ~$108
+        valueUsd: trade.amount * currentPrice,
         timestamp: new Date(Date.now() - i * 600000).toISOString(),
-        maker: `0x${Math.random().toString(16).slice(2, 6)}...${Math.random().toString(16).slice(2, 6)}`
+        maker: `0x${generateRandomHex(4)}...${generateRandomHex(4)}`
       }));
     }
 
