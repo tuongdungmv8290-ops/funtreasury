@@ -38,6 +38,19 @@ function generateRandomHex(length: number): string {
     .join('');
 }
 
+// Seeded random function for stable trades within time bucket
+function seededRandom(seed: number, index: number): number {
+  const x = Math.sin(seed + index * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+// Generate seeded hex string for consistent tx hashes
+function generateSeededHex(seed: number, index: number, length: number): string {
+  return [...Array(length)]
+    .map((_, i) => Math.floor(seededRandom(seed, index * 100 + i) * 16).toString(16))
+    .join('');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -71,43 +84,51 @@ serve(async (req) => {
             // Calculate buy ratio for random distribution
             const buyRatio = totalTxns > 0 ? buyCount / totalTxns : 0.5;
             
-            // Generate 20 trades with random buy/sell based on actual ratio
+            // Generate 20 trades with seeded random for stability
+            // Trades remain consistent within 5-minute buckets
+            const currentTime = Date.now();
+            const timeBucket = Math.floor(currentTime / (5 * 60 * 1000)); // 5-minute buckets
             const tradeCount = 20;
             const trades: Trade[] = [];
             
             for (let i = 0; i < tradeCount; i++) {
-              // Randomly determine buy/sell based on actual ratio
-              const isBuy = Math.random() < buyRatio;
+              const random1 = seededRandom(timeBucket, i);
+              const random2 = seededRandom(timeBucket, i + 100);
+              const random3 = seededRandom(timeBucket, i + 200);
+              
+              // Determine buy/sell based on actual ratio with seeded random
+              const isBuy = random1 < buyRatio;
               
               // Realistic amount distribution based on actual Bitget data:
               // - 60% small trades: 5K - 100K CAMLY
               // - 30% medium trades: 100K - 1M CAMLY  
               // - 10% large trades: 1M - 5M CAMLY
-              const randomValue = Math.random();
               let randomAmount: number;
-              if (randomValue < 0.6) {
+              if (random2 < 0.6) {
                 // Small trades: 5K - 100K
-                randomAmount = Math.floor(Math.random() * 95000) + 5000;
-              } else if (randomValue < 0.9) {
+                randomAmount = Math.floor(random3 * 95000) + 5000;
+              } else if (random2 < 0.9) {
                 // Medium trades: 100K - 1M
-                randomAmount = Math.floor(Math.random() * 900000) + 100000;
+                randomAmount = Math.floor(random3 * 900000) + 100000;
               } else {
                 // Large trades: 1M - 5M
-                randomAmount = Math.floor(Math.random() * 4000000) + 1000000;
+                randomAmount = Math.floor(random3 * 4000000) + 1000000;
               }
               const valueUsd = randomAmount * currentPrice;
               
-              // Random time within last 24 hours
-              const randomTimeOffset = Math.floor(Math.random() * 86400000);
+              // Distribute timestamps across last 24 hours
+              // Index 0 = most recent, Index 19 = oldest
+              const timeSpread = ((i + random3 * 0.5) / tradeCount) * 86400000;
+              const bucketBaseTime = timeBucket * 5 * 60 * 1000;
               
               trades.push({
-                txHash: `0x${generateRandomHex(8)}...${generateRandomHex(4)}`,
+                txHash: `0x${generateSeededHex(timeBucket, i, 8)}...${generateSeededHex(timeBucket, i + 50, 4)}`,
                 type: isBuy ? 'buy' : 'sell',
                 amount: randomAmount,
                 priceUsd: currentPrice,
                 valueUsd: valueUsd,
-                timestamp: new Date(Date.now() - randomTimeOffset).toISOString(),
-                maker: `0x${generateRandomHex(4)}...${generateRandomHex(4)}`
+                timestamp: new Date(bucketBaseTime - timeSpread).toISOString(),
+                maker: `0x${generateSeededHex(timeBucket, i + 100, 4)}...${generateSeededHex(timeBucket, i + 150, 4)}`
               });
             }
             
