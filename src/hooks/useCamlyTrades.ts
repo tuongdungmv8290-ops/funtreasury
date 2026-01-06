@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Trade {
@@ -18,17 +18,27 @@ interface Holder {
   valueUsd: number;
 }
 
+interface Pagination {
+  page: number;
+  limit: number;
+  hasMore: boolean;
+  total24h: number;
+}
+
 interface CamlyTradesData {
   topHolders: Holder[];
   recentTrades: Trade[];
   currentPrice: number;
+  pagination: Pagination;
 }
 
 export function useCamlyTrades() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['camly-trades'],
-    queryFn: async (): Promise<CamlyTradesData> => {
-      const { data, error } = await supabase.functions.invoke('get-camly-trades');
+    queryFn: async ({ pageParam = 1 }): Promise<CamlyTradesData> => {
+      const { data, error } = await supabase.functions.invoke('get-camly-trades', {
+        body: { page: pageParam, limit: 50 }
+      });
       
       if (error) {
         console.error('Error fetching CAMLY trades:', error);
@@ -37,7 +47,12 @@ export function useCamlyTrades() {
       
       return data.data;
     },
-    refetchInterval: 15 * 1000, // Refresh every 15 seconds
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage?.pagination?.hasMore) return undefined;
+      return lastPage.pagination.page + 1;
+    },
+    refetchInterval: 15 * 1000,
     staleTime: 10 * 1000,
     retry: 2,
   });
