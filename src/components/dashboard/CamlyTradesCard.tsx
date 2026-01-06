@@ -28,13 +28,13 @@ export function CamlyTradesCard() {
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('vi-VN', { 
-      day: '2-digit', 
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    
+    return `${day}/${month} ${hours}:${minutes}:${seconds}`;
   };
 
   const EmptyState = () => (
@@ -71,7 +71,7 @@ export function CamlyTradesCard() {
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
-                <span className="text-[10px] text-emerald-500 font-medium">Live • Auto-refresh 30s</span>
+                <span className="text-[10px] text-emerald-500 font-medium">Live • Auto-refresh 15s</span>
               </div>
             </div>
           </div>
