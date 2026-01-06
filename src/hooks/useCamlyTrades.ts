@@ -32,24 +32,36 @@ interface CamlyTradesData {
   pagination: Pagination;
 }
 
+async function fetchCamlyTrades(page: number): Promise<CamlyTradesData> {
+  const { data, error } = await supabase.functions.invoke('get-camly-trades', {
+    body: { page, limit: 50 }
+  });
+  
+  if (error) {
+    console.error('Error fetching CAMLY trades:', error);
+    throw error;
+  }
+  
+  // Ensure we have valid pagination data
+  const result = data?.data || {
+    topHolders: [],
+    recentTrades: [],
+    currentPrice: 0,
+    pagination: { page: 1, limit: 50, hasMore: false, total24h: 0 }
+  };
+  
+  return result;
+}
+
 export function useCamlyTrades() {
-  return useInfiniteQuery({
+  return useInfiniteQuery<CamlyTradesData, Error>({
     queryKey: ['camly-trades'],
-    queryFn: async ({ pageParam = 1 }): Promise<CamlyTradesData> => {
-      const { data, error } = await supabase.functions.invoke('get-camly-trades', {
-        body: { page: pageParam, limit: 50 }
-      });
-      
-      if (error) {
-        console.error('Error fetching CAMLY trades:', error);
-        throw error;
-      }
-      
-      return data.data;
-    },
+    queryFn: ({ pageParam }) => fetchCamlyTrades(pageParam as number),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      if (!lastPage?.pagination?.hasMore) return undefined;
+      // Safe check for pagination
+      if (!lastPage || !lastPage.pagination) return undefined;
+      if (!lastPage.pagination.hasMore) return undefined;
       return lastPage.pagination.page + 1;
     },
     refetchInterval: 15 * 1000,
