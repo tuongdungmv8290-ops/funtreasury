@@ -1,7 +1,7 @@
 import { Header } from '@/components/layout/Header';
 import { WalletCard } from '@/components/dashboard/WalletCard';
 import { TransactionChart } from '@/components/dashboard/TransactionChart';
-import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
+
 import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { PortfolioHistoryChart } from '@/components/dashboard/PortfolioHistoryChart';
 import { BulkTransferSection } from '@/components/dashboard/BulkTransferSection';
@@ -290,15 +290,14 @@ const Index = () => {
           </div>
         )}
 
-        {/* Charts, Token Balances and Recent Transactions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Charts and Token Balances */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div ref={flowChartRef}>
             <TransactionChart />
           </div>
           <div ref={pieChartRef}>
             <TokenBalancesCard />
           </div>
-          <RecentTransactions />
         </div>
       </main>
 
