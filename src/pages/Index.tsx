@@ -1,6 +1,5 @@
 import { Header } from '@/components/layout/Header';
 import { WalletCard } from '@/components/dashboard/WalletCard';
-import { StatsCard } from '@/components/dashboard/StatsCard';
 import { TransactionChart } from '@/components/dashboard/TransactionChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
@@ -9,9 +8,9 @@ import { BulkTransferSection } from '@/components/dashboard/BulkTransferSection'
 import { CamlyMarketPrice } from '@/components/dashboard/CamlyMarketPrice';
 import { CamlyTradesCard } from '@/components/dashboard/CamlyTradesCard';
 import { useWallets } from '@/hooks/useWallets';
-import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
+import { useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/formatUtils';
-import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown, Eye } from 'lucide-react';
+import { RefreshCw, Loader2, Crown, Clock, FileDown, Eye } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -31,7 +30,6 @@ const Index = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const { data: wallets, isLoading: walletsLoading } = useWallets();
-  const { data: stats, isLoading: statsLoading } = useTransactionStats(dateRange);
   const { data: transactions } = useTransactions();
   
   // Realtime notifications
@@ -137,7 +135,7 @@ const Index = () => {
     }
   };
 
-  const isLoading = walletsLoading || statsLoading;
+  const isLoading = walletsLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -263,74 +261,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
-          <StatsCard
-            title="Total Inflow"
-            value={stats?.inflow || 0}
-            type="inflow"
-            subtitle={`${dateRange}D`}
-            index={0}
-          />
-          <StatsCard
-            title="Total Outflow"
-            value={stats?.outflow || 0}
-            type="outflow"
-            subtitle={`${dateRange}D`}
-            index={1}
-          />
-          <StatsCard
-            title="Net Flow"
-            value={stats?.netflow || 0}
-            type="netflow"
-            subtitle={`${dateRange}D`}
-            index={2}
-          />
-          <div 
-            className="treasury-card relative overflow-hidden animate-fade-in"
-            style={{ animationDelay: '300ms' }}
-          >
-            <div className="absolute -top-6 -left-6 w-28 h-28 rounded-full blur-3xl opacity-60 bg-gradient-to-br from-primary/15 to-transparent" />
-            <div className="relative">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center border bg-primary/10 border-primary/30">
-                  <BarChart3 className="w-5 h-5 text-primary" />
-                </div>
-                <span className="text-xs font-medium text-muted-foreground bg-secondary/80 px-2.5 py-1 rounded-lg border border-border/50">
-                  {dateRange}D
-                </span>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Transactions</p>
-                <p className="text-2xl md:text-3xl font-bold text-foreground">
-                  {stats?.txCount || 0}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div 
-            className="treasury-card relative overflow-hidden animate-fade-in"
-            style={{ animationDelay: '400ms' }}
-          >
-            <div className="absolute -top-6 -left-6 w-28 h-28 rounded-full blur-3xl opacity-60 bg-gradient-to-br from-accent/15 to-transparent" />
-            <div className="relative">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center border bg-accent/10 border-accent/30">
-                  <Coins className="w-5 h-5 text-accent-foreground" />
-                </div>
-                <span className="text-xs font-medium text-muted-foreground bg-secondary/80 px-2.5 py-1 rounded-lg border border-border/50">
-                  {dateRange}D
-                </span>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Active Tokens</p>
-                <p className="text-2xl md:text-3xl font-bold text-foreground">
-                  {stats?.activeTokens || 0}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Wallet Cards */}
         <div className="mb-6 md:mb-8">
