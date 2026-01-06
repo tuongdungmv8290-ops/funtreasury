@@ -1,6 +1,6 @@
 import { ArrowUpRight, ArrowDownLeft, ExternalLink, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatCurrency, shortenAddress, formatDate } from '@/lib/mockData';
+import { formatCurrency, shortenAddress, formatDate } from '@/lib/formatUtils';
 import { Link } from 'react-router-dom';
 import { useTransactions } from '@/hooks/useTransactions';
 
