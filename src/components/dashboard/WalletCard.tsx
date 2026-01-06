@@ -1,7 +1,7 @@
 import { Wallet as WalletIcon, Copy, ExternalLink, CheckCircle, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { formatCurrency, shortenAddress } from '@/lib/mockData';
+import { formatCurrency, shortenAddress } from '@/lib/formatUtils';
 import type { Wallet } from '@/hooks/useWallets';
 import camlyLogo from '@/assets/camly-logo.jpeg';
 import { WalletDetailModal } from './WalletDetailModal';

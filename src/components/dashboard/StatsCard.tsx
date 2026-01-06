@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/mockData';
+import { formatCurrency } from '@/lib/formatUtils';
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 

@@ -10,7 +10,7 @@ import { CamlyMarketPrice } from '@/components/dashboard/CamlyMarketPrice';
 import { CamlyTradesCard } from '@/components/dashboard/CamlyTradesCard';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactionStats, useTransactions } from '@/hooks/useTransactions';
-import { formatCurrency } from '@/lib/mockData';
+import { formatCurrency } from '@/lib/formatUtils';
 import { Wallet, RefreshCw, Loader2, Crown, BarChart3, Coins, Clock, FileDown, Eye } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';

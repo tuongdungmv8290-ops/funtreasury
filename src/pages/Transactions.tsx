@@ -5,7 +5,7 @@ import { useWallets } from '@/hooks/useWallets';
 import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
-import { formatCurrency, shortenAddress } from '@/lib/mockData';
+import { formatCurrency, shortenAddress } from '@/lib/formatUtils';
 import {
   ArrowUpRight,
   ArrowDownLeft,
