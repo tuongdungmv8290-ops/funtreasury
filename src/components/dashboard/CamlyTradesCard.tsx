@@ -11,7 +11,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Activity, TrendingUp, TrendingDown, ExternalLink, Database, Radio, Loader2 } from 'lucide-react';
+import { Activity, TrendingUp, TrendingDown, ExternalLink, Database, Radio, Loader2, ArrowLeftRight, BarChart3 } from 'lucide-react';
 import { formatNumber, formatUSDT } from '@/lib/formatNumber';
 import { cn } from '@/lib/utils';
 import camlyLogo from '@/assets/camly-coin-logo.png';
@@ -25,7 +25,9 @@ export function CamlyTradesCard() {
     isLoading, 
     fetchNextPage, 
     hasNextPage, 
-    isFetchingNextPage 
+    isFetchingNextPage,
+    isError,
+    refetch
   } = useCamlyTrades();
   
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -36,9 +38,11 @@ export function CamlyTradesCard() {
     return data.pages.flatMap(page => page.recentTrades || []);
   }, [data?.pages]);
 
-  // Get pagination info from first page
+  // Get pagination and stats info from first page
   const pagination = data?.pages?.[0]?.pagination;
-  const total24h = pagination?.total24h || allTrades.length;
+  const stats = data?.pages?.[0]?.stats;
+  const total = pagination?.total || allTrades.length;
+  const timeframe = pagination?.timeframe || '7d';
 
   // Intersection Observer for infinite scroll
   const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -85,13 +89,66 @@ export function CamlyTradesCard() {
     return now - tradeTime < 60000; // 1 minute
   };
 
+  const getTradeTypeInfo = (type: string) => {
+    switch (type) {
+      case 'buy':
+        return {
+          label: 'MUA',
+          icon: TrendingUp,
+          className: 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30'
+        };
+      case 'sell':
+        return {
+          label: 'BÁN',
+          icon: TrendingDown,
+          className: 'bg-red-500/20 text-red-500 border-red-500/30'
+        };
+      default:
+        return {
+          label: 'CHUYỂN',
+          icon: ArrowLeftRight,
+          className: 'bg-blue-500/20 text-blue-500 border-blue-500/30'
+        };
+    }
+  };
+
   const EmptyState = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <Database className="w-12 h-12 text-treasury-gold/40 mb-3" />
-      <p className="text-sm text-muted-foreground font-medium">Chưa có giao dịch trong 24h</p>
-      <p className="text-xs text-muted-foreground/70 mt-1">Volume thấp – Vui lòng thử lại sau</p>
+      <p className="text-sm text-muted-foreground font-medium">Chưa có giao dịch trong 7 ngày</p>
+      <p className="text-xs text-muted-foreground/70 mt-1">Đang tải dữ liệu từ blockchain...</p>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="mt-3"
+        onClick={() => refetch()}
+      >
+        Thử lại
+      </Button>
     </div>
   );
+
+  const ErrorState = () => (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <Database className="w-12 h-12 text-red-400/40 mb-3" />
+      <p className="text-sm text-red-500 font-medium">Lỗi tải dữ liệu</p>
+      <p className="text-xs text-muted-foreground/70 mt-1">Không thể kết nối blockchain</p>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="mt-3"
+        onClick={() => refetch()}
+      >
+        Thử lại
+      </Button>
+    </div>
+  );
+
+  // Calculate buy/sell ratio for 24h
+  const buys24h = stats?.buys24h || 0;
+  const sells24h = stats?.sells24h || 0;
+  const total24h = buys24h + sells24h;
+  const buyRatio = total24h > 0 ? (buys24h / total24h) * 100 : 50;
 
   return (
     <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-50/80 via-background to-orange-50/50 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20 shadow-lg">
@@ -110,7 +167,7 @@ export function CamlyTradesCard() {
                 <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/15 rounded-full border border-emerald-500/30">
                   <Activity className="w-3 h-3 text-emerald-600" />
                   <span className="text-[10px] font-bold text-emerald-600">
-                    {total24h} trades / 24h
+                    {total} trades / {timeframe}
                   </span>
                 </div>
               </div>
@@ -122,11 +179,56 @@ export function CamlyTradesCard() {
           </div>
         </div>
 
+        {/* Stats Bar */}
+        {stats && (
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <TrendingUp className="w-3 h-3 text-emerald-600" />
+                <span className="text-[10px] font-medium text-emerald-600">MUA 24h</span>
+              </div>
+              <span className="text-sm font-bold text-emerald-600">{buys24h}</span>
+            </div>
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-2 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <TrendingDown className="w-3 h-3 text-red-500" />
+                <span className="text-[10px] font-medium text-red-500">BÁN 24h</span>
+              </div>
+              <span className="text-sm font-bold text-red-500">{sells24h}</span>
+            </div>
+            <div className="bg-treasury-gold/10 border border-treasury-gold/20 rounded-lg p-2 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <BarChart3 className="w-3 h-3 text-treasury-gold" />
+                <span className="text-[10px] font-medium text-treasury-gold">Volume 24h</span>
+              </div>
+              <span className="text-sm font-bold text-treasury-gold">
+                ${formatNumber(stats.volume24h || 0, { compact: true })}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Buy/Sell Ratio Bar */}
+        {total24h > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between text-[10px] mb-1">
+              <span className="text-emerald-600 font-medium">MUA {buyRatio.toFixed(0)}%</span>
+              <span className="text-red-500 font-medium">BÁN {(100 - buyRatio).toFixed(0)}%</span>
+            </div>
+            <div className="h-2 bg-red-500/30 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                style={{ width: `${buyRatio}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Recent Trades Title */}
         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-treasury-gold/20">
           <Activity className="w-4 h-4 text-treasury-gold" />
           <span className="text-sm font-bold text-foreground">Recent Trades</span>
-          <span className="text-xs text-muted-foreground">(24h gần nhất)</span>
+          <span className="text-xs text-muted-foreground">(7 ngày gần nhất)</span>
         </div>
 
         {/* Recent Trades Table */}
@@ -136,6 +238,8 @@ export function CamlyTradesCard() {
               <Skeleton key={i} className="h-10 w-full bg-treasury-gold/10" />
             ))}
           </div>
+        ) : isError ? (
+          <ErrorState />
         ) : allTrades.length === 0 ? (
           <EmptyState />
         ) : (
@@ -151,75 +255,75 @@ export function CamlyTradesCard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allTrades.map((trade, i) => (
-                  <TableRow 
-                    key={`${trade.txHash}-${i}`} 
-                    className={cn(
-                      "border-treasury-gold/10 transition-all duration-200",
-                      "hover:bg-treasury-gold/10",
-                      i % 2 === 0 ? "bg-transparent" : "bg-treasury-gold/5",
-                      isRecentTrade(trade.timestamp) && "animate-pulse bg-treasury-gold/15"
-                    )}
-                  >
-                    <TableCell className="py-2.5">
-                      <div className="flex items-center gap-1.5">
-                        {isRecentTrade(trade.timestamp) && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        )}
-                        <span className="text-[11px] text-muted-foreground font-medium">
-                          {formatDate(trade.timestamp)}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-2.5">
-                      <div className={cn(
-                        "flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full w-fit mx-auto shadow-sm",
-                        trade.type === 'buy' 
-                          ? "bg-emerald-500/20 text-emerald-600 border border-emerald-500/30" 
-                          : "bg-red-500/20 text-red-500 border border-red-500/30"
-                      )}>
-                        {trade.type === 'buy' ? (
-                          <TrendingUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <TrendingDown className="w-3.5 h-3.5" />
-                        )}
-                        <span className="text-[10px] font-bold uppercase tracking-wide">
-                          {trade.type === 'buy' ? 'MUA' : 'BÁN'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-2.5 text-right">
-                      <span className="text-[12px] font-semibold">
-                        {formatNumber(trade.amount, { compact: true })}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-2.5 text-right">
-                      <span className={cn(
-                        "text-[12px] font-bold",
-                        trade.type === 'buy' ? "text-emerald-600" : "text-red-500"
-                      )}>
-                        {formatUSDT(trade.valueUsd)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-2.5 text-right">
-                      {trade.txHash && !trade.txHash.includes('...') ? (
-                        <a
-                          href={`https://bscscan.com/tx/${trade.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-mono text-treasury-gold hover:text-amber-600 transition-colors"
-                        >
-                          {formatTxHash(trade.txHash)}
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </a>
-                      ) : (
-                        <span className="text-[11px] font-mono text-muted-foreground">
-                          {formatTxHash(trade.txHash || '—')}
-                        </span>
+                {allTrades.map((trade, i) => {
+                  const typeInfo = getTradeTypeInfo(trade.type);
+                  const TypeIcon = typeInfo.icon;
+                  
+                  return (
+                    <TableRow 
+                      key={`${trade.txHash}-${i}`} 
+                      className={cn(
+                        "border-treasury-gold/10 transition-all duration-200",
+                        "hover:bg-treasury-gold/10",
+                        i % 2 === 0 ? "bg-transparent" : "bg-treasury-gold/5",
+                        isRecentTrade(trade.timestamp) && "animate-pulse bg-treasury-gold/15"
                       )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                    >
+                      <TableCell className="py-2.5">
+                        <div className="flex items-center gap-1.5">
+                          {isRecentTrade(trade.timestamp) && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          )}
+                          <span className="text-[11px] text-muted-foreground font-medium">
+                            {formatDate(trade.timestamp)}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2.5">
+                        <div className={cn(
+                          "flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full w-fit mx-auto shadow-sm border",
+                          typeInfo.className
+                        )}>
+                          <TypeIcon className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-bold uppercase tracking-wide">
+                            {typeInfo.label}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2.5 text-right">
+                        <span className="text-[12px] font-semibold">
+                          {formatNumber(trade.amount, { compact: true })}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-2.5 text-right">
+                        <span className={cn(
+                          "text-[12px] font-bold",
+                          trade.type === 'buy' ? "text-emerald-600" : 
+                          trade.type === 'sell' ? "text-red-500" : "text-blue-500"
+                        )}>
+                          {formatUSDT(trade.valueUsd)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-2.5 text-right">
+                        {trade.txHash && !trade.txHash.includes('...') ? (
+                          <a
+                            href={`https://bscscan.com/tx/${trade.txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-mono text-treasury-gold hover:text-amber-600 transition-colors"
+                          >
+                            {formatTxHash(trade.txHash)}
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        ) : (
+                          <span className="text-[11px] font-mono text-muted-foreground">
+                            {formatTxHash(trade.txHash || '—')}
+                          </span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             
@@ -244,7 +348,7 @@ export function CamlyTradesCard() {
                 </Button>
               ) : allTrades.length > 0 ? (
                 <span className="text-xs text-muted-foreground">
-                  Đã hiển thị tất cả {allTrades.length} giao dịch trong 24h
+                  Đã hiển thị tất cả {allTrades.length} giao dịch trong 7 ngày
                 </span>
               ) : null}
             </div>
