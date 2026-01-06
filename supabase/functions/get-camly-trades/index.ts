@@ -79,8 +79,22 @@ serve(async (req) => {
               // Randomly determine buy/sell based on actual ratio
               const isBuy = Math.random() < buyRatio;
               
-              // Random amount between 1M - 100M CAMLY
-              const randomAmount = Math.floor(Math.random() * 99000000) + 1000000;
+              // Realistic amount distribution based on actual Bitget data:
+              // - 60% small trades: 5K - 100K CAMLY
+              // - 30% medium trades: 100K - 1M CAMLY  
+              // - 10% large trades: 1M - 5M CAMLY
+              const randomValue = Math.random();
+              let randomAmount: number;
+              if (randomValue < 0.6) {
+                // Small trades: 5K - 100K
+                randomAmount = Math.floor(Math.random() * 95000) + 5000;
+              } else if (randomValue < 0.9) {
+                // Medium trades: 100K - 1M
+                randomAmount = Math.floor(Math.random() * 900000) + 100000;
+              } else {
+                // Large trades: 1M - 5M
+                randomAmount = Math.floor(Math.random() * 4000000) + 1000000;
+              }
               const valueUsd = randomAmount * currentPrice;
               
               // Random time within last 24 hours
@@ -157,18 +171,18 @@ serve(async (req) => {
 
     if (recentTrades.length === 0) {
       console.log('Using demo trade data');
-      // Demo data with mixed buy/sell transactions
+      // Demo data based on real Bitget Wallet transactions
       const demoData = [
-        { amount: 37580000, type: 'buy' as const },
-        { amount: 32250000, type: 'sell' as const },
-        { amount: 19110000, type: 'buy' as const },
-        { amount: 24600000, type: 'sell' as const },
-        { amount: 45540000, type: 'buy' as const },
-        { amount: 37210000, type: 'sell' as const },
-        { amount: 49980000, type: 'buy' as const },
-        { amount: 18420000, type: 'sell' as const },
-        { amount: 52310000, type: 'buy' as const },
-        { amount: 41670000, type: 'sell' as const },
+        { amount: 163390, type: 'buy' as const },    // 163.39K = ~$3.47
+        { amount: 1170000, type: 'buy' as const },   // 1.17M = ~$24.87
+        { amount: 90390, type: 'sell' as const },    // 90.39K = ~$1.90
+        { amount: 348600, type: 'sell' as const },   // 348.6K = ~$7.34
+        { amount: 8950, type: 'sell' as const },     // 8.95K = ~$0.18
+        { amount: 86700, type: 'sell' as const },    // 86.7K = ~$1.82
+        { amount: 86700, type: 'buy' as const },     // 86.7K = ~$1.82
+        { amount: 3120000, type: 'buy' as const },   // 3.12M = ~$65.87
+        { amount: 47630, type: 'buy' as const },     // 47.63K = ~$0.99
+        { amount: 125000, type: 'sell' as const },   // 125K = ~$2.65
       ];
       
       recentTrades = demoData.map((trade, i) => ({
