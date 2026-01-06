@@ -117,45 +117,45 @@ export function WalletSummaryCards() {
                       </div>
                     ) : (
                       /* EVM wallets - show 3 columns: Inflow, Outflow, Balance */
-                      <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div className="grid grid-cols-3 gap-3 text-sm">
                         {/* Inflow */}
-                        <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-2">
-                          <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 mb-1">
-                            <ArrowDownLeft className="w-3 h-3" />
-                            <span className="text-xs font-medium">Inflow</span>
+                        <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3">
+                          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 mb-2">
+                            <ArrowDownLeft className="w-4 h-4" />
+                            <span className="text-sm font-semibold uppercase tracking-wide">INFLOW</span>
                           </div>
-                          <div className="font-semibold text-emerald-700 dark:text-emerald-300">
+                          <div className="font-bold text-base text-emerald-700 dark:text-emerald-300">
                             {formatCompactAmount(token.inflow_amount, token.token_symbol)}
                           </div>
-                          <div className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
+                          <div className="text-sm font-medium text-emerald-600/80 dark:text-emerald-400/80">
                             {formatUSD(token.inflow_usd)}
                           </div>
                         </div>
 
                         {/* Outflow */}
-                        <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-2">
-                          <div className="flex items-center gap-1 text-red-600 dark:text-red-400 mb-1">
-                            <ArrowUpRight className="w-3 h-3" />
-                            <span className="text-xs font-medium">Outflow</span>
+                        <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-3">
+                          <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400 mb-2">
+                            <ArrowUpRight className="w-4 h-4" />
+                            <span className="text-sm font-semibold uppercase tracking-wide">OUTFLOW</span>
                           </div>
-                          <div className="font-semibold text-red-700 dark:text-red-300">
+                          <div className="font-bold text-base text-red-700 dark:text-red-300">
                             {formatCompactAmount(token.outflow_amount, token.token_symbol)}
                           </div>
-                          <div className="text-xs text-red-600/80 dark:text-red-400/80">
+                          <div className="text-sm font-medium text-red-600/80 dark:text-red-400/80">
                             {formatUSD(token.outflow_usd)}
                           </div>
                         </div>
 
                         {/* Current Balance */}
-                        <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-2">
-                          <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400 mb-1">
-                            <Wallet className="w-3 h-3" />
-                            <span className="text-xs font-medium">Balance</span>
+                        <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-3">
+                          <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 mb-2">
+                            <Wallet className="w-4 h-4" />
+                            <span className="text-sm font-semibold uppercase tracking-wide">BALANCE</span>
                           </div>
-                          <div className="font-semibold text-purple-700 dark:text-purple-300">
+                          <div className="font-bold text-base text-purple-700 dark:text-purple-300">
                             {formatCompactAmount(token.current_balance, token.token_symbol)}
                           </div>
-                          <div className="text-xs text-purple-600/80 dark:text-purple-400/80">
+                          <div className="text-sm font-medium text-purple-600/80 dark:text-purple-400/80">
                             {formatUSD(token.current_balance_usd)}
                           </div>
                         </div>
