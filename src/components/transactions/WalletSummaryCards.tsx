@@ -1,6 +1,6 @@
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
-import { ArrowDownLeft, ArrowUpRight, Wallet, TrendingUp, TrendingDown, Bitcoin, AlertCircle } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CHAIN_ICONS: Record<string, string> = {
@@ -116,8 +116,8 @@ export function WalletSummaryCards() {
                         </div>
                       </div>
                     ) : (
-                      /* EVM wallets - show 4 columns */
-                      <div className="grid grid-cols-4 gap-2 text-sm">
+                      /* EVM wallets - show 3 columns: Inflow, Outflow, Balance */
+                      <div className="grid grid-cols-3 gap-2 text-sm">
                         {/* Inflow */}
                         <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-2">
                           <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 mb-1">
@@ -146,44 +146,6 @@ export function WalletSummaryCards() {
                           </div>
                         </div>
 
-                        {/* Net */}
-                        <div className={cn(
-                          "rounded-lg p-2",
-                          token.net_usd >= 0 
-                            ? "bg-blue-50 dark:bg-blue-950/30" 
-                            : "bg-orange-50 dark:bg-orange-950/30"
-                        )}>
-                          <div className={cn(
-                            "flex items-center gap-1 mb-1",
-                            token.net_usd >= 0 
-                              ? "text-blue-600 dark:text-blue-400" 
-                              : "text-orange-600 dark:text-orange-400"
-                          )}>
-                            {token.net_usd >= 0 ? (
-                              <TrendingUp className="w-3 h-3" />
-                            ) : (
-                              <TrendingDown className="w-3 h-3" />
-                            )}
-                            <span className="text-xs font-medium">Net</span>
-                          </div>
-                          <div className={cn(
-                            "font-semibold",
-                            token.net_usd >= 0 
-                              ? "text-blue-700 dark:text-blue-300" 
-                              : "text-orange-700 dark:text-orange-300"
-                          )}>
-                            {token.net_amount >= 0 ? '+' : ''}{formatCompactAmount(token.net_amount, token.token_symbol)}
-                          </div>
-                          <div className={cn(
-                            "text-xs",
-                            token.net_usd >= 0 
-                              ? "text-blue-600/80 dark:text-blue-400/80" 
-                              : "text-orange-600/80 dark:text-orange-400/80"
-                          )}>
-                            {token.net_usd >= 0 ? '+' : ''}{formatUSD(token.net_usd)}
-                          </div>
-                        </div>
-
                         {/* Current Balance */}
                         <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-2">
                           <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400 mb-1">
@@ -202,19 +164,6 @@ export function WalletSummaryCards() {
                   </div>
                 );
               })}
-            </div>
-
-            {/* Total */}
-            <div className="mt-4 pt-3 border-t border-treasury-gold/20">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">💰 Total Net Flow</span>
-                <span className={cn(
-                  "text-lg font-bold",
-                  wallet.total_net_usd >= 0 ? "text-emerald-600" : "text-red-600"
-                )}>
-                  {wallet.total_net_usd >= 0 ? '+' : ''}{formatUSD(wallet.total_net_usd)}
-                </span>
-              </div>
             </div>
           </div>
         ))}
