@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useViewMode } from '@/contexts/ViewModeContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signIn, signUp, loading } = useAuth();
+  const { enterViewMode } = useViewMode();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -277,6 +279,33 @@ const Login = () => {
               </form>
             </TabsContent>
           </Tabs>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">hoặc</span>
+            </div>
+          </div>
+
+          {/* View Only Button */}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              enterViewMode();
+              navigate('/');
+              toast.success('Đang vào chế độ Chỉ Xem');
+            }}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Xem với tư cách Khách
+          </Button>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Xem dữ liệu Treasury, không thể chỉnh sửa
+          </p>
         </CardContent>
       </Card>
 
