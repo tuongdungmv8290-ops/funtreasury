@@ -1,7 +1,13 @@
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
-import { ArrowDownLeft, ArrowUpRight, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, TrendingUp, TrendingDown, Bitcoin, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const CHAIN_ICONS: Record<string, string> = {
+  'BNB': '🔶',
+  'BTC': '₿',
+  'ETH': '⟠',
+};
 
 export function WalletSummaryCards() {
   const { data: summaries, isLoading } = useWalletSummary();
@@ -57,95 +63,145 @@ export function WalletSummaryCards() {
             {/* Wallet Header */}
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-treasury-gold/20">
               <div className="w-8 h-8 rounded-lg bg-treasury-gold/20 flex items-center justify-center">
-                <Wallet className="w-4 h-4 text-treasury-gold" />
+                {wallet.wallet_chain === 'BTC' ? (
+                  <Bitcoin className="w-4 h-4 text-orange-500" />
+                ) : (
+                  <Wallet className="w-4 h-4 text-treasury-gold" />
+                )}
               </div>
-              <h3 className="font-bold text-foreground">{wallet.wallet_name}</h3>
+              <h3 className="font-bold text-foreground">
+                {CHAIN_ICONS[wallet.wallet_chain] || ''} {wallet.wallet_name}
+              </h3>
             </div>
 
             {/* Token Details */}
             <div className="space-y-4">
-              {wallet.tokens.map((token) => (
-                <div key={token.token_symbol} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className={cn(
-                      "text-xs font-bold px-2 py-0.5 rounded-full",
-                      token.token_symbol === 'CAMLY' 
-                        ? "bg-treasury-gold/20 text-treasury-gold-dark" 
-                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                    )}>
-                      {token.token_symbol === 'CAMLY' ? '📈 CAMLY' : '💵 USDT'}
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-2 text-sm">
-                    {/* Inflow */}
-                    <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-2">
-                      <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 mb-1">
-                        <ArrowDownLeft className="w-3 h-3" />
-                        <span className="text-xs font-medium">Inflow</span>
-                      </div>
-                      <div className="font-semibold text-emerald-700 dark:text-emerald-300">
-                        {formatCompactAmount(token.inflow_amount, token.token_symbol)}
-                      </div>
-                      <div className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
-                        {formatUSD(token.inflow_usd)}
-                      </div>
+              {wallet.tokens.map((token) => {
+                const isBtcWallet = wallet.wallet_chain === 'BTC';
+                const tokenIcon = token.token_symbol === 'CAMLY' ? '📈' : token.token_symbol === 'BTC' ? '₿' : '💵';
+                
+                return (
+                  <div key={token.token_symbol} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "text-xs font-bold px-2 py-0.5 rounded-full",
+                        token.token_symbol === 'CAMLY' 
+                          ? "bg-treasury-gold/20 text-treasury-gold-dark" 
+                          : token.token_symbol === 'BTC'
+                          ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                      )}>
+                        {tokenIcon} {token.token_symbol}
+                      </span>
                     </div>
+                    
+                    {/* BTC wallet - show balance only */}
+                    {isBtcWallet ? (
+                      <div className="space-y-2">
+                        <div className="bg-orange-50 dark:bg-orange-950/30 rounded-lg p-3">
+                          <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 mb-1">
+                            <Wallet className="w-3 h-3" />
+                            <span className="text-xs font-medium">Current Balance</span>
+                          </div>
+                          <div className="font-bold text-lg text-orange-700 dark:text-orange-300">
+                            {formatNumber(token.current_balance, { minDecimals: 4, maxDecimals: 6 })} BTC
+                          </div>
+                          <div className="text-sm text-orange-600/80 dark:text-orange-400/80">
+                            {formatUSD(token.current_balance_usd)}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
+                          <AlertCircle className="w-3 h-3" />
+                          <span>BTC transactions sync chưa được hỗ trợ</span>
+                        </div>
+                      </div>
+                    ) : (
+                      /* EVM wallets - show 4 columns */
+                      <div className="grid grid-cols-4 gap-2 text-sm">
+                        {/* Inflow */}
+                        <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-2">
+                          <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 mb-1">
+                            <ArrowDownLeft className="w-3 h-3" />
+                            <span className="text-xs font-medium">Inflow</span>
+                          </div>
+                          <div className="font-semibold text-emerald-700 dark:text-emerald-300">
+                            {formatCompactAmount(token.inflow_amount, token.token_symbol)}
+                          </div>
+                          <div className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
+                            {formatUSD(token.inflow_usd)}
+                          </div>
+                        </div>
 
-                    {/* Outflow */}
-                    <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-2">
-                      <div className="flex items-center gap-1 text-red-600 dark:text-red-400 mb-1">
-                        <ArrowUpRight className="w-3 h-3" />
-                        <span className="text-xs font-medium">Outflow</span>
-                      </div>
-                      <div className="font-semibold text-red-700 dark:text-red-300">
-                        {formatCompactAmount(token.outflow_amount, token.token_symbol)}
-                      </div>
-                      <div className="text-xs text-red-600/80 dark:text-red-400/80">
-                        {formatUSD(token.outflow_usd)}
-                      </div>
-                    </div>
+                        {/* Outflow */}
+                        <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-2">
+                          <div className="flex items-center gap-1 text-red-600 dark:text-red-400 mb-1">
+                            <ArrowUpRight className="w-3 h-3" />
+                            <span className="text-xs font-medium">Outflow</span>
+                          </div>
+                          <div className="font-semibold text-red-700 dark:text-red-300">
+                            {formatCompactAmount(token.outflow_amount, token.token_symbol)}
+                          </div>
+                          <div className="text-xs text-red-600/80 dark:text-red-400/80">
+                            {formatUSD(token.outflow_usd)}
+                          </div>
+                        </div>
 
-                    {/* Net */}
-                    <div className={cn(
-                      "rounded-lg p-2",
-                      token.net_usd >= 0 
-                        ? "bg-blue-50 dark:bg-blue-950/30" 
-                        : "bg-orange-50 dark:bg-orange-950/30"
-                    )}>
-                      <div className={cn(
-                        "flex items-center gap-1 mb-1",
-                        token.net_usd >= 0 
-                          ? "text-blue-600 dark:text-blue-400" 
-                          : "text-orange-600 dark:text-orange-400"
-                      )}>
-                        {token.net_usd >= 0 ? (
-                          <TrendingUp className="w-3 h-3" />
-                        ) : (
-                          <TrendingDown className="w-3 h-3" />
-                        )}
-                        <span className="text-xs font-medium">Net</span>
+                        {/* Net */}
+                        <div className={cn(
+                          "rounded-lg p-2",
+                          token.net_usd >= 0 
+                            ? "bg-blue-50 dark:bg-blue-950/30" 
+                            : "bg-orange-50 dark:bg-orange-950/30"
+                        )}>
+                          <div className={cn(
+                            "flex items-center gap-1 mb-1",
+                            token.net_usd >= 0 
+                              ? "text-blue-600 dark:text-blue-400" 
+                              : "text-orange-600 dark:text-orange-400"
+                          )}>
+                            {token.net_usd >= 0 ? (
+                              <TrendingUp className="w-3 h-3" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3" />
+                            )}
+                            <span className="text-xs font-medium">Net</span>
+                          </div>
+                          <div className={cn(
+                            "font-semibold",
+                            token.net_usd >= 0 
+                              ? "text-blue-700 dark:text-blue-300" 
+                              : "text-orange-700 dark:text-orange-300"
+                          )}>
+                            {token.net_amount >= 0 ? '+' : ''}{formatCompactAmount(token.net_amount, token.token_symbol)}
+                          </div>
+                          <div className={cn(
+                            "text-xs",
+                            token.net_usd >= 0 
+                              ? "text-blue-600/80 dark:text-blue-400/80" 
+                              : "text-orange-600/80 dark:text-orange-400/80"
+                          )}>
+                            {token.net_usd >= 0 ? '+' : ''}{formatUSD(token.net_usd)}
+                          </div>
+                        </div>
+
+                        {/* Current Balance */}
+                        <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-2">
+                          <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400 mb-1">
+                            <Wallet className="w-3 h-3" />
+                            <span className="text-xs font-medium">Balance</span>
+                          </div>
+                          <div className="font-semibold text-purple-700 dark:text-purple-300">
+                            {formatCompactAmount(token.current_balance, token.token_symbol)}
+                          </div>
+                          <div className="text-xs text-purple-600/80 dark:text-purple-400/80">
+                            {formatUSD(token.current_balance_usd)}
+                          </div>
+                        </div>
                       </div>
-                      <div className={cn(
-                        "font-semibold",
-                        token.net_usd >= 0 
-                          ? "text-blue-700 dark:text-blue-300" 
-                          : "text-orange-700 dark:text-orange-300"
-                      )}>
-                        {token.net_amount >= 0 ? '+' : ''}{formatCompactAmount(token.net_amount, token.token_symbol)}
-                      </div>
-                      <div className={cn(
-                        "text-xs",
-                        token.net_usd >= 0 
-                          ? "text-blue-600/80 dark:text-blue-400/80" 
-                          : "text-orange-600/80 dark:text-orange-400/80"
-                      )}>
-                        {token.net_usd >= 0 ? '+' : ''}{formatUSD(token.net_usd)}
-                      </div>
-                    </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Total */}
