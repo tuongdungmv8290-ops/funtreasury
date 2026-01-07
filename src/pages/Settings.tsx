@@ -1119,7 +1119,7 @@ const Settings = () => {
             {/* 2FA - Admin only */}
             {!isViewOnly && <TwoFactorSetup />}
             
-            {/* WalletConnect - Visible to all, but disabled for View Only */}
+            {/* WalletConnect - Visible to all, disabled for View Only */}
             <WalletConnect viewOnly={isViewOnly} />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,11 +25,11 @@ declare global {
   }
 }
 
-interface WalletConnectProps {
+export interface WalletConnectProps {
   viewOnly?: boolean;
 }
 
-export const WalletConnect = ({ viewOnly = false }: WalletConnectProps) => {
+export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [chainId, setChainId] = useState<string | null>(null);
@@ -317,4 +317,4 @@ export const WalletConnect = ({ viewOnly = false }: WalletConnectProps) => {
       </CardContent>
     </Card>
   );
-};
+}
