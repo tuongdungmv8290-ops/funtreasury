@@ -333,7 +333,7 @@ const Transactions = () => {
     
     toast({
       title: "✅ Export CSV thành công!",
-      description: `Đã export ${count} transactions từ 3 ví Treasury`,
+      description: `Đã export ${count} transactions từ 5 ví Treasury`,
     });
   };
 
