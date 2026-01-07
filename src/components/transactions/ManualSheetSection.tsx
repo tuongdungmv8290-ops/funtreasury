@@ -13,11 +13,14 @@ export const ManualSheetSection = ({ viewOnly = false }: ManualSheetSectionProps
 
   const handleOpenSheet = () => {
     if (isReadOnly) {
-      toast.info('🔒 Chế độ Chỉ Xem - Vui lòng đăng nhập để truy cập Google Sheets', { duration: 3000 });
-      return;
+      // Khách mở ở chế độ VIEW ONLY
+      window.open('https://docs.google.com/spreadsheets/d/1KePMTNAyHd1rCKEgiQ2f7HyGcPNQmhgzh9CkomsaYyc/view', '_blank');
+      toast.info('👁️ Đang mở Bảng Thủ Công ở chế độ Chỉ Xem', { duration: 3000 });
+    } else {
+      // Admin mở chế độ EDIT
+      window.open('https://docs.google.com/spreadsheets/d/1KePMTNAyHd1rCKEgiQ2f7HyGcPNQmhgzh9CkomsaYyc/edit?usp=sharing', '_blank');
+      toast.success('📊 Đã mở Bảng Thủ Công trên Google Sheets!', { duration: 3000 });
     }
-    window.open('https://docs.google.com/spreadsheets/d/1KePMTNAyHd1rCKEgiQ2f7HyGcPNQmhgzh9CkomsaYyc/edit?usp=sharing', '_blank');
-    toast.success('📊 Đã mở Bảng Thủ Công trên Google Sheets!', { duration: 3000 });
   };
 
   return (
@@ -41,21 +44,20 @@ export const ManualSheetSection = ({ viewOnly = false }: ManualSheetSectionProps
       <div className="p-4 rounded-xl bg-gradient-to-r from-treasury-gold/10 to-treasury-gold/5 border border-treasury-gold/30">
         <p className="text-sm text-muted-foreground mb-4">
           {isReadOnly 
-            ? 'Đây là khu vực quản lý giao dịch thủ công. Đăng nhập để truy cập đầy đủ.'
+            ? 'Nhấn nút bên dưới để xem Bảng Thủ Công Treasury (chỉ xem, không chỉnh sửa được).'
             : 'Nhấn nút bên dưới để mở Google Sheets và nhập giao dịch thủ công. Dữ liệu sẽ được đồng bộ với hệ thống.'
           }
         </p>
         <Button
           className={`gap-2 font-semibold shadow-lg transition-all px-6 ${
             isReadOnly 
-              ? 'bg-gray-400 cursor-not-allowed opacity-60' 
+              ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:shadow-xl' 
               : 'bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white hover:shadow-xl'
           }`}
           onClick={handleOpenSheet}
-          disabled={isReadOnly}
         >
           <ExternalLink className="w-4 h-4" />
-          Mở Google Sheets
+          {isReadOnly ? 'Xem Google Sheets' : 'Mở Google Sheets'}
         </Button>
       </div>
     </div>
