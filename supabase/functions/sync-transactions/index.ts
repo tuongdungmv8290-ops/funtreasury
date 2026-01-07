@@ -480,11 +480,12 @@ serve(async (req) => {
             status: 'success'
           };
 
-          // Check if transaction already exists
+          // Check if transaction already exists FOR THIS WALLET (same tx_hash can exist for different wallets)
           const { data: existing } = await supabase
             .from('transactions')
             .select('id')
             .eq('tx_hash', tx.transaction_hash)
+            .eq('wallet_id', wallet.id)
             .maybeSingle();
 
           if (!existing) {
