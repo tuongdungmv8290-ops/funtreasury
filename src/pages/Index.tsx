@@ -283,12 +283,10 @@ const Index = () => {
           <PortfolioHistoryChart />
         </div>
 
-        {/* Bulk Transfer Section - Admin only */}
-        {!isViewOnly && (
-          <div className="mb-6 md:mb-8">
-            <BulkTransferSection />
-          </div>
-        )}
+        {/* Bulk Transfer Section - Visible to all, editable by admin only */}
+        <div className="mb-6 md:mb-8">
+          <BulkTransferSection viewOnly={isViewOnly} />
+        </div>
 
         {/* Charts and Token Balances */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

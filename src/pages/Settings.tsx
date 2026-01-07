@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste, Copy, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
@@ -21,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { TwoFactorSetup } from '@/components/security/TwoFactorSetup';
 import { WalletConnect } from '@/components/security/WalletConnect';
+import { useViewMode } from '@/contexts/ViewModeContext';
 
 
 // Chain display names
@@ -35,6 +37,7 @@ const CHAIN_NAMES: Record<string, string> = {
 };
 
 const Settings = () => {
+  const { isViewOnly } = useViewMode();
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
   const { contracts, isLoading: isLoadingContracts, updateAllContracts, getContractBySymbol } = useTokenContracts();
   const { settings: apiSettings, isLoading: isLoadingApiSettings, updateSettingAsync, getSettingByKey } = useApiSettings();
@@ -424,9 +427,17 @@ const Settings = () => {
             <h1 className="text-3xl font-bold">
               <span className="gold-text">Treasury Wallet Settings</span>
             </h1>
+            {isViewOnly && (
+              <Badge variant="outline" className="flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1">
+                <Eye className="w-3.5 h-3.5" />
+                Chế độ Chỉ Xem
+              </Badge>
+            )}
           </div>
           <p className="text-muted-foreground">
-            Quản lý và cấu hình các ví thiêng liêng của Treasury
+            {isViewOnly 
+              ? 'Xem cấu hình ví Treasury (chế độ chỉ xem - không thể chỉnh sửa)'
+              : 'Quản lý và cấu hình các ví thiêng liêng của Treasury'}
           </p>
         </div>
 
@@ -453,15 +464,16 @@ const Settings = () => {
                   value={wallet1Name}
                   onChange={(e) => setWallet1Name(e.target.value)}
                   placeholder="Treasury Wallet 1"
-                  className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-lg"
+                  className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-lg disabled:opacity-70"
+                  disabled={isViewOnly}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="wallet1Chain" className="text-foreground font-medium">
                   Blockchain Network
                 </Label>
-                <Select value={wallet1Chain} onValueChange={setWallet1Chain}>
-                  <SelectTrigger className="bg-white border-border hover:border-primary/50 transition-colors shadow-sm h-10">
+                <Select value={wallet1Chain} onValueChange={setWallet1Chain} disabled={isViewOnly}>
+                  <SelectTrigger className="bg-white border-border hover:border-primary/50 transition-colors shadow-sm h-10 disabled:opacity-70">
                     <SelectValue placeholder="Select chain" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border-border shadow-lg z-50">
@@ -520,7 +532,8 @@ const Settings = () => {
                 value={wallet1Address}
                 onChange={(e) => setWallet1Address(e.target.value)}
                 placeholder="0x..."
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                disabled={isViewOnly}
               />
             </div>
           </div>
@@ -549,15 +562,16 @@ const Settings = () => {
                   value={wallet2Name}
                   onChange={(e) => setWallet2Name(e.target.value)}
                   placeholder="Treasury Wallet 2"
-                  className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-lg"
+                  className="bg-white border-border focus:border-primary focus:ring-primary/20 shadow-sm text-lg disabled:opacity-70"
+                  disabled={isViewOnly}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="wallet2Chain" className="text-foreground font-medium">
                   Blockchain Network
                 </Label>
-                <Select value={wallet2Chain} onValueChange={setWallet2Chain}>
-                  <SelectTrigger className="bg-white border-border hover:border-primary/50 transition-colors shadow-sm h-10">
+                <Select value={wallet2Chain} onValueChange={setWallet2Chain} disabled={isViewOnly}>
+                  <SelectTrigger className="bg-white border-border hover:border-primary/50 transition-colors shadow-sm h-10 disabled:opacity-70">
                     <SelectValue placeholder="Select chain" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border-border shadow-lg z-50">
@@ -616,7 +630,8 @@ const Settings = () => {
                 value={wallet2Address}
                 onChange={(e) => setWallet2Address(e.target.value)}
                 placeholder="0x..."
-                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                disabled={isViewOnly}
               />
             </div>
           </div>
@@ -648,7 +663,8 @@ const Settings = () => {
                   value={camlyCoinAddress}
                   onChange={(e) => setCamlyCoinAddress(e.target.value)}
                   placeholder="0x... (paste contract address)"
-                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                  disabled={isViewOnly}
                 />
                 {camlyCoinAddress && (
                   <button
@@ -678,7 +694,8 @@ const Settings = () => {
                   value={usdtAddress}
                   onChange={(e) => setUsdtAddress(e.target.value)}
                   placeholder="0x... (paste contract address)"
-                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                  disabled={isViewOnly}
                 />
                 {usdtAddress && (
                   <button
@@ -708,7 +725,8 @@ const Settings = () => {
                   value={btcbAddress}
                   onChange={(e) => setBtcbAddress(e.target.value)}
                   placeholder="0x... (paste contract address)"
-                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                  disabled={isViewOnly}
                 />
                 {btcbAddress && (
                   <button
@@ -735,138 +753,15 @@ const Settings = () => {
             </p>
           </div>
 
-          {/* Save Token Contracts Button */}
-          <div className="mt-6 pt-6 border-t border-border">
-            <Button
-              onClick={handleSaveTokenContracts}
-              disabled={isSavingContracts}
-              className="w-full md:w-auto gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-6 py-5 text-base font-semibold"
-            >
-              {isSavingContracts ? (
-                <>
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  Đang lưu...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  Save Token Contracts
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Save Button - Big Gold */}
-        <div className="mb-8">
-          <Button
-            onClick={handleSaveWallets}
-            disabled={isUpdating}
-            className="w-full md:w-auto gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-8 py-6 text-lg font-semibold"
-          >
-            {isUpdating ? (
-              <>
-                <RefreshCw className="w-5 h-5 animate-spin" />
-                Đang lưu...
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                Save Wallet Settings
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Moralis Realtime Sync Section */}
-        <div className="treasury-card mb-6 bg-gradient-to-br from-primary/5 via-white to-primary/10 border-2 border-primary/30">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
-              <Link className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground">Moralis Realtime Sync (Free Tier)</h2>
-              <p className="text-sm text-muted-foreground">Kết nối on-chain sync miễn phí với Moralis API</p>
-            </div>
-          </div>
-
-          {/* Info Note */}
-          <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20">
-            <div className="flex items-start gap-3">
-              <span className="text-xl">💡</span>
-              <div>
-                <p className="text-sm text-foreground font-medium mb-1">
-                  Đăng ký miễn phí tại{' '}
-                  <a 
-                    href="https://moralis.io/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    moralis.io
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Free tier đủ sync hàng nghìn transactions/ngày!
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* API Key Input */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="moralisApiKey" className="text-foreground font-medium">
-                Moralis API Key <span className="text-outflow">*</span>
-              </Label>
-              <div className="relative">
-                <input
-                  id="moralisApiKey"
-                  type={showMoralisKey ? 'text' : 'password'}
-                  value={moralisApiKey}
-                  onChange={(e) => setMoralisApiKey(e.target.value)}
-                  placeholder="Nhập Moralis API key... (paste Ctrl+V)"
-                  className="flex h-10 w-full rounded-md border border-input bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:border-primary pr-20 shadow-sm transition-all"
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const text = await navigator.clipboard.readText();
-                        if (text) {
-                          setMoralisApiKey(text.trim());
-                          toast.success("Đã paste API Key!", { description: "Nhấn Save để lưu" });
-                        }
-                      } catch (err) {
-                        toast.error("Không thể đọc clipboard");
-                      }
-                    }}
-                    className="p-1.5 rounded-md hover:bg-primary/10 text-primary/60 hover:text-primary transition-colors"
-                    title="Paste từ clipboard"
-                  >
-                    <ClipboardPaste className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowMoralisKey(!showMoralisKey)}
-                    className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
-                    title={showMoralisKey ? 'Ẩn' : 'Hiện'}
-                  >
-                    {showMoralisKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-            </div>
-            {/* Save & Test Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
+          {/* Save Token Contracts Button - Admin only */}
+          {!isViewOnly && (
+            <div className="mt-6 pt-6 border-t border-border">
               <Button
-                onClick={handleSaveMoralisKey}
-                disabled={isSavingApiKey}
-                className="gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-6 py-5 text-base font-semibold"
+                onClick={handleSaveTokenContracts}
+                disabled={isSavingContracts}
+                className="w-full md:w-auto gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-6 py-5 text-base font-semibold"
               >
-                {isSavingApiKey ? (
+                {isSavingContracts ? (
                   <>
                     <RefreshCw className="w-5 h-5 animate-spin" />
                     Đang lưu...
@@ -874,200 +769,333 @@ const Settings = () => {
                 ) : (
                   <>
                     <Save className="w-5 h-5" />
-                    Save Moralis API Key
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handleTestMoralisConnection}
-                disabled={isTestingConnection || !moralisApiKey.trim()}
-                variant="outline"
-                className="gap-3 border-primary/50 text-primary hover:bg-primary/10 px-6 py-5 text-base font-semibold disabled:opacity-50"
-              >
-                {isTestingConnection ? (
-                  <>
-                    <RefreshCw className="w-5 h-5 animate-spin" />
-                    Đang kiểm tra...
-                  </>
-                ) : (
-                  <>
-                    <Link className="w-5 h-5" />
-                    Test Connection
+                    Save Token Contracts
                   </>
                 )}
               </Button>
             </div>
-
-            {/* Connection Status Display */}
-            {connectionStatus !== 'idle' && (
-              <div className={`mt-4 p-4 rounded-xl border-2 flex items-center gap-3 ${
-                connectionStatus === 'success' 
-                  ? 'bg-inflow/10 border-inflow/30 text-inflow' 
-                  : 'bg-outflow/10 border-outflow/30 text-outflow'
-              }`}>
-                {connectionStatus === 'success' ? (
-                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
-                ) : (
-                  <XCircle className="w-6 h-6 flex-shrink-0" />
-                )}
-                <span className="font-medium">{connectionMessage}</span>
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
-        {/* Sync Configuration */}
-        <div className="treasury-card mb-6 bg-white">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-inflow/20 to-inflow/10 border border-inflow/30 flex items-center justify-center shadow-sm">
-              <RefreshCw className="w-5 h-5 text-inflow" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Sync Settings</h2>
-              <p className="text-sm text-muted-foreground">Cấu hình đồng bộ dữ liệu (Bước 4.2)</p>
-            </div>
+        {/* Save Button - Big Gold - Admin only */}
+        {!isViewOnly && (
+          <div className="mb-8">
+            <Button
+              onClick={handleSaveWallets}
+              disabled={isUpdating}
+              className="w-full md:w-auto gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-8 py-6 text-lg font-semibold"
+            >
+              {isUpdating ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Đang lưu...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Save Wallet Settings
+                </>
+              )}
+            </Button>
           </div>
+        )}
 
-          <div className="space-y-6">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 border border-border">
+        {/* Moralis Realtime Sync Section - Admin Only */}
+        {!isViewOnly && (
+          <div className="treasury-card mb-6 bg-gradient-to-br from-primary/5 via-white to-primary/10 border-2 border-primary/30">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                <Link className="w-6 h-6 text-primary-foreground" />
+              </div>
               <div>
-                <Label htmlFor="autoSync" className="text-foreground font-medium">Auto Sync</Label>
-                <p className="text-sm text-muted-foreground">
-                  Tự động đồng bộ transactions theo chu kỳ
-                </p>
+                <h2 className="text-xl font-bold text-foreground">Moralis Realtime Sync (Free Tier)</h2>
+                <p className="text-sm text-muted-foreground">Kết nối on-chain sync miễn phí với Moralis API</p>
               </div>
-              <Switch
-                id="autoSync"
-                checked={autoSync}
-                onCheckedChange={setAutoSync}
-                className="data-[state=checked]:bg-primary"
-              />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="syncInterval" className="text-foreground font-medium">Sync Interval</Label>
-              <Select value={syncInterval} onValueChange={setSyncInterval} disabled={!autoSync}>
-                <SelectTrigger className="w-full md:w-[200px] bg-white border-border hover:border-primary/50 transition-colors shadow-sm disabled:opacity-50">
-                  <SelectValue placeholder="Select interval" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-border shadow-lg z-50">
-                  <SelectItem value="1">Every 1 minute</SelectItem>
-                  <SelectItem value="5">Every 5 minutes</SelectItem>
-                  <SelectItem value="15">Every 15 minutes</SelectItem>
-                  <SelectItem value="30">Every 30 minutes</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="pt-2">
-              <Button
-                onClick={handleSyncNow}
-                disabled={isSyncing}
-                className="gap-2 bg-inflow text-white hover:bg-inflow/90 shadow-sm"
-              >
-                <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Syncing...' : 'Sync Now'}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Admin Management */}
-        <div className="treasury-card mb-6 bg-white">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-destructive/20 to-destructive/10 border border-destructive/30 flex items-center justify-center shadow-sm">
-              <Shield className="w-6 h-6 text-destructive" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground">Admin Management</h2>
-              <p className="text-sm text-muted-foreground">Quản lý quyền admin cho Treasury</p>
-            </div>
-          </div>
-
-          {/* Add New Admin */}
-          <div className="space-y-4 mb-6">
-            <Label className="text-foreground font-medium">Thêm Admin mới bằng User ID</Label>
-            <div className="flex gap-3">
-              <Input
-                value={newAdminUserId}
-                onChange={(e) => setNewAdminUserId(e.target.value)}
-                placeholder="Nhập User ID (UUID)..."
-                className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
-              />
-              <Button
-                onClick={handleAddAdmin}
-                disabled={isAddingAdmin || !newAdminUserId.trim()}
-                className="gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg"
-              >
-                {isAddingAdmin ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <UserPlus className="w-4 h-4" />
-                )}
-                Thêm Admin
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Lưu ý: User ID là UUID của user trong database (có thể tìm trong bảng profiles)
-            </p>
-          </div>
-
-          {/* Admin List */}
-          <div className="border-t border-border pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <Label className="text-foreground font-medium">Danh sách Admin hiện tại</Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={fetchAdmins}
-                disabled={isLoadingAdmins}
-                className="gap-1 text-muted-foreground hover:text-foreground"
-              >
-                <RefreshCw className={`w-4 h-4 ${isLoadingAdmins ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-            </div>
-
-            {isLoadingAdmins ? (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : adminList.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Chưa có admin nào
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {adminList.map((admin) => (
-                  <div
-                    key={admin.user_id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Shield className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{admin.email}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{admin.user_id}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveAdmin(admin.user_id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            {/* Info Note */}
+            <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20">
+              <div className="flex items-start gap-3">
+                <span className="text-xl">💡</span>
+                <div>
+                  <p className="text-sm text-foreground font-medium mb-1">
+                    Đăng ký miễn phí tại{' '}
+                    <a 
+                      href="https://moralis.io/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1"
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                      moralis.io
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Free tier đủ sync hàng nghìn transactions/ngày!
+                  </p>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Advanced Security Section */}
+            {/* API Key Input */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="moralisApiKey" className="text-foreground font-medium">
+                  Moralis API Key <span className="text-outflow">*</span>
+                </Label>
+                <div className="relative">
+                  <input
+                    id="moralisApiKey"
+                    type={showMoralisKey ? 'text' : 'password'}
+                    value={moralisApiKey}
+                    onChange={(e) => setMoralisApiKey(e.target.value)}
+                    placeholder="Nhập Moralis API key... (paste Ctrl+V)"
+                    className="flex h-10 w-full rounded-md border border-input bg-secondary/30 px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:border-primary pr-20 shadow-sm transition-all"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const text = await navigator.clipboard.readText();
+                          if (text) {
+                            setMoralisApiKey(text.trim());
+                            toast.success("Đã paste API Key!", { description: "Nhấn Save để lưu" });
+                          }
+                        } catch (err) {
+                          toast.error("Không thể đọc clipboard");
+                        }
+                      }}
+                      className="p-1.5 rounded-md hover:bg-primary/10 text-primary/60 hover:text-primary transition-colors"
+                      title="Paste từ clipboard"
+                    >
+                      <ClipboardPaste className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowMoralisKey(!showMoralisKey)}
+                      className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
+                      title={showMoralisKey ? 'Ẩn' : 'Hiện'}
+                    >
+                      {showMoralisKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {/* Save & Test Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={handleSaveMoralisKey}
+                  disabled={isSavingApiKey}
+                  className="gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg px-6 py-5 text-base font-semibold"
+                >
+                  {isSavingApiKey ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      Đang lưu...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      Save Moralis API Key
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleTestMoralisConnection}
+                  disabled={isTestingConnection || !moralisApiKey.trim()}
+                  variant="outline"
+                  className="gap-3 border-primary/50 text-primary hover:bg-primary/10 px-6 py-5 text-base font-semibold disabled:opacity-50"
+                >
+                  {isTestingConnection ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      Đang kiểm tra...
+                    </>
+                  ) : (
+                    <>
+                      <Link className="w-5 h-5" />
+                      Test Connection
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Connection Status Display */}
+              {connectionStatus !== 'idle' && (
+                <div className={`mt-4 p-4 rounded-xl border-2 flex items-center gap-3 ${
+                  connectionStatus === 'success' 
+                    ? 'bg-inflow/10 border-inflow/30 text-inflow' 
+                    : 'bg-outflow/10 border-outflow/30 text-outflow'
+                }`}>
+                  {connectionStatus === 'success' ? (
+                    <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  ) : (
+                    <XCircle className="w-6 h-6 flex-shrink-0" />
+                  )}
+                  <span className="font-medium">{connectionMessage}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Sync Configuration - Admin Only */}
+        {!isViewOnly && (
+          <div className="treasury-card mb-6 bg-white">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-inflow/20 to-inflow/10 border border-inflow/30 flex items-center justify-center shadow-sm">
+                <RefreshCw className="w-5 h-5 text-inflow" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Sync Settings</h2>
+                <p className="text-sm text-muted-foreground">Cấu hình đồng bộ dữ liệu (Bước 4.2)</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 border border-border">
+                <div>
+                  <Label htmlFor="autoSync" className="text-foreground font-medium">Auto Sync</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Tự động đồng bộ transactions theo chu kỳ
+                  </p>
+                </div>
+                <Switch
+                  id="autoSync"
+                  checked={autoSync}
+                  onCheckedChange={setAutoSync}
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="syncInterval" className="text-foreground font-medium">Sync Interval</Label>
+                <Select value={syncInterval} onValueChange={setSyncInterval} disabled={!autoSync}>
+                  <SelectTrigger className="w-full md:w-[200px] bg-white border-border hover:border-primary/50 transition-colors shadow-sm disabled:opacity-50">
+                    <SelectValue placeholder="Select interval" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-border shadow-lg z-50">
+                    <SelectItem value="1">Every 1 minute</SelectItem>
+                    <SelectItem value="5">Every 5 minutes</SelectItem>
+                    <SelectItem value="15">Every 15 minutes</SelectItem>
+                    <SelectItem value="30">Every 30 minutes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  onClick={handleSyncNow}
+                  disabled={isSyncing}
+                  className="gap-2 bg-inflow text-white hover:bg-inflow/90 shadow-sm"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                  {isSyncing ? 'Syncing...' : 'Sync Now'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Management - Admin Only */}
+        {!isViewOnly && (
+          <div className="treasury-card mb-6 bg-white">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-destructive/20 to-destructive/10 border border-destructive/30 flex items-center justify-center shadow-sm">
+                <Shield className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Admin Management</h2>
+                <p className="text-sm text-muted-foreground">Quản lý quyền admin cho Treasury</p>
+              </div>
+            </div>
+
+            {/* Add New Admin */}
+            <div className="space-y-4 mb-6">
+              <Label className="text-foreground font-medium">Thêm Admin mới bằng User ID</Label>
+              <div className="flex gap-3">
+                <Input
+                  value={newAdminUserId}
+                  onChange={(e) => setNewAdminUserId(e.target.value)}
+                  placeholder="Nhập User ID (UUID)..."
+                  className="flex-1 font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm"
+                />
+                <Button
+                  onClick={handleAddAdmin}
+                  disabled={isAddingAdmin || !newAdminUserId.trim()}
+                  className="gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg"
+                >
+                  {isAddingAdmin ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <UserPlus className="w-4 h-4" />
+                  )}
+                  Thêm Admin
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Lưu ý: User ID là UUID của user trong database (có thể tìm trong bảng profiles)
+              </p>
+            </div>
+
+            {/* Admin List */}
+            <div className="border-t border-border pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-foreground font-medium">Danh sách Admin hiện tại</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={fetchAdmins}
+                  disabled={isLoadingAdmins}
+                  className="gap-1 text-muted-foreground hover:text-foreground"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLoadingAdmins ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+
+              {isLoadingAdmins ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : adminList.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Chưa có admin nào
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {adminList.map((admin) => (
+                    <div
+                      key={admin.user_id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Shield className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{admin.email}</p>
+                          <p className="text-xs text-muted-foreground font-mono">{admin.user_id}</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveAdmin(admin.user_id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Advanced Security Section - WalletConnect visible to all */}
         <div className="treasury-card mb-6 bg-white">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
@@ -1075,13 +1103,24 @@ const Settings = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground">Advanced Security</h2>
-              <p className="text-sm text-muted-foreground">Bảo mật nâng cao cho Bulk Transfer</p>
+              <p className="text-sm text-muted-foreground">
+                {isViewOnly ? 'Thông tin bảo mật (chỉ xem)' : 'Bảo mật nâng cao cho Bulk Transfer'}
+              </p>
             </div>
+            {isViewOnly && (
+              <Badge variant="secondary" className="flex items-center gap-1 bg-muted text-muted-foreground ml-auto">
+                <Eye className="w-3 h-3" />
+                Chỉ xem
+              </Badge>
+            )}
           </div>
 
           <div className="space-y-6">
-            <TwoFactorSetup />
-            <WalletConnect />
+            {/* 2FA - Admin only */}
+            {!isViewOnly && <TwoFactorSetup />}
+            
+            {/* WalletConnect - Visible to all, but disabled for View Only */}
+            <WalletConnect viewOnly={isViewOnly} />
           </div>
         </div>
       </main>
