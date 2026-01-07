@@ -32,8 +32,15 @@ import {
   FileSpreadsheet,
   X,
   Search,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
 
 // Token configuration with prices (for preview/estimation only)
@@ -58,7 +65,11 @@ interface AddressEntry {
   isValid: boolean;
 }
 
-export const BulkTransferSection = () => {
+interface BulkTransferSectionProps {
+  viewOnly?: boolean;
+}
+
+export const BulkTransferSection = ({ viewOnly = false }: BulkTransferSectionProps) => {
   const [selectedToken, setSelectedToken] = useState('CAMLY');
   const [tokenSearch, setTokenSearch] = useState('');
   const [addressInput, setAddressInput] = useState('');
@@ -162,8 +173,23 @@ export const BulkTransferSection = () => {
             <Badge variant="outline" className="border-treasury-gold/50 text-treasury-gold text-xs">
               Preview Only
             </Badge>
+            {viewOnly && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="secondary" className="flex items-center gap-1 bg-muted text-muted-foreground">
+                      <Lock className="w-3 h-3" />
+                      Chỉ xem
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Đăng nhập Admin để sử dụng tính năng này</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </CardTitle>
-          {showPreview && (
+          {showPreview && !viewOnly && (
             <Button variant="ghost" size="sm" onClick={clearAll}>
               <X className="w-4 h-4 mr-1" />
               Clear
@@ -180,8 +206,8 @@ export const BulkTransferSection = () => {
               <Coins className="w-4 h-4 text-treasury-gold" />
               Token
             </Label>
-            <Select value={selectedToken} onValueChange={setSelectedToken}>
-              <SelectTrigger className="border-treasury-gold/30 focus:ring-treasury-gold/50">
+            <Select value={selectedToken} onValueChange={setSelectedToken} disabled={viewOnly}>
+              <SelectTrigger className="border-treasury-gold/30 focus:ring-treasury-gold/50 disabled:opacity-60">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -224,7 +250,8 @@ export const BulkTransferSection = () => {
               placeholder="e.g. 1000"
               value={amountPerAddress}
               onChange={(e) => setAmountPerAddress(e.target.value)}
-              className="border-treasury-gold/30 focus:ring-treasury-gold/50"
+              className="border-treasury-gold/30 focus:ring-treasury-gold/50 disabled:opacity-60"
+              disabled={viewOnly}
             />
             {amountPerAddress && (
               <p className="text-xs text-muted-foreground">
@@ -247,8 +274,9 @@ export const BulkTransferSection = () => {
             />
             <Button
               variant="outline"
-              className="w-full border-dashed border-treasury-gold/50 hover:bg-treasury-gold/10"
+              className="w-full border-dashed border-treasury-gold/50 hover:bg-treasury-gold/10 disabled:opacity-60"
               onClick={() => fileInputRef.current?.click()}
+              disabled={viewOnly}
             >
               <Upload className="w-4 h-4 mr-2" />
               Upload CSV
@@ -266,7 +294,8 @@ export const BulkTransferSection = () => {
             placeholder="0x609a49e1E8D8bECDc5E67F3E3bE8e91a06a4519d&#10;0x742d35Cc6634C0532925a3b844Bc9e7595f45678&#10;0x8ba1f109551bD432803012645Ac136ddd64DBA72"
             value={addressInput}
             onChange={(e) => setAddressInput(e.target.value)}
-            className="min-h-[120px] font-mono text-sm border-treasury-gold/30 focus:ring-treasury-gold/50"
+            className="min-h-[120px] font-mono text-sm border-treasury-gold/30 focus:ring-treasury-gold/50 disabled:opacity-60"
+            disabled={viewOnly}
           />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
@@ -275,8 +304,9 @@ export const BulkTransferSection = () => {
             <Button
               variant="link"
               size="sm"
-              className="h-auto p-0 text-treasury-gold"
+              className="h-auto p-0 text-treasury-gold disabled:opacity-60"
               onClick={handleParseAddresses}
+              disabled={viewOnly}
             >
               Parse & Preview
             </Button>
@@ -380,9 +410,9 @@ export const BulkTransferSection = () => {
             {/* Action Buttons */}
             <div className="flex items-center gap-3 pt-2">
               <Button
-                className="flex-1 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg"
+                className="flex-1 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark hover:from-treasury-gold-dark hover:to-treasury-gold text-white font-semibold shadow-lg disabled:opacity-60"
                 onClick={handlePreviewSend}
-                disabled={validCount === 0}
+                disabled={validCount === 0 || viewOnly}
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Preview Send

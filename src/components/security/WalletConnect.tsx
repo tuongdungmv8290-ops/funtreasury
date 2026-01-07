@@ -10,7 +10,8 @@ import {
   Check,
   ExternalLink,
   Copy,
-  AlertCircle
+  AlertCircle,
+  Lock
 } from 'lucide-react';
 
 declare global {
@@ -24,7 +25,11 @@ declare global {
   }
 }
 
-export const WalletConnect = () => {
+interface WalletConnectProps {
+  viewOnly?: boolean;
+}
+
+export const WalletConnect = ({ viewOnly = false }: WalletConnectProps) => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [chainId, setChainId] = useState<string | null>(null);
@@ -261,12 +266,17 @@ export const WalletConnect = () => {
                 Kết nối ví để xác thực và ký các giao dịch Bulk Transfer
               </p>
               <Button 
-                className="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white"
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white disabled:opacity-60"
                 onClick={connectWallet}
-                disabled={isConnecting}
+                disabled={isConnecting || viewOnly}
               >
                 {isConnecting ? (
                   'Connecting...'
+                ) : viewOnly ? (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    Đăng nhập để kết nối
+                  </>
                 ) : (
                   <>
                     <Link className="w-4 h-4 mr-2" />

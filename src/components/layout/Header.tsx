@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { path: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export function Header() {
@@ -32,8 +32,8 @@ export function Header() {
     }
   };
 
-  // Filter nav items based on view mode
-  const visibleNavItems = navItems.filter(item => !item.adminOnly || !isViewOnly);
+  // All nav items visible to everyone
+  const visibleNavItems = navItems;
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border shadow-sm">

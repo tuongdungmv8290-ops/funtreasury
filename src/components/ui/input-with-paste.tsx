@@ -10,6 +10,7 @@ interface InputWithPasteProps {
   placeholder?: string;
   className?: string;
   type?: string;
+  disabled?: boolean;
 }
 
 function InputWithPaste({ 
@@ -18,7 +19,8 @@ function InputWithPaste({
   onChange, 
   placeholder, 
   className,
-  type = "text"
+  type = "text",
+  disabled = false
 }: InputWithPasteProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -77,19 +79,22 @@ function InputWithPaste({
         onChange={onChange}
         onPaste={handleNativePaste}
         placeholder={placeholder}
+        disabled={disabled}
         className={cn(
           "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-10 transition-all duration-200",
           className,
         )}
       />
-      <button
-        type="button"
-        onClick={handlePasteFromClipboard}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 text-primary/60 hover:text-primary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
-        title="Paste từ clipboard"
-      >
-        <ClipboardPaste className="w-4 h-4" />
-      </button>
+      {!disabled && (
+        <button
+          type="button"
+          onClick={handlePasteFromClipboard}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 text-primary/60 hover:text-primary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          title="Paste từ clipboard"
+        >
+          <ClipboardPaste className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }
