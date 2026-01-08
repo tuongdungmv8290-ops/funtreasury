@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useCamlyPrice } from './useCamlyPrice';
 
 export interface Token {
   id: string;
@@ -20,9 +21,8 @@ export interface Wallet {
 // Core tokens to display (filter out spam/airdrops)
 const CORE_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB', 'USDC'];
 
-// Realtime prices - CAMLY at $0.000022
-const REALTIME_PRICES: Record<string, number> = {
-  'CAMLY': 0.000022,
+// Base prices for non-CAMLY tokens
+const BASE_PRICES: Record<string, number> = {
   'BTC': 97000,
   'BTCB': 97000,
   'BNB': 710,
@@ -31,9 +31,18 @@ const REALTIME_PRICES: Record<string, number> = {
 };
 
 export function useWallets() {
+  const { data: camlyPriceData } = useCamlyPrice();
+  const camlyPrice = camlyPriceData?.price_usd || 0.00002069; // Fallback to recent price
+
   return useQuery({
-    queryKey: ['wallets'],
+    queryKey: ['wallets', camlyPrice],
     queryFn: async (): Promise<Wallet[]> => {
+      // Build realtime prices with CAMLY from API
+      const REALTIME_PRICES: Record<string, number> = {
+        'CAMLY': camlyPrice,
+        ...BASE_PRICES,
+      };
+
       const { data: wallets, error: walletsError } = await supabase
         .from('wallets')
         .select('*');

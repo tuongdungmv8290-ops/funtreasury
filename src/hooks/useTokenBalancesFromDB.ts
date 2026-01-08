@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useCamlyPrice } from './useCamlyPrice';
 
 export interface TokenBalanceDB {
   symbol: string;
@@ -24,9 +25,8 @@ const TOKEN_NAMES: Record<string, string> = {
   'USDC': 'USD Coin',
 };
 
-// Latest prices - CAMLY at $0.000022
-const REALTIME_PRICES: Record<string, number> = {
-  'CAMLY': 0.000022,
+// Base prices for non-CAMLY tokens
+const BASE_PRICES: Record<string, number> = {
   'BTC': 97000,
   'BTCB': 97000,
   'BNB': 710,
@@ -34,10 +34,18 @@ const REALTIME_PRICES: Record<string, number> = {
   'USDC': 1,
 };
 
-export function useTokenBalancesFromDB() {
+export function useTokenBalancesFromDB(camlyPrice?: number) {
+  const resolvedCamlyPrice = camlyPrice || 0.00002069; // Fallback to recent price
+  
   return useQuery({
-    queryKey: ['token-balances-db'],
+    queryKey: ['token-balances-db', resolvedCamlyPrice],
     queryFn: async (): Promise<TokenBalanceDB[]> => {
+      // Build realtime prices with CAMLY from API
+      const REALTIME_PRICES: Record<string, number> = {
+        'CAMLY': resolvedCamlyPrice,
+        ...BASE_PRICES,
+      };
+
       // Fetch tokens joined with wallets
       const { data: tokens, error: tokensError } = await supabase
         .from('tokens')
@@ -78,17 +86,26 @@ export function useTokenBalancesFromDB() {
 
       return result;
     },
-    staleTime: 15 * 1000, // 15 seconds
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds
+    staleTime: 15 * 1000,
+    refetchInterval: 30 * 1000,
     refetchOnWindowFocus: true,
   });
 }
 
 // Aggregate tokens by symbol for total portfolio view
 export function useAggregatedTokenBalances() {
-  const { data: tokens, ...rest } = useTokenBalancesFromDB();
+  const { data: camlyPriceData } = useCamlyPrice();
+  const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
+  
+  const { data: tokens, ...rest } = useTokenBalancesFromDB(camlyPrice);
 
   const aggregated = tokens ? aggregateTokens(tokens) : [];
+
+  // Build realtime prices for export
+  const REALTIME_PRICES: Record<string, number> = {
+    'CAMLY': camlyPrice,
+    ...BASE_PRICES,
+  };
 
   return {
     data: aggregated,
