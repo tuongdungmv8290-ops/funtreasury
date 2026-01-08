@@ -53,12 +53,20 @@ const Settings = () => {
   const [wallet3Name, setWallet3Name] = useState('');
   const [wallet3Address, setWallet3Address] = useState('');
   const [wallet3Chain, setWallet3Chain] = useState('BNB');
+  const [wallet4Name, setWallet4Name] = useState('');
+  const [wallet4Address, setWallet4Address] = useState('');
+  const [wallet4Chain, setWallet4Chain] = useState('BTC');
+  const [wallet5Name, setWallet5Name] = useState('');
+  const [wallet5Address, setWallet5Address] = useState('');
+  const [wallet5Chain, setWallet5Chain] = useState('BTC');
   const [chain, setChain] = useState('BNB');
   
   // Track previous chain values for change detection
   const [prevWallet1Chain, setPrevWallet1Chain] = useState('BNB');
   const [prevWallet2Chain, setPrevWallet2Chain] = useState('BNB');
   const [prevWallet3Chain, setPrevWallet3Chain] = useState('BNB');
+  const [prevWallet4Chain, setPrevWallet4Chain] = useState('BTC');
+  const [prevWallet5Chain, setPrevWallet5Chain] = useState('BTC');
   
   // Sync settings (for future use)
   const [syncInterval, setSyncInterval] = useState('5');
@@ -192,6 +200,8 @@ const Settings = () => {
       const w1 = wallets[0];
       const w2 = wallets[1];
       const w3 = wallets[2];
+      const w4 = wallets[3];
+      const w5 = wallets[4];
       
       if (w1) {
         setWallet1Name(w1.name || 'Treasury Wallet 1');
@@ -213,6 +223,21 @@ const Settings = () => {
         setWallet3Chain(w3.chain || 'BNB');
         setPrevWallet3Chain(w3.chain || 'BNB');
       }
+
+      if (w4) {
+        setWallet4Name(w4.name || 'Treasury Wallet 4');
+        setWallet4Address(w4.address || '');
+        setWallet4Chain(w4.chain || 'BTC');
+        setPrevWallet4Chain(w4.chain || 'BTC');
+      }
+
+      if (w5) {
+        setWallet5Name(w5.name || 'Treasury Wallet 5');
+        setWallet5Address(w5.address || '');
+        setWallet5Chain(w5.chain || 'BTC');
+        setPrevWallet5Chain(w5.chain || 'BTC');
+      }
+
       setIsWalletsInitialized(true);
       console.log('Wallets initialized:', wallets);
     }
@@ -249,7 +274,7 @@ const Settings = () => {
 
   // Save only wallet settings with chain switch detection
   const handleSaveWallets = async () => {
-    if (wallets.length < 3) {
+    if (wallets.length < 5) {
       toast.error('Không tìm thấy đủ ví trong database');
       return;
     }
@@ -257,7 +282,9 @@ const Settings = () => {
     const wallet1ChainChanged = wallet1Chain !== prevWallet1Chain;
     const wallet2ChainChanged = wallet2Chain !== prevWallet2Chain;
     const wallet3ChainChanged = wallet3Chain !== prevWallet3Chain;
-    const chainChanged = wallet1ChainChanged || wallet2ChainChanged || wallet3ChainChanged;
+    const wallet4ChainChanged = wallet4Chain !== prevWallet4Chain;
+    const wallet5ChainChanged = wallet5Chain !== prevWallet5Chain;
+    const chainChanged = wallet1ChainChanged || wallet2ChainChanged || wallet3ChainChanged || wallet4ChainChanged || wallet5ChainChanged;
 
     const updatedWallets = [
       {
@@ -278,6 +305,18 @@ const Settings = () => {
         address: wallet3Address,
         chain: wallet3Chain,
       },
+      {
+        id: wallets[3].id,
+        name: wallet4Name,
+        address: wallet4Address,
+        chain: wallet4Chain,
+      },
+      {
+        id: wallets[4].id,
+        name: wallet5Name,
+        address: wallet5Address,
+        chain: wallet5Chain,
+      },
     ];
 
     updateWallets(updatedWallets);
@@ -286,6 +325,8 @@ const Settings = () => {
     setPrevWallet1Chain(wallet1Chain);
     setPrevWallet2Chain(wallet2Chain);
     setPrevWallet3Chain(wallet3Chain);
+    setPrevWallet4Chain(wallet4Chain);
+    setPrevWallet5Chain(wallet5Chain);
     
     // If chain was changed, show toast and refresh balances
     if (chainChanged) {
@@ -293,6 +334,8 @@ const Settings = () => {
       if (wallet1ChainChanged) changedChains.push(CHAIN_NAMES[wallet1Chain] || wallet1Chain);
       if (wallet2ChainChanged) changedChains.push(CHAIN_NAMES[wallet2Chain] || wallet2Chain);
       if (wallet3ChainChanged) changedChains.push(CHAIN_NAMES[wallet3Chain] || wallet3Chain);
+      if (wallet4ChainChanged) changedChains.push(CHAIN_NAMES[wallet4Chain] || wallet4Chain);
+      if (wallet5ChainChanged) changedChains.push(CHAIN_NAMES[wallet5Chain] || wallet5Chain);
       
       toast.success(`🔗 Đã chuyển sang ${changedChains.join(' & ')}`, {
         description: 'Balance realtime đang cập nhật...'
@@ -749,6 +792,166 @@ const Settings = () => {
                 value={wallet3Address}
                 onChange={(e) => setWallet3Address(e.target.value)}
                 placeholder="0x... hoặc bc1..."
+                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                disabled={isViewOnly}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Treasury Wallet 4 Card - Bitcoin */}
+        <div className="treasury-card mb-6 bg-white">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-lg">4</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Treasury Wallet 4</h2>
+              <p className="text-sm text-muted-foreground">Ví Bitcoin Treasury 1</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="wallet4Name" className="text-foreground font-medium">
+                Wallet Name
+              </Label>
+              <Input
+                id="wallet4Name"
+                value={wallet4Name}
+                onChange={(e) => setWallet4Name(e.target.value)}
+                placeholder="Nhập tên ví..."
+                className="bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                disabled={isViewOnly}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="wallet4Chain" className="text-foreground font-medium">
+                  Blockchain Network
+                </Label>
+                <Select value={wallet4Chain} onValueChange={setWallet4Chain} disabled={isViewOnly}>
+                  <SelectTrigger className="bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70">
+                    <SelectValue placeholder="Chọn blockchain" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BTC">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                        Bitcoin
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="BNB">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        BNB Smart Chain
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ETH">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        Ethereum
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="SOL">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-green-400"></span>
+                        Solana
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wallet4Address" className="text-foreground font-medium">
+                Wallet Address
+              </Label>
+              <Input
+                id="wallet4Address"
+                value={wallet4Address}
+                onChange={(e) => setWallet4Address(e.target.value)}
+                placeholder="bc1... hoặc 0x..."
+                className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                disabled={isViewOnly}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Treasury Wallet 5 Card - Bitcoin */}
+        <div className="treasury-card mb-6 bg-white">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-600 to-amber-500 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-lg">5</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Treasury Wallet 5</h2>
+              <p className="text-sm text-muted-foreground">Ví Bitcoin Treasury 2</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="wallet5Name" className="text-foreground font-medium">
+                Wallet Name
+              </Label>
+              <Input
+                id="wallet5Name"
+                value={wallet5Name}
+                onChange={(e) => setWallet5Name(e.target.value)}
+                placeholder="Nhập tên ví..."
+                className="bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
+                disabled={isViewOnly}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="wallet5Chain" className="text-foreground font-medium">
+                  Blockchain Network
+                </Label>
+                <Select value={wallet5Chain} onValueChange={setWallet5Chain} disabled={isViewOnly}>
+                  <SelectTrigger className="bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70">
+                    <SelectValue placeholder="Chọn blockchain" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BTC">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                        Bitcoin
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="BNB">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        BNB Smart Chain
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ETH">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        Ethereum
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="SOL">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-green-400"></span>
+                        Solana
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wallet5Address" className="text-foreground font-medium">
+                Wallet Address
+              </Label>
+              <Input
+                id="wallet5Address"
+                value={wallet5Address}
+                onChange={(e) => setWallet5Address(e.target.value)}
+                placeholder="bc1... hoặc 0x..."
                 className="font-mono text-sm bg-secondary/30 border-border focus:border-primary focus:ring-primary/20 shadow-sm disabled:opacity-70"
                 disabled={isViewOnly}
               />
