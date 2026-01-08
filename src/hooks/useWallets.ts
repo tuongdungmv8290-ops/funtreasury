@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCamlyPrice } from './useCamlyPrice';
+import { useMemo } from 'react';
 
 export interface Token {
   id: string;
@@ -30,19 +31,22 @@ const BASE_PRICES: Record<string, number> = {
   'USDC': 1,
 };
 
+interface RawWalletData {
+  id: string;
+  name: string;
+  address: string;
+  chain: string;
+  tokens: { id: string; symbol: string; balance: number }[];
+}
+
 export function useWallets() {
   const { data: camlyPriceData } = useCamlyPrice();
-  const camlyPrice = camlyPriceData?.price_usd || 0.00002069; // Fallback to recent price
+  const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
 
-  return useQuery({
-    queryKey: ['wallets', camlyPrice],
-    queryFn: async (): Promise<Wallet[]> => {
-      // Build realtime prices with CAMLY from API
-      const REALTIME_PRICES: Record<string, number> = {
-        'CAMLY': camlyPrice,
-        ...BASE_PRICES,
-      };
-
+  // Fetch raw data without price calculation
+  const { data: rawData, ...queryRest } = useQuery({
+    queryKey: ['wallets-raw'],
+    queryFn: async (): Promise<RawWalletData[]> => {
       const { data: wallets, error: walletsError } = await supabase
         .from('wallets')
         .select('*');
@@ -56,34 +60,55 @@ export function useWallets() {
       if (tokensError) throw tokensError;
 
       return (wallets || []).map(wallet => {
-        // Filter and recalculate tokens with realtime prices
         const walletTokens = (tokens || [])
           .filter(t => t.wallet_id === wallet.id && CORE_TOKENS.includes(t.symbol))
-          .map(t => {
-            const balance = Number(t.balance);
-            const price = REALTIME_PRICES[t.symbol] || 0;
-            return {
-              id: t.id,
-              symbol: t.symbol,
-              balance: balance,
-              usd_value: balance * price,
-            };
-          })
-          .filter(t => t.balance > 0); // Only show tokens with balance
-        
-        const totalBalance = walletTokens.reduce((sum, t) => sum + t.usd_value, 0);
-        
+          .map(t => ({
+            id: t.id,
+            symbol: t.symbol,
+            balance: Number(t.balance),
+          }))
+          .filter(t => t.balance > 0);
+
         return {
           id: wallet.id,
           name: wallet.name,
           address: wallet.address,
           chain: wallet.chain,
           tokens: walletTokens,
-          totalBalance,
         };
       });
     },
     staleTime: 15 * 1000,
     refetchInterval: 30 * 1000,
   });
+
+  // Calculate USD values with current CAMLY price (memoized)
+  const data = useMemo((): Wallet[] | undefined => {
+    if (!rawData) return undefined;
+
+    const REALTIME_PRICES: Record<string, number> = {
+      'CAMLY': camlyPrice,
+      ...BASE_PRICES,
+    };
+
+    return rawData.map(wallet => {
+      const tokensWithUsd = wallet.tokens.map(t => ({
+        ...t,
+        usd_value: t.balance * (REALTIME_PRICES[t.symbol] || 0),
+      }));
+
+      const totalBalance = tokensWithUsd.reduce((sum, t) => sum + t.usd_value, 0);
+
+      return {
+        ...wallet,
+        tokens: tokensWithUsd,
+        totalBalance,
+      };
+    });
+  }, [rawData, camlyPrice]);
+
+  return {
+    data,
+    ...queryRest,
+  };
 }

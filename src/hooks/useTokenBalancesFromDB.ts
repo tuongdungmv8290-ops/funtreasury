@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCamlyPrice } from './useCamlyPrice';
+import { useMemo } from 'react';
 
 export interface TokenBalanceDB {
   symbol: string;
@@ -34,25 +35,27 @@ const BASE_PRICES: Record<string, number> = {
   'USDC': 1,
 };
 
-export function useTokenBalancesFromDB(camlyPrice?: number) {
-  const resolvedCamlyPrice = camlyPrice || 0.00002069; // Fallback to recent price
-  
-  return useQuery({
-    queryKey: ['token-balances-db', resolvedCamlyPrice],
-    queryFn: async (): Promise<TokenBalanceDB[]> => {
-      // Build realtime prices with CAMLY from API
-      const REALTIME_PRICES: Record<string, number> = {
-        'CAMLY': resolvedCamlyPrice,
-        ...BASE_PRICES,
-      };
+interface RawTokenData {
+  symbol: string;
+  balance: number;
+  wallet_id: string;
+  wallet_name: string;
+  chain: string;
+}
 
-      // Fetch tokens joined with wallets
+export function useTokenBalancesFromDB() {
+  const { data: camlyPriceData } = useCamlyPrice();
+  const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
+
+  // Fetch raw data without price calculation
+  const { data: rawData, ...queryRest } = useQuery({
+    queryKey: ['token-balances-db-raw'],
+    queryFn: async (): Promise<RawTokenData[]> => {
       const { data: tokens, error: tokensError } = await supabase
         .from('tokens')
         .select(`
           symbol,
           balance,
-          usd_value,
           wallet_id,
           wallets!inner(name, chain)
         `);
@@ -66,30 +69,41 @@ export function useTokenBalancesFromDB(camlyPrice?: number) {
         return [];
       }
 
-      // Filter core tokens and calculate USD values with realtime prices
-      const result: TokenBalanceDB[] = tokens
+      return tokens
         .filter((t: any) => CORE_TOKENS.includes(t.symbol) && Number(t.balance) > 0)
-        .map((t: any) => {
-          const price = REALTIME_PRICES[t.symbol] || 0;
-          const balance = Number(t.balance);
-          
-          return {
-            symbol: t.symbol,
-            name: TOKEN_NAMES[t.symbol] || t.symbol,
-            balance: balance,
-            usd_value: balance * price,
-            wallet_id: t.wallet_id,
-            wallet_name: t.wallets?.name || 'Unknown',
-            chain: t.wallets?.chain || 'BNB',
-          };
-        });
-
-      return result;
+        .map((t: any) => ({
+          symbol: t.symbol,
+          balance: Number(t.balance),
+          wallet_id: t.wallet_id,
+          wallet_name: t.wallets?.name || 'Unknown',
+          chain: t.wallets?.chain || 'BNB',
+        }));
     },
     staleTime: 15 * 1000,
     refetchInterval: 30 * 1000,
     refetchOnWindowFocus: true,
   });
+
+  // Calculate USD values with current CAMLY price (memoized)
+  const data = useMemo((): TokenBalanceDB[] | undefined => {
+    if (!rawData) return undefined;
+
+    const REALTIME_PRICES: Record<string, number> = {
+      'CAMLY': camlyPrice,
+      ...BASE_PRICES,
+    };
+
+    return rawData.map(t => ({
+      ...t,
+      name: TOKEN_NAMES[t.symbol] || t.symbol,
+      usd_value: t.balance * (REALTIME_PRICES[t.symbol] || 0),
+    }));
+  }, [rawData, camlyPrice]);
+
+  return {
+    data,
+    ...queryRest,
+  };
 }
 
 // Aggregate tokens by symbol for total portfolio view
@@ -97,19 +111,22 @@ export function useAggregatedTokenBalances() {
   const { data: camlyPriceData } = useCamlyPrice();
   const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
   
-  const { data: tokens, ...rest } = useTokenBalancesFromDB(camlyPrice);
+  const { data: tokens, ...rest } = useTokenBalancesFromDB();
 
-  const aggregated = tokens ? aggregateTokens(tokens) : [];
+  const aggregated = useMemo(() => {
+    if (!tokens) return [];
+    return aggregateTokens(tokens);
+  }, [tokens]);
 
   // Build realtime prices for export
-  const REALTIME_PRICES: Record<string, number> = {
+  const prices: Record<string, number> = useMemo(() => ({
     'CAMLY': camlyPrice,
     ...BASE_PRICES,
-  };
+  }), [camlyPrice]);
 
   return {
     data: aggregated,
-    prices: REALTIME_PRICES,
+    prices,
     ...rest,
   };
 }
