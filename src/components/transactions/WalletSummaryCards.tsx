@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
-import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle, RefreshCw } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle, RefreshCw, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import camlyLogo from '@/assets/camly-logo.jpeg';
 
 const CHAIN_ICONS: Record<string, string> = {
@@ -56,7 +62,7 @@ export function WalletSummaryCards() {
   const { data: summaries, isLoading, refetch } = useWalletSummary();
   const [syncingWalletId, setSyncingWalletId] = useState<string | null>(null);
 
-  const handleSyncWallet = async (walletId: string, walletName: string) => {
+  const handleSyncWallet = async (walletId: string, walletName: string, forceFullSync = false) => {
     setSyncingWalletId(walletId);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -65,10 +71,11 @@ export function WalletSummaryCards() {
         return;
       }
 
-      toast.info(`🔄 Đang sync ${walletName}...`);
+      const syncType = forceFullSync ? 'Full Resync' : 'Sync';
+      toast.info(`🔄 Đang ${syncType} ${walletName}...`);
       
       const { data, error } = await supabase.functions.invoke('sync-transactions', {
-        body: { wallet_id: walletId }
+        body: { wallet_id: walletId, force_full_sync: forceFullSync }
       });
 
       if (error) {
@@ -152,21 +159,40 @@ export function WalletSummaryCards() {
                 </h3>
               </div>
               
-              {/* Sync Button */}
+              {/* Sync Dropdown */}
               {wallet.wallet_chain !== 'BTC' && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleSyncWallet(wallet.wallet_id, wallet.wallet_name)}
-                  disabled={syncingWalletId === wallet.wallet_id}
-                  className="h-8 px-2 hover:bg-treasury-gold/20 text-treasury-gold"
-                >
-                  <RefreshCw className={cn(
-                    "w-4 h-4",
-                    syncingWalletId === wallet.wallet_id && "animate-spin"
-                  )} />
-                  <span className="ml-1 text-xs hidden sm:inline">Sync</span>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={syncingWalletId === wallet.wallet_id}
+                      className="h-8 px-2 hover:bg-treasury-gold/20 text-treasury-gold"
+                    >
+                      <RefreshCw className={cn(
+                        "w-4 h-4",
+                        syncingWalletId === wallet.wallet_id && "animate-spin"
+                      )} />
+                      <span className="ml-1 text-xs hidden sm:inline">Sync</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem 
+                      onClick={() => handleSyncWallet(wallet.wallet_id, wallet.wallet_name, false)}
+                      className="cursor-pointer"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Sync mới
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleSyncWallet(wallet.wallet_id, wallet.wallet_name, true)}
+                      className="cursor-pointer text-orange-600 dark:text-orange-400"
+                    >
+                      <History className="w-4 h-4 mr-2" />
+                      Full Resync
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
 

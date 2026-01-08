@@ -138,12 +138,14 @@ serve(async (req) => {
   }
 
   try {
-    // Parse request body for wallet_id filter (optional)
+    // Parse request body for wallet_id filter and force_full_sync flag
     let targetWalletId: string | null = null;
+    let forceFullSync = false;
     if (req.method === 'POST') {
       try {
         const body = await req.json();
         targetWalletId = body.wallet_id || null;
+        forceFullSync = body.force_full_sync === true;
       } catch {
         // No body or invalid JSON, sync all wallets
       }
@@ -152,6 +154,9 @@ serve(async (req) => {
     console.log('=== Starting Transaction Sync ===');
     if (targetWalletId) {
       console.log(`Target wallet ID: ${targetWalletId}`);
+    }
+    if (forceFullSync) {
+      console.log('Force full sync enabled - will fetch all historical transactions');
     }
 
     // Authenticate the request
@@ -322,9 +327,26 @@ serve(async (req) => {
     // USDT contract on BSC
     const USDT_CONTRACT = '0x55d398326f99059ff775485246999027b3197955';
     
+    // Fetch realtime CAMLY price from get-camly-price function
+    let camlyPrice = 0.000022; // fallback
+    try {
+      const priceResponse = await fetch(`${supabaseUrl}/functions/v1/get-camly-price`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (priceResponse.ok) {
+        const priceData = await priceResponse.json();
+        if (priceData?.data?.price_usd) {
+          camlyPrice = priceData.data.price_usd;
+          console.log(`Fetched realtime CAMLY price: $${camlyPrice}`);
+        }
+      }
+    } catch (priceError) {
+      console.log('Failed to fetch CAMLY price, using fallback:', priceError);
+    }
+    
     // Token prices for USD value calculation
     const tokenPrices: Record<string, number> = {
-      'CAMLY': 0.000022,
+      'CAMLY': camlyPrice,
       'BNB': 710,
       'USDT': 1,
       'USDC': 1,
@@ -351,8 +373,9 @@ serve(async (req) => {
           .eq('wallet_id', wallet.id)
           .maybeSingle();
         
-        const lastBlockSynced = syncStateData?.last_block_synced || 0;
-        console.log(`Last synced block for ${wallet.name}: ${lastBlockSynced}`);
+        // If force_full_sync, ignore last_block_synced and fetch all history
+        const lastBlockSynced = forceFullSync ? 0 : (syncStateData?.last_block_synced || 0);
+        console.log(`Last synced block for ${wallet.name}: ${lastBlockSynced}${forceFullSync ? ' (force full sync)' : ''}`);
 
         let erc20Transfers: ERC20Transfer[] = [];
         let usedSource = 'Moralis';
