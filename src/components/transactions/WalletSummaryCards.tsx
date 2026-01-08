@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
-import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import camlyLogo from '@/assets/camly-logo.jpeg';
 
 const CHAIN_ICONS: Record<string, string> = {
@@ -49,7 +53,41 @@ const TokenLogo = ({ symbol, size = 32 }: { symbol: string; size?: number }) => 
 };
 
 export function WalletSummaryCards() {
-  const { data: summaries, isLoading } = useWalletSummary();
+  const { data: summaries, isLoading, refetch } = useWalletSummary();
+  const [syncingWalletId, setSyncingWalletId] = useState<string | null>(null);
+
+  const handleSyncWallet = async (walletId: string, walletName: string) => {
+    setSyncingWalletId(walletId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Vui lòng đăng nhập để sync');
+        return;
+      }
+
+      toast.info(`🔄 Đang sync ${walletName}...`);
+      
+      const { data, error } = await supabase.functions.invoke('sync-transactions', {
+        body: { wallet_id: walletId }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.success) {
+        toast.success(`✅ ${walletName}: ${data.totalNewTransactions || 0} giao dịch mới`);
+        refetch();
+      } else {
+        toast.error(data?.error || 'Sync thất bại');
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      toast.error('Lỗi khi sync ví');
+    } finally {
+      setSyncingWalletId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -100,17 +138,36 @@ export function WalletSummaryCards() {
             className="bg-gradient-to-br from-amber-50/80 to-yellow-50/80 dark:from-amber-950/20 dark:to-yellow-950/20 border border-treasury-gold/20 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"
           >
             {/* Wallet Header */}
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-treasury-gold/20">
-              <div className="w-8 h-8 rounded-lg bg-treasury-gold/20 flex items-center justify-center">
-                {wallet.wallet_chain === 'BTC' ? (
-                  <Bitcoin className="w-4 h-4 text-orange-500" />
-                ) : (
-                  <Wallet className="w-4 h-4 text-treasury-gold" />
-                )}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-treasury-gold/20">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-treasury-gold/20 flex items-center justify-center">
+                  {wallet.wallet_chain === 'BTC' ? (
+                    <Bitcoin className="w-4 h-4 text-orange-500" />
+                  ) : (
+                    <Wallet className="w-4 h-4 text-treasury-gold" />
+                  )}
+                </div>
+                <h3 className="font-bold text-foreground">
+                  {CHAIN_ICONS[wallet.wallet_chain] || ''} {wallet.wallet_name}
+                </h3>
               </div>
-              <h3 className="font-bold text-foreground">
-                {CHAIN_ICONS[wallet.wallet_chain] || ''} {wallet.wallet_name}
-              </h3>
+              
+              {/* Sync Button */}
+              {wallet.wallet_chain !== 'BTC' && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleSyncWallet(wallet.wallet_id, wallet.wallet_name)}
+                  disabled={syncingWalletId === wallet.wallet_id}
+                  className="h-8 px-2 hover:bg-treasury-gold/20 text-treasury-gold"
+                >
+                  <RefreshCw className={cn(
+                    "w-4 h-4",
+                    syncingWalletId === wallet.wallet_id && "animate-spin"
+                  )} />
+                  <span className="ml-1 text-xs hidden sm:inline">Sync</span>
+                </Button>
+              )}
             </div>
 
             {/* Token Details */}

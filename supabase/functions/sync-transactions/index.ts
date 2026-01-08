@@ -138,7 +138,21 @@ serve(async (req) => {
   }
 
   try {
+    // Parse request body for wallet_id filter (optional)
+    let targetWalletId: string | null = null;
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json();
+        targetWalletId = body.wallet_id || null;
+      } catch {
+        // No body or invalid JSON, sync all wallets
+      }
+    }
+    
     console.log('=== Starting Transaction Sync ===');
+    if (targetWalletId) {
+      console.log(`Target wallet ID: ${targetWalletId}`);
+    }
 
     // Authenticate the request
     const authHeader = req.headers.get('Authorization');
@@ -233,9 +247,14 @@ serve(async (req) => {
 
     // 2. Get wallet addresses from database
     console.log('Fetching wallet addresses...');
-    const { data: wallets, error: walletsError } = await supabase
-      .from('wallets')
-      .select('id, address, chain, name');
+    let walletsQuery = supabase.from('wallets').select('id, address, chain, name');
+    
+    // If target wallet specified, only sync that wallet
+    if (targetWalletId) {
+      walletsQuery = walletsQuery.eq('id', targetWalletId);
+    }
+    
+    const { data: wallets, error: walletsError } = await walletsQuery;
 
     if (walletsError) {
       console.error('Error fetching wallets:', walletsError);
@@ -249,17 +268,20 @@ serve(async (req) => {
     }
 
     if (!wallets || wallets.length === 0) {
+      const errorMsg = targetWalletId 
+        ? `Không tìm thấy ví với ID: ${targetWalletId}`
+        : 'Chưa có ví nào được cấu hình. Vui lòng thêm ví trong Settings.';
       console.error('No wallets found');
       return new Response(JSON.stringify({
         success: false,
-        error: 'Chưa có ví nào được cấu hình. Vui lòng thêm ví trong Settings.'
+        error: errorMsg
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    console.log(`Found ${wallets.length} wallets to sync`);
+    console.log(`Found ${wallets.length} wallet(s) to sync`);
 
     let totalNewTransactions = 0;
     let totalDuplicatesRemoved = 0;
