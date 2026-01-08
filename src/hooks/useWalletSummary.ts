@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useWallets } from './useWallets';
+import { useCamlyPrice } from './useCamlyPrice';
 
 export interface WalletTokenSummary {
   token_symbol: string;
@@ -26,8 +27,8 @@ export interface WalletSummary {
   total_net_usd: number;
 }
 
-// Realtime prices
-const REALTIME_PRICES: Record<string, number> = {
+// Fallback prices (will be overridden by realtime prices)
+const FALLBACK_PRICES: Record<string, number> = {
   'CAMLY': 0.000022,
   'BTC': 97000,
   'BTCB': 97000,
@@ -38,9 +39,16 @@ const REALTIME_PRICES: Record<string, number> = {
 
 export function useWalletSummary() {
   const { data: wallets } = useWallets();
+  const { data: camlyPriceData } = useCamlyPrice();
+
+  // Build realtime prices with fetched CAMLY price
+  const realtimePrices: Record<string, number> = {
+    ...FALLBACK_PRICES,
+    'CAMLY': camlyPriceData?.price_usd || FALLBACK_PRICES['CAMLY'],
+  };
 
   return useQuery({
-    queryKey: ['wallet-summary', wallets?.map(w => w.id)],
+    queryKey: ['wallet-summary', wallets?.map(w => w.id), camlyPriceData?.price_usd],
     queryFn: async (): Promise<WalletSummary[]> => {
       if (!wallets || wallets.length === 0) return [];
 
@@ -66,7 +74,7 @@ export function useWalletSummary() {
         }
         balanceMap.get(t.wallet_id)!.set(t.symbol, {
           balance: Number(t.balance) || 0,
-          usd: Number(t.balance) * (REALTIME_PRICES[t.symbol] || 0),
+          usd: Number(t.balance) * (realtimePrices[t.symbol] || 0),
         });
       });
 
