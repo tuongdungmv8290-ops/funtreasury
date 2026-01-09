@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCamlyPrice } from './useCamlyPrice';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 
 export interface Token {
   id: string;
@@ -40,8 +40,39 @@ interface RawWalletData {
 }
 
 export function useWallets() {
+  const queryClient = useQueryClient();
   const { data: camlyPriceData } = useCamlyPrice();
   const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
+  
+  // Realtime subscription for tokens table - auto-update UI when balances change
+  useEffect(() => {
+    console.log('🔔 Setting up realtime subscription for tokens table...');
+    
+    const channel = supabase
+      .channel('tokens-realtime-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tokens'
+        },
+        (payload) => {
+          console.log('💰 Token balance changed:', payload);
+          // Invalidate queries to refresh UI with new balances
+          queryClient.invalidateQueries({ queryKey: ['wallets-raw'] });
+          queryClient.invalidateQueries({ queryKey: ['token-balances-db-raw'] });
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Tokens realtime subscription status:', status);
+      });
+
+    return () => {
+      console.log('🔕 Cleaning up tokens realtime subscription...');
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Fetch raw data without price calculation
   const { data: rawData, ...queryRest } = useQuery({

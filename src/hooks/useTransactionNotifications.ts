@@ -1,9 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatTokenAmount, formatUSD } from '@/lib/formatNumber';
 import { saveNotification } from '@/hooks/useNotifications';
+
+// Debounce timeout for balance refresh (prevent excessive API calls)
+let balanceRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
 interface TransactionPayload {
   id: string;
@@ -152,6 +155,23 @@ export function useTransactionNotifications() {
           queryClient.invalidateQueries({ queryKey: ['transaction-stats'] });
           queryClient.invalidateQueries({ queryKey: ['token-balances'] });
           queryClient.invalidateQueries({ queryKey: ['wallets'] });
+          
+          // Auto-refresh balances from blockchain with debounce (3s delay)
+          if (balanceRefreshTimeout) {
+            clearTimeout(balanceRefreshTimeout);
+          }
+          balanceRefreshTimeout = setTimeout(async () => {
+            console.log('🔄 Auto-refreshing balances from blockchain...');
+            try {
+              await supabase.functions.invoke('get-token-balances');
+              console.log('✅ Balances refreshed from blockchain');
+              queryClient.invalidateQueries({ queryKey: ['wallets-raw'] });
+              queryClient.invalidateQueries({ queryKey: ['token-balances-db-raw'] });
+              queryClient.invalidateQueries({ queryKey: ['aggregated-tokens'] });
+            } catch (error) {
+              console.log('⚠️ Could not auto-refresh balances:', error);
+            }
+          }, 3000);
         }
       )
       .subscribe((status) => {
