@@ -119,11 +119,13 @@ const Index = () => {
           );
         }
         
-        // Auto refresh all data after successful sync
+        // Auto refresh all data after successful sync (including token balances from blockchain)
         queryClient.invalidateQueries({ queryKey: ['token-balances-db'] });
+        queryClient.invalidateQueries({ queryKey: ['wallets-raw'] });
         queryClient.invalidateQueries({ queryKey: ['wallets'] });
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
         queryClient.invalidateQueries({ queryKey: ['transaction-stats'] });
+        queryClient.invalidateQueries({ queryKey: ['aggregated-tokens'] });
         refetchSyncTime(); // Update last synced time
       } else {
         toast.error(`❌ ${data?.error || 'Sync failed'}`, { id: 'sync-toast' });
