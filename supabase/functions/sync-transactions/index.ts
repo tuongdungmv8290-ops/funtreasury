@@ -634,6 +634,27 @@ serve(async (req) => {
 
     console.log(`=== Sync Complete: ${totalNewTransactions} new transactions, ${totalDuplicatesRemoved} cleaned up ===`);
 
+    // Auto-refresh token balances from blockchain after syncing transactions
+    console.log('Auto-refreshing token balances from blockchain...');
+    try {
+      const balanceResponse = await fetch(`${supabaseUrl}/functions/v1/get-token-balances`, {
+        method: 'GET',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (balanceResponse.ok) {
+        const balanceData = await balanceResponse.json();
+        console.log('Token balances refreshed successfully:', balanceData?.message || 'OK');
+      } else {
+        console.log('Warning: Could not refresh balances, status:', balanceResponse.status);
+      }
+    } catch (balanceError) {
+      console.log('Warning: Error refreshing balances:', balanceError);
+    }
+
     return new Response(JSON.stringify({
       success: true,
       message: totalNewTransactions > 0 || totalDuplicatesRemoved > 0
@@ -641,6 +662,7 @@ serve(async (req) => {
         : 'Sync hoàn tất! Không có giao dịch mới.',
       totalNewTransactions,
       totalDuplicatesRemoved,
+      balancesRefreshed: true,
       results: syncResults,
       syncTime: new Date().toISOString()
     }), {
