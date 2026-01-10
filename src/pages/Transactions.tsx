@@ -24,6 +24,7 @@ import {
   ArrowDown,
   CalendarDays,
   Wallet,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -51,6 +52,7 @@ import { MonthlyReportDialog } from '@/components/reports/MonthlyReportDialog';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { exportTransactionsXLSX } from '@/lib/excelExport';
 import type { Transaction } from '@/hooks/useTransactions';
 
 type SortField = 'timestamp' | 'token_symbol' | 'amount' | 'usd_value' | 'direction';
@@ -352,8 +354,8 @@ const Transactions = () => {
     downloadCSV(csv, sortedTransactions.length);
   };
 
-  // Export ALL transactions from database
-  const exportAllCSV = async () => {
+  // Export ALL transactions from database as XLSX with colors
+  const exportAllXLSX = async () => {
     setIsExporting(true);
     try {
       const { data, error } = await supabase
@@ -397,8 +399,24 @@ const Transactions = () => {
         return;
       }
 
-      const csv = generateCSV(allTransactions);
-      downloadCSV(csv, allTransactions.length);
+      await exportTransactionsXLSX(
+        allTransactions,
+        wallets || [],
+        (count) => {
+          toast({
+            title: "✅ Export Excel thành công!",
+            description: `Đã export ${count} transactions với màu sắc phân biệt USDT/CAMLY`,
+          });
+        },
+        (error) => {
+          console.error('Export error:', error);
+          toast({
+            title: "Lỗi export",
+            description: "Không thể export dữ liệu. Vui lòng thử lại.",
+            variant: "destructive",
+          });
+        }
+      );
     } catch (error) {
       console.error('Export error:', error);
       toast({
@@ -535,15 +553,15 @@ const Transactions = () => {
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={exportAllCSV}
+                  onClick={exportAllXLSX}
                   className="cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
                   disabled={isExporting}
                 >
-                  <Download className="w-4 h-4 mr-2 text-treasury-gold" />
+                  <FileSpreadsheet className="w-4 h-4 mr-2 text-treasury-gold" />
                   <div className="flex flex-col">
-                    <span className="font-medium">Export All</span>
+                    <span className="font-medium">📊 Export All (Excel)</span>
                     <span className="text-xs text-muted-foreground">
-                      All transactions in database
+                      USDT xanh, CAMLY vàng
                     </span>
                   </div>
                 </DropdownMenuItem>
