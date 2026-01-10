@@ -543,6 +543,46 @@ serve(async (req) => {
             } else {
               newTxCount++;
               console.log(`Inserted ${symbolUpper} tx: ${amount.toLocaleString()} ${symbolUpper}, direction: ${direction}`);
+              
+              // ============== DUAL-ENTRY LOGIC ==============
+              // Check if counterparty is also a tracked wallet in our system
+              // If so, create the corresponding IN/OUT entry for that wallet
+              const counterpartyAddress = direction === 'OUT' ? tx.to_address : tx.from_address;
+              const counterpartyWallet = (wallets as WalletData[]).find(w => 
+                w.address.toLowerCase() === counterpartyAddress?.toLowerCase() && w.id !== wallet.id
+              );
+
+              if (counterpartyWallet) {
+                const counterpartyDirection = direction === 'OUT' ? 'IN' : 'OUT';
+                
+                // Check if counterparty entry already exists
+                const { data: existingCounterparty } = await supabase
+                  .from('transactions')
+                  .select('id')
+                  .eq('tx_hash', tx.transaction_hash)
+                  .eq('wallet_id', counterpartyWallet.id)
+                  .maybeSingle();
+                  
+                if (!existingCounterparty) {
+                  const counterpartyData = {
+                    ...transactionData,
+                    wallet_id: counterpartyWallet.id,
+                    direction: counterpartyDirection,
+                  };
+                  
+                  const { error: dualError } = await supabase
+                    .from('transactions')
+                    .insert(counterpartyData);
+                    
+                  if (!dualError) {
+                    newTxCount++;
+                    console.log(`  ↳ Created dual-entry for ${counterpartyWallet.name}: ${counterpartyDirection}`);
+                  } else {
+                    console.error(`  ↳ Error creating dual-entry for ${counterpartyWallet.name}:`, dualError);
+                  }
+                }
+              }
+              // ============== END DUAL-ENTRY LOGIC ==============
             }
           }
         }
