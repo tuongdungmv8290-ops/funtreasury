@@ -59,8 +59,8 @@ export function Header() {
           </Badge>
         )}
 
-        {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-1 bg-secondary/50 p-1 rounded-xl">
+        {/* Navigation - Sang Trọng & Giàu Có */}
+        <nav className="hidden md:flex items-center gap-2 bg-secondary/60 dark:bg-secondary/40 p-2 rounded-2xl border border-border/50 shadow-sm backdrop-blur-sm">
           {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -70,14 +70,19 @@ export function Header() {
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  "flex items-center gap-3 px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300",
                   isActive
-                    ? "bg-white text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/50"
+                    ? "bg-white dark:bg-card text-foreground shadow-lg border-2 border-primary/40 scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/80 dark:hover:bg-card/80 hover:scale-[1.01]"
                 )}
               >
-                <Icon className={cn("w-4 h-4", isActive && "text-primary")} />
-                {item.label}
+                <Icon className={cn(
+                  "w-5 h-5 transition-colors duration-300",
+                  isActive ? "text-primary" : "text-current"
+                )} />
+                <span className={cn(isActive && "gold-text")}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
