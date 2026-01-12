@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useWallets } from './useWallets';
 import { useCamlyPrice } from './useCamlyPrice';
@@ -38,8 +39,31 @@ const FALLBACK_PRICES: Record<string, number> = {
 };
 
 export function useWalletSummary() {
+  const queryClient = useQueryClient();
   const { data: wallets } = useWallets();
   const { data: camlyPriceData } = useCamlyPrice();
+
+  // Realtime subscription for transactions table
+  useEffect(() => {
+    const channel = supabase
+      .channel('wallet-summary-transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['wallet-summary'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Build realtime prices with fetched CAMLY price
   const realtimePrices: Record<string, number> = {
