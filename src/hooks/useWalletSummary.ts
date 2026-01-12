@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useWallets } from './useWallets';
 import { useCamlyPrice } from './useCamlyPrice';
@@ -43,36 +43,18 @@ export function useWalletSummary() {
   const { data: wallets } = useWallets();
   const { data: camlyPriceData } = useCamlyPrice();
 
-  // Realtime subscription for transactions table
-  useEffect(() => {
-    const channel = supabase
-      .channel('wallet-summary-transactions')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'transactions'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['wallet-summary'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Stabilize wallet IDs to prevent unnecessary re-renders
+  const walletIds = useMemo(() => wallets?.map(w => w.id) ?? [], [wallets]);
+  const camlyPrice = camlyPriceData?.price_usd ?? FALLBACK_PRICES['CAMLY'];
 
   // Build realtime prices with fetched CAMLY price
-  const realtimePrices: Record<string, number> = {
+  const realtimePrices = useMemo<Record<string, number>>(() => ({
     ...FALLBACK_PRICES,
-    'CAMLY': camlyPriceData?.price_usd || FALLBACK_PRICES['CAMLY'],
-  };
+    'CAMLY': camlyPrice,
+  }), [camlyPrice]);
 
-  return useQuery({
-    queryKey: ['wallet-summary', wallets?.map(w => w.id), camlyPriceData?.price_usd],
+  const query = useQuery({
+    queryKey: ['wallet-summary', walletIds, camlyPrice],
     queryFn: async (): Promise<WalletSummary[]> => {
       if (!wallets || wallets.length === 0) return [];
 
@@ -204,6 +186,30 @@ export function useWalletSummary() {
 
       return result;
     },
-    enabled: !!wallets && wallets.length > 0,
+    enabled: walletIds.length > 0,
   });
+
+  // Realtime subscription for transactions table - AFTER useQuery to maintain hook order
+  useEffect(() => {
+    const channel = supabase
+      .channel('wallet-summary-transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['wallet-summary'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  return query;
 }
