@@ -14,6 +14,7 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
+import Prices from "./pages/Prices";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +39,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/settings" element={<Settings />} />
-                  <Route path="/prices" element={<ComingSoon title="Prices" description="Theo dõi giá token realtime từ các sàn giao dịch." />} />
+                  <Route path="/prices" element={<Prices />} />
                   <Route path="/charts" element={<ComingSoon title="Charts" description="Biểu đồ phân tích chi tiết treasury performance." />} />
                   <Route path="/camly" element={<ComingSoon title="CAMLY Coin" description="Thông tin chi tiết về CAMLY token và trading history." />} />
                   <Route path="/anh-sang" element={<ComingSoon title="Ánh Sáng" description="Dự án Ánh Sáng - Sáng tạo và đổi mới." />} />
