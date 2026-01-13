@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { Header } from '@/components/layout/Header';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
 import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
@@ -508,8 +507,6 @@ const Transactions = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main className="container py-8 max-w-[1600px]">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">

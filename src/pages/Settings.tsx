@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputWithPaste } from '@/components/ui/input-with-paste';
@@ -469,7 +468,6 @@ const Settings = () => {
   if (isLoading || isLoadingContracts || isLoadingApiSettings) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <main className="container py-8 max-w-4xl">
           <div className="flex items-center justify-center h-64">
             <RefreshCw className="w-8 h-8 animate-spin text-primary" />
@@ -481,8 +479,6 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main className="container py-8 max-w-4xl">
         {/* Page Header */}
         <div className="mb-8">
