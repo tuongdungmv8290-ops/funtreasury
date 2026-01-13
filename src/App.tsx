@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import Prices from "./pages/Prices";
 import CamlyCoin from "./pages/CamlyCoin";
+import AnhSang from "./pages/AnhSang";
 
 
 const queryClient = new QueryClient();
@@ -44,7 +45,7 @@ const App = () => (
                   <Route path="/prices" element={<Prices />} />
                   
                   <Route path="/camly" element={<CamlyCoin />} />
-                  <Route path="/anh-sang" element={<ComingSoon title="Ánh Sáng" description="Dự án Ánh Sáng - Sáng tạo và đổi mới." />} />
+                  <Route path="/anh-sang" element={<AnhSang />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
