@@ -16,7 +16,7 @@ import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import Prices from "./pages/Prices";
 import CamlyCoin from "./pages/CamlyCoin";
-import Charts from "./pages/Charts";
+
 
 const queryClient = new QueryClient();
 
@@ -42,7 +42,7 @@ const App = () => (
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/prices" element={<Prices />} />
-                  <Route path="/charts" element={<Charts />} />
+                  
                   <Route path="/camly" element={<CamlyCoin />} />
                   <Route path="/anh-sang" element={<ComingSoon title="Ánh Sáng" description="Dự án Ánh Sáng - Sáng tạo và đổi mới." />} />
                 </Route>

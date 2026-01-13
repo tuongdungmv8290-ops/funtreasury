@@ -11,7 +11,7 @@ const pageTitles: Record<string, string> = {
   '/': 'Dashboard',
   '/transactions': 'Transactions',
   '/prices': 'Prices',
-  '/charts': 'Charts',
+  
   '/camly': 'CAMLY Coin',
   '/anh-sang': 'Ánh Sáng',
   '/settings': 'Settings',
