@@ -482,12 +482,12 @@ export function CamlyMarketPrice() {
             {/* Price Display - Large Bold */}
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-baseline gap-3">
-                <p className="font-heading text-4xl font-bold bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-sm">
+                <p className="font-mono text-4xl font-semibold bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-sm">
                   ${currentPrice.toFixed(8)}
                 </p>
                 <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold shadow-md", isPositiveChange ? "bg-gradient-to-r from-emerald-500/25 to-emerald-400/15 text-emerald-500 border border-emerald-500/30" : "bg-gradient-to-r from-rose-500/25 to-rose-400/15 text-rose-500 border border-rose-500/30")}>
                   {isPositiveChange ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  {isPositiveChange ? '+' : ''}{formatNumber(priceData?.change_24h || 0, { minDecimals: 2, maxDecimals: 2 })}%
+                  <span className="font-mono">{isPositiveChange ? '+' : ''}{formatNumber(priceData?.change_24h || 0, { minDecimals: 2, maxDecimals: 2 })}%</span>
                   <span className="text-[10px] font-semibold opacity-70">(24h)</span>
                 </div>
               </div>
@@ -507,11 +507,11 @@ export function CamlyMarketPrice() {
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gradient-to-br from-background/80 to-background/60 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/30 shadow-md">
                 <p className="font-body text-[10px] text-muted-foreground font-medium mb-1">📊 Volume 24h</p>
-                <p className="font-heading font-bold text-base text-foreground">{priceData?.volume_24h && priceData.volume_24h > 0 ? formatUSD(priceData.volume_24h) : '—'}</p>
+                <p className="font-mono font-semibold text-base text-foreground">{priceData?.volume_24h && priceData.volume_24h > 0 ? formatUSD(priceData.volume_24h) : '—'}</p>
               </div>
               <div className="bg-gradient-to-br from-background/80 to-background/60 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/30 shadow-md">
                 <p className="font-body text-[10px] text-muted-foreground font-medium mb-1">💎 Market Cap</p>
-                <p className="font-heading font-bold text-base text-foreground">{priceData?.market_cap && priceData.market_cap > 0 ? formatUSD(priceData.market_cap) : '—'}</p>
+                <p className="font-mono font-semibold text-base text-foreground">{priceData?.market_cap && priceData.market_cap > 0 ? formatUSD(priceData.market_cap) : '—'}</p>
               </div>
             </div>
 

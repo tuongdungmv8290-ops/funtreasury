@@ -115,7 +115,7 @@ export function PortfolioHistoryChart() {
       {/* Current Value & Change */}
       <div className="flex items-end justify-between mb-6">
         <div>
-          <p className="font-heading text-3xl md:text-4xl font-bold gold-text">
+          <p className="font-mono text-3xl md:text-4xl font-semibold gold-text">
             ${formatNumber(currentValue)}
           </p>
           <p className="font-body text-xs text-muted-foreground mt-1">Current value</p>
@@ -204,17 +204,17 @@ export function PortfolioHistoryChart() {
         <div className="mt-4 pt-4 border-t border-border/50 grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="font-body text-xs text-muted-foreground">Start</p>
-            <p className="font-heading text-sm font-semibold text-foreground">${formatNumber(chartData[0].value)}</p>
+            <p className="font-mono text-sm font-semibold text-foreground">${formatNumber(chartData[0].value)}</p>
           </div>
           <div>
             <p className="font-body text-xs text-muted-foreground">Change</p>
-            <p className={`font-heading text-sm font-semibold ${isPositive ? 'text-inflow' : 'text-outflow'}`}>
+            <p className={`font-mono text-sm font-semibold ${isPositive ? 'text-inflow' : 'text-outflow'}`}>
               {isPositive ? '+' : ''}{formatNumber(Math.abs(change))}
             </p>
           </div>
           <div>
             <p className="font-body text-xs text-muted-foreground">Current</p>
-            <p className="font-heading text-sm font-semibold text-foreground">${formatNumber(currentValue)}</p>
+            <p className="font-mono text-sm font-semibold text-foreground">${formatNumber(currentValue)}</p>
           </div>
         </div>
       )}

@@ -221,29 +221,24 @@
   }
 
   .stat-value {
-    @apply text-2xl md:text-3xl font-bold tracking-tight text-foreground;
-    font-family: 'Cormorant Garamond', serif;
+    @apply text-2xl md:text-3xl font-semibold tracking-tight text-foreground;
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
   }
 
   .stat-value-gold {
-    @apply text-2xl md:text-3xl font-bold tracking-tight;
-    font-family: 'Cormorant Garamond', serif;
+    @apply text-2xl md:text-3xl font-semibold tracking-tight;
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
     background: var(--gradient-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .inflow-text {
-    color: hsl(var(--inflow));
-  }
-
-  .outflow-text {
-    color: hsl(var(--outflow));
-  }
-
   .gold-text {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
     background: var(--gradient-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

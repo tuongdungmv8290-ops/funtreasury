@@ -108,7 +108,7 @@ export function StatsCard({ title, value, type, icon: CustomIcon, subtitle, inde
 
         <div>
           <p className="font-body text-sm font-medium text-muted-foreground mb-1">{title}</p>
-          <p className={cn("stat-value", styles.valueClass)}>
+          <p className={cn("font-mono stat-value", styles.valueClass)}>
             {type === 'netflow' && value > 0 ? '+' : ''}
             {formatCurrency(Math.abs(value))}
           </p>
