@@ -269,7 +269,7 @@ export function TreasurySidebar() {
                             <img
                               src={platform.logo}
                               alt=""
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-screen"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                                 const fallbackEl = e.currentTarget.nextElementSibling as HTMLElement;
@@ -340,7 +340,7 @@ export function TreasurySidebar() {
                                 <img
                                   src={platform.logo}
                                   alt=""
-                                  className="w-full h-full object-contain"
+                                  className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-screen"
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                     const fallbackEl = e.currentTarget.nextElementSibling as HTMLElement;
