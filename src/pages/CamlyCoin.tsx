@@ -58,7 +58,15 @@ export default function CamlyCoin() {
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30"
             >
-              <a href={PANCAKESWAP_URL} target="_blank" rel="noopener noreferrer">
+              <a 
+                href={PANCAKESWAP_URL} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open(PANCAKESWAP_URL, '_blank', 'noopener,noreferrer');
+                }}
+              >
                 Buy CAMLY on PancakeSwap
                 <ExternalLink className="w-4 h-4 ml-2" />
               </a>
@@ -69,7 +77,15 @@ export default function CamlyCoin() {
               variant="outline"
               className="border-primary/50 text-primary hover:bg-primary/10"
             >
-              <a href={DEXSCREENER_URL} target="_blank" rel="noopener noreferrer">
+              <a 
+                href={DEXSCREENER_URL} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open(DEXSCREENER_URL, '_blank', 'noopener,noreferrer');
+                }}
+              >
                 View Chart
                 <ExternalLink className="w-4 h-4 ml-2" />
               </a>
