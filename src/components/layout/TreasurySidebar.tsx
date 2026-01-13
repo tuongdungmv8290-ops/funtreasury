@@ -47,7 +47,7 @@ const treasuryItems = [
   { path: '/prices', label: 'Prices', icon: TrendingUp, status: 'active' },
   
   { path: '/camly', label: 'CAMLY Coin', icon: Coins, status: 'active' },
-  { path: '/anh-sang', label: 'Ánh Sáng', icon: Sparkles, status: 'coming-soon' },
+  { path: '/anh-sang', label: 'Ánh Sáng', icon: Sparkles, status: 'active' },
   { path: '/settings', label: 'Settings', icon: Settings, status: 'active' },
 ];
 
