@@ -30,8 +30,8 @@ export const ManualSheetSection = ({ viewOnly = false }: ManualSheetSectionProps
           <Table2 className="w-6 h-6 text-white" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold gold-text">📊 Bảng Thủ Công</h2>
-          <p className="text-sm text-muted-foreground">Quản lý giao dịch thủ công trực tiếp trên Google Sheets</p>
+          <h2 className="font-heading text-xl font-bold tracking-wide gold-text">📊 Bảng Thủ Công</h2>
+          <p className="font-body text-sm text-muted-foreground">Quản lý giao dịch thủ công trực tiếp trên Google Sheets</p>
         </div>
         {isReadOnly && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">

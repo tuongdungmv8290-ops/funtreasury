@@ -67,8 +67,8 @@ export const TransactionAlertsSection = ({ viewOnly = false }: TransactionAlerts
           <AlertTriangle className="w-6 h-6 text-amber-500" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-foreground">Transaction Alerts</h2>
-          <p className="text-sm text-muted-foreground">Cảnh báo khi có giao dịch lớn (Bước 7.4)</p>
+          <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Transaction Alerts</h2>
+          <p className="font-body text-sm text-muted-foreground">Cảnh báo khi có giao dịch lớn (Bước 7.4)</p>
         </div>
         {isReadOnly && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">

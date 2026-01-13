@@ -133,7 +133,7 @@ export function WalletSummaryCards() {
 
   return (
     <div className="mb-6">
-      <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+      <h2 className="font-heading text-xl font-semibold tracking-wide text-foreground mb-3 flex items-center gap-2">
         <Wallet className="w-5 h-5 text-treasury-gold" />
         <span className="gold-text">Wallet Summary</span>
       </h2>
@@ -154,7 +154,7 @@ export function WalletSummaryCards() {
                     <Wallet className="w-4 h-4 text-treasury-gold" />
                   )}
                 </div>
-                <h3 className="font-bold text-foreground">
+                <h3 className="font-heading font-bold tracking-wide text-foreground">
                   {CHAIN_ICONS[wallet.wallet_chain] || ''} {wallet.wallet_name}
                 </h3>
               </div>
@@ -208,7 +208,7 @@ export function WalletSummaryCards() {
                       <TokenLogo symbol={token.token_symbol} size={36} />
                       <div className="flex flex-col">
                         <span className={cn(
-                          "text-base font-bold",
+                          "font-heading text-base font-bold",
                           token.token_symbol === 'CAMLY' 
                             ? "text-treasury-gold-dark dark:text-treasury-gold" 
                             : token.token_symbol === 'BTC' || token.token_symbol === 'BTCB'
@@ -217,7 +217,7 @@ export function WalletSummaryCards() {
                         )}>
                           {token.token_symbol}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="font-body text-xs text-muted-foreground">
                           {TOKEN_NAMES[token.token_symbol] || token.token_symbol}
                         </span>
                       </div>
@@ -229,18 +229,18 @@ export function WalletSummaryCards() {
                         <div className="bg-orange-50 dark:bg-orange-950/30 rounded-lg p-3">
                           <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 mb-1">
                             <Wallet className="w-3 h-3" />
-                            <span className="text-xs font-medium">Current Balance</span>
+                            <span className="font-body text-xs font-medium">Current Balance</span>
                           </div>
-                          <div className="font-bold text-lg text-orange-700 dark:text-orange-300">
+                          <div className="font-mono font-bold text-lg text-orange-700 dark:text-orange-300">
                             {formatNumber(token.current_balance, { minDecimals: 4, maxDecimals: 6 })} BTC
                           </div>
-                          <div className="text-sm text-orange-600/80 dark:text-orange-400/80">
+                          <div className="font-mono text-sm text-orange-600/80 dark:text-orange-400/80">
                             {formatUSD(token.current_balance_usd)}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
                           <AlertCircle className="w-3 h-3" />
-                          <span>BTC transactions sync chưa được hỗ trợ</span>
+                          <span className="font-body">BTC transactions sync chưa được hỗ trợ</span>
                         </div>
                       </div>
                     ) : (
@@ -250,12 +250,12 @@ export function WalletSummaryCards() {
                         <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3">
                           <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 mb-2">
                             <ArrowDownLeft className="w-4 h-4" />
-                            <span className="text-sm font-semibold uppercase tracking-wide">INFLOW</span>
+                            <span className="font-body text-sm font-semibold uppercase tracking-widest">INFLOW</span>
                           </div>
-                          <div className="font-bold text-base text-emerald-700 dark:text-emerald-300">
+                          <div className="font-mono font-bold text-base text-emerald-700 dark:text-emerald-300">
                             {formatCompactAmount(token.inflow_amount, token.token_symbol)}
                           </div>
-                          <div className="text-sm font-medium text-emerald-600/80 dark:text-emerald-400/80">
+                          <div className="font-mono text-sm font-medium text-emerald-600/80 dark:text-emerald-400/80">
                             {formatUSD(token.inflow_usd)}
                           </div>
                         </div>
@@ -264,12 +264,12 @@ export function WalletSummaryCards() {
                         <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-3">
                           <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400 mb-2">
                             <ArrowUpRight className="w-4 h-4" />
-                            <span className="text-sm font-semibold uppercase tracking-wide">OUTFLOW</span>
+                            <span className="font-body text-sm font-semibold uppercase tracking-widest">OUTFLOW</span>
                           </div>
-                          <div className="font-bold text-base text-red-700 dark:text-red-300">
+                          <div className="font-mono font-bold text-base text-red-700 dark:text-red-300">
                             {formatCompactAmount(token.outflow_amount, token.token_symbol)}
                           </div>
-                          <div className="text-sm font-medium text-red-600/80 dark:text-red-400/80">
+                          <div className="font-mono text-sm font-medium text-red-600/80 dark:text-red-400/80">
                             {formatUSD(token.outflow_usd)}
                           </div>
                         </div>
@@ -278,12 +278,12 @@ export function WalletSummaryCards() {
                         <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-3">
                           <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 mb-2">
                             <Wallet className="w-4 h-4" />
-                            <span className="text-sm font-semibold uppercase tracking-wide">BALANCE</span>
+                            <span className="font-body text-sm font-semibold uppercase tracking-widest">BALANCE</span>
                           </div>
-                          <div className="font-bold text-base text-purple-700 dark:text-purple-300">
+                          <div className="font-mono font-bold text-base text-purple-700 dark:text-purple-300">
                             {formatCompactAmount(token.current_balance, token.token_symbol)}
                           </div>
-                          <div className="text-sm font-medium text-purple-600/80 dark:text-purple-400/80">
+                          <div className="font-mono text-sm font-medium text-purple-600/80 dark:text-purple-400/80">
                             {formatUSD(token.current_balance_usd)}
                           </div>
                         </div>

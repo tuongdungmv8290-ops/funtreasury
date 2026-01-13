@@ -15,8 +15,8 @@ export function RecentTransactions() {
     <div className="treasury-card animate-fade-in" style={{ animationDelay: '500ms' }}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Recent Transactions</h3>
-          <p className="text-sm text-muted-foreground">Latest activity across all wallets</p>
+          <h3 className="font-heading text-xl font-semibold tracking-wide text-foreground">Recent Transactions</h3>
+          <p className="font-body text-sm text-muted-foreground">Latest activity across all wallets</p>
         </div>
         <Link
           to="/transactions"
@@ -58,8 +58,8 @@ export function RecentTransactions() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground">{tx.token_symbol}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="font-heading font-semibold text-foreground">{tx.token_symbol}</span>
+                    <span className="font-body text-xs text-muted-foreground">
                       {tx.direction === 'IN' ? 'from' : 'to'} {shortenAddress(tx.direction === 'IN' ? tx.from_address : tx.to_address)}
                     </span>
                     <a
@@ -71,7 +71,7 @@ export function RecentTransactions() {
                       <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
                     </a>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{formatDate(tx.timestamp)}</p>
+                  <p className="font-body text-xs text-muted-foreground mt-0.5">{formatDate(tx.timestamp)}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -86,7 +86,7 @@ export function RecentTransactions() {
                     ? tx.amount.toFixed(8).replace(/\.?0+$/, '') 
                     : tx.amount.toLocaleString(undefined, { maximumFractionDigits: 6 })} {tx.token_symbol}
                 </p>
-                <p className="text-xs text-muted-foreground font-medium">{formatCurrency(tx.usd_value)}</p>
+                <p className="font-mono text-xs text-muted-foreground">{formatCurrency(tx.usd_value)}</p>
               </div>
             </div>
           ))}
