@@ -223,18 +223,18 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
                 {filteredTokens.map((token) => (
                   <div
                     key={token.id}
-                    className="px-3 py-2.5 rounded-xl bg-secondary/70 border border-border/60 hover:border-treasury-gold/30 transition-all duration-200 group"
+                    className="px-3 py-3 rounded-xl bg-secondary/70 border border-border/60 hover:border-treasury-gold/30 transition-all duration-200 group"
                   >
-                    <div className="flex items-center gap-2">
-                      <TokenLogo symbol={token.symbol} size={20} />
+                    <div className="flex items-center gap-2.5">
+                      <TokenLogo symbol={token.symbol} size={24} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <span className="font-heading text-xs font-semibold text-foreground">{token.symbol}</span>
-                          <span className="font-mono text-xs text-muted-foreground font-medium">
+                          <span className="font-heading text-sm font-bold text-foreground">{token.symbol}</span>
+                          <span className="font-mono text-sm text-muted-foreground font-medium">
                             {formatCurrency(token.usd_value)}
                           </span>
                         </div>
-                        <p className="text-sm font-mono text-muted-foreground truncate">
+                        <p className="text-base font-mono font-semibold text-foreground truncate">
                           {token.balance.toLocaleString()}
                         </p>
                       </div>
