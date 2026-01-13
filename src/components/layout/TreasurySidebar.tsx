@@ -42,6 +42,9 @@ import funWalletLogo from '@/assets/fun-wallet-logo.png';
 import angelAiLogo from '@/assets/angel-ai-logo.png';
 import funPlayLogo from '@/assets/fun-play-logo.png';
 import funPlanetLogo from '@/assets/fun-planet-logo.png';
+// New logos for TREASURY menu items
+import camlyCoinNewLogo from '@/assets/camly-coin-new-logo.png';
+import funEcosystemWeb3Logo from '@/assets/fun-ecosystem-web3-logo.png';
 
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -76,13 +79,13 @@ import {
 } from '@/components/ui/tooltip';
 import { SparkleOnClick } from '@/components/effects/SparkleOnClick';
 
-// TREASURY navigation items with translation keys
-const treasuryItems = [
+// TREASURY navigation items with translation keys and optional logos
+const treasuryItems: { path: string; labelKey: string; icon: LucideIcon; status: string; logo?: string }[] = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard, status: 'active' },
   { path: '/transactions', labelKey: 'nav.transactions', icon: ArrowLeftRight, status: 'active' },
   { path: '/prices', labelKey: 'nav.prices', icon: TrendingUp, status: 'active' },
-  { path: '/ecosystem', labelKey: 'nav.ecosystem', icon: Globe, status: 'active' },
-  { path: '/camly', labelKey: 'nav.camly', icon: Coins, status: 'active' },
+  { path: '/ecosystem', labelKey: 'nav.ecosystem', icon: Globe, status: 'active', logo: funEcosystemWeb3Logo },
+  { path: '/camly', labelKey: 'nav.camly', icon: Coins, status: 'active', logo: camlyCoinNewLogo },
   { path: '/anh-sang', labelKey: 'nav.anhSang', icon: Sparkles, status: 'active' },
   { path: '/settings', labelKey: 'nav.settings', icon: Settings, status: 'active' },
 ];
@@ -195,21 +198,34 @@ export function TreasurySidebar() {
                       <Link
                         to={item.path}
                         className={cn(
-                          'flex items-center gap-3 px-3 py-3 text-base font-semibold font-heading transition-all duration-200 group',
+                          'flex items-center gap-3 px-3 py-3 text-lg font-bold font-heading transition-all duration-200 group',
                           active
                             ? 'text-primary border-l-4 border-primary bg-primary/10'
                             : 'text-foreground/80 hover:text-primary hover:bg-primary/5',
                           isComingSoon && 'opacity-60'
                         )}
                       >
-                        <Icon
-                          className={cn(
-                            'w-6 h-6 shrink-0 transition-all',
-                            active 
-                              ? 'text-primary drop-shadow-[0_0_8px_rgba(201,162,39,0.6)]' 
-                              : 'text-foreground/60 group-hover:text-primary group-hover:drop-shadow-[0_0_6px_rgba(201,162,39,0.4)]'
-                          )}
-                        />
+                        {item.logo ? (
+                          <img
+                            src={item.logo}
+                            alt=""
+                            className={cn(
+                              'w-7 h-7 shrink-0 rounded-full object-cover transition-all',
+                              active 
+                                ? 'drop-shadow-[0_0_8px_rgba(201,162,39,0.6)]' 
+                                : 'group-hover:drop-shadow-[0_0_6px_rgba(201,162,39,0.4)]'
+                            )}
+                          />
+                        ) : (
+                          <Icon
+                            className={cn(
+                              'w-7 h-7 shrink-0 transition-all',
+                              active 
+                                ? 'text-primary drop-shadow-[0_0_8px_rgba(201,162,39,0.6)]' 
+                                : 'text-foreground/60 group-hover:text-primary group-hover:drop-shadow-[0_0_6px_rgba(201,162,39,0.4)]'
+                            )}
+                          />
+                        )}
                         {!isCollapsed && (
                           <>
                             <span className={cn(
