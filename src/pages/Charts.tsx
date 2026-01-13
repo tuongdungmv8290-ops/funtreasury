@@ -1,5 +1,6 @@
 import { BarChart3 } from 'lucide-react';
 import { TreasuryStatsOverview } from '@/components/charts/TreasuryStatsOverview';
+import { TokenAllocationChart } from '@/components/charts/TokenAllocationChart';
 import { EnhancedPortfolioChart } from '@/components/charts/EnhancedPortfolioChart';
 import { TransactionFlowChart } from '@/components/charts/TransactionFlowChart';
 import { CamlyPriceChartSection } from '@/components/charts/CamlyPriceChartSection';
@@ -22,6 +23,9 @@ export default function Charts() {
 
       {/* Stats Overview Cards */}
       <TreasuryStatsOverview />
+
+      {/* Token Allocation Pie Chart */}
+      <TokenAllocationChart />
 
       {/* Portfolio History Chart */}
       <EnhancedPortfolioChart />
