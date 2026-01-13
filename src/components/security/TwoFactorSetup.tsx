@@ -67,8 +67,8 @@ export const TwoFactorSetup = () => {
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-lg">Two-Factor Authentication</CardTitle>
-              <CardDescription>Bảo mật tài khoản với Google Authenticator</CardDescription>
+              <CardTitle className="font-heading text-lg tracking-wide">Two-Factor Authentication</CardTitle>
+              <CardDescription className="font-body">Bảo mật tài khoản với Google Authenticator</CardDescription>
             </div>
           </div>
           <Badge 
@@ -93,8 +93,8 @@ export const TwoFactorSetup = () => {
             <div className="flex items-center gap-3">
               <Smartphone className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="font-medium text-foreground">Google Authenticator</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-heading font-medium text-foreground">Google Authenticator</p>
+                <p className="font-body text-sm text-muted-foreground">
                   {is2FAEnabled 
                     ? 'Bảo mật 2 lớp đang hoạt động' 
                     : 'Thêm lớp bảo mật cho tài khoản admin'}
@@ -120,7 +120,7 @@ export const TwoFactorSetup = () => {
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-              <p className="text-sm text-yellow-600 dark:text-yellow-400">
+              <p className="font-body text-sm text-yellow-600 dark:text-yellow-400">
                 Quét mã QR bằng Google Authenticator hoặc nhập secret key thủ công
               </p>
             </div>
@@ -139,7 +139,7 @@ export const TwoFactorSetup = () => {
               {/* Manual Setup */}
               <div className="flex-1 space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">
+                  <p className="font-body text-sm font-medium text-muted-foreground mb-2">
                     Hoặc nhập thủ công trong app:
                   </p>
                   <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export const TwoFactorSetup = () => {
 
         {/* Security Tips */}
         <div className="pt-4 border-t border-border/50">
-          <p className="text-xs text-muted-foreground">
+          <p className="font-body text-xs text-muted-foreground">
             💡 2FA bảo vệ tài khoản admin khỏi truy cập trái phép. Mỗi lần đăng nhập sẽ yêu cầu mã từ Google Authenticator.
           </p>
         </div>

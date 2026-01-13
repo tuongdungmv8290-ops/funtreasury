@@ -168,8 +168,8 @@ export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
               <Wallet className="w-5 h-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-lg">Wallet Connect</CardTitle>
-              <CardDescription>Kết nối MetaMask/Trust Wallet để ký giao dịch</CardDescription>
+              <CardTitle className="font-heading text-lg tracking-wide">Wallet Connect</CardTitle>
+              <CardDescription className="font-body">Kết nối MetaMask/Trust Wallet để ký giao dịch</CardDescription>
             </div>
           </div>
           <Badge 
@@ -194,7 +194,7 @@ export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
             {/* Connected Wallet Info */}
             <div className="p-4 bg-secondary/50 rounded-lg border border-border/50">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-muted-foreground">Connected Wallet</span>
+                <span className="font-body text-sm text-muted-foreground">Connected Wallet</span>
                 <div className="flex items-center gap-2">
                   <Badge 
                     variant="outline" 
@@ -235,7 +235,7 @@ export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
             {!isCorrectChain && (
               <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-                <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                <p className="font-body text-sm text-yellow-600 dark:text-yellow-400">
                   Vui lòng chuyển sang BNB Chain để thực hiện giao dịch
                 </p>
               </div>
@@ -244,7 +244,7 @@ export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
             {/* Status */}
             <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
               <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <p className="text-sm text-green-600 dark:text-green-400">
+              <p className="font-body text-sm text-green-600 dark:text-green-400">
                 Ví đã sẵn sàng để ký giao dịch Bulk Transfer
               </p>
             </div>
@@ -262,7 +262,7 @@ export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
           <div className="space-y-4">
             <div className="p-4 bg-secondary/50 rounded-lg border border-border/50 text-center">
               <Wallet className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="font-body text-sm text-muted-foreground mb-4">
                 Kết nối ví để xác thực và ký các giao dịch Bulk Transfer
               </p>
               <Button 
@@ -288,7 +288,7 @@ export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
 
             {/* Supported Wallets */}
             <div className="flex items-center justify-center gap-4 pt-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 font-body text-xs text-muted-foreground">
                 <img 
                   src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" 
                   alt="MetaMask" 
@@ -296,7 +296,7 @@ export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
                 />
                 MetaMask
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 font-body text-xs text-muted-foreground">
                 <img 
                   src="https://trustwallet.com/assets/images/media/assets/trust_platform.svg" 
                   alt="Trust Wallet" 
@@ -310,7 +310,7 @@ export function WalletConnect({ viewOnly = false }: WalletConnectProps) {
 
         {/* Info */}
         <div className="pt-4 border-t border-border/50">
-          <p className="text-xs text-muted-foreground">
+          <p className="font-body text-xs text-muted-foreground">
             🔐 Wallet Connect cho phép ký giao dịch trực tiếp từ ví của bạn, đảm bảo an toàn tuyệt đối.
           </p>
         </div>
