@@ -247,13 +247,13 @@ export function TreasurySidebar() {
                           href={platform.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+                          className="flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium
                                      text-muted-foreground hover:text-foreground hover:bg-secondary/80
                                      transition-all duration-200 group animate-fade-in"
                           style={{ animationDelay: `${index * 0.03}s` }}
                         >
-                          {/* Logo - NO BORDER */}
-                          <div className="w-8 h-8 shrink-0 group-hover:scale-110 
+                          {/* Logo - TO GẤP ĐÔI, KHÔNG NỀN, KHÔNG VIỀN */}
+                          <div className="w-16 h-16 shrink-0 group-hover:scale-110 
                                           group-hover:drop-shadow-[0_0_15px_rgba(201,162,39,0.6)]
                                           transition-all duration-300">
                             <img
@@ -267,20 +267,13 @@ export function TreasurySidebar() {
                               }}
                             />
                             <div className="hidden w-full h-full items-center justify-center">
-                              <FallbackIcon className="w-5 h-5 text-primary/60" />
+                              <FallbackIcon className="w-8 h-8 text-primary/60" />
                             </div>
                           </div>
                           
                           {!isCollapsed && (
                             <span className="flex-1 truncate group-hover:text-primary transition-colors">
                               {t(platform.labelKey)}
-                            </span>
-                          )}
-                          
-                          {!isCollapsed && platform.status === 'live' && (
-                            <span className="text-[8px] font-bold text-green-400 bg-green-500/20 
-                                             px-1.5 py-0.5 rounded border border-green-500/30">
-                              LIVE
                             </span>
                           )}
                         </a>
@@ -322,13 +315,13 @@ export function TreasurySidebar() {
                               href={platform.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+                              className="flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium
                                          text-muted-foreground hover:text-foreground hover:bg-secondary/80
                                          transition-all duration-200 group animate-fade-in"
                               style={{ animationDelay: `${index * 0.03}s` }}
                             >
-                              {/* Logo - NO BORDER */}
-                              <div className="w-8 h-8 shrink-0 group-hover:scale-110 
+                              {/* Logo - TO GẤP ĐÔI, KHÔNG NỀN, KHÔNG VIỀN */}
+                              <div className="w-16 h-16 shrink-0 group-hover:scale-110 
                                               group-hover:drop-shadow-[0_0_15px_rgba(201,162,39,0.6)]
                                               transition-all duration-300">
                                 <img
@@ -342,20 +335,13 @@ export function TreasurySidebar() {
                                   }}
                                 />
                                 <div className="hidden w-full h-full items-center justify-center">
-                                  <FallbackIcon className="w-5 h-5 text-primary/60" />
+                                  <FallbackIcon className="w-8 h-8 text-primary/60" />
                                 </div>
                               </div>
                               
                               {!isCollapsed && (
                                 <span className="flex-1 truncate group-hover:text-primary transition-colors">
                                   {t(platform.labelKey)}
-                                </span>
-                              )}
-                              
-                              {!isCollapsed && platform.status === 'live' && (
-                                <span className="text-[8px] font-bold text-green-400 bg-green-500/20 
-                                                 px-1.5 py-0.5 rounded border border-green-500/30">
-                                  LIVE
                                 </span>
                               )}
                             </a>
