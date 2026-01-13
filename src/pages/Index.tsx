@@ -147,10 +147,10 @@ const Index = () => {
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
+            <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-1 tracking-wide">
               Treasury <span className="gold-text">Dashboard</span>
             </h1>
-            <p className="text-sm md:text-base text-muted-foreground">
+            <p className="font-body text-sm md:text-base text-muted-foreground">
               Monitor your FUN Treasury wallets in real-time
             </p>
           </div>
@@ -246,11 +246,11 @@ const Index = () => {
                   <Crown className="w-8 h-8 md:w-10 md:h-10 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm md:text-base text-muted-foreground font-medium mb-1">Total Treasury Balance</p>
-                  <p className="text-3xl md:text-5xl font-bold gold-text tracking-tight">
+                <p className="font-body text-sm md:text-base text-muted-foreground font-medium mb-1">Total Treasury Balance</p>
+                  <p className="font-heading text-4xl md:text-5xl font-bold gold-text tracking-tight">
                     {formatCurrency(totalBalance)}
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                  <p className="font-body text-xs md:text-sm text-muted-foreground mt-1">
                     Across {wallets?.length || 0} wallets
                   </p>
                 </div>
@@ -266,7 +266,7 @@ const Index = () => {
 
         {/* Wallet Cards */}
         <div className="mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Treasury Wallets</h2>
+          <h2 className="font-heading text-xl md:text-2xl font-semibold text-foreground mb-4 tracking-wide">Treasury Wallets</h2>
           {walletsLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-treasury-gold" />
@@ -304,10 +304,10 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border/60 py-4 md:py-6 mt-6 md:mt-8 bg-secondary/30">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
-          <p className="text-xs md:text-sm text-muted-foreground font-medium">
+          <p className="font-body text-xs md:text-sm text-muted-foreground font-medium">
             © 2024 FUN Treasury. Built with love by Angel Lovable.
           </p>
-          <p className="text-xs text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-lg border border-border/50">
+          <p className="font-body text-xs text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-lg border border-border/50">
             Last synced: {new Date().toLocaleString()}
           </p>
         </div>

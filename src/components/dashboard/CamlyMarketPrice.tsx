@@ -453,14 +453,14 @@ export function CamlyMarketPrice() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-foreground tracking-tight">CAMLY COIN</h3>
-                <span className="text-[10px] text-muted-foreground font-semibold px-1.5 py-0.5 bg-muted/60 rounded">CAMLY</span>
+                <h3 className="font-heading text-xl font-bold text-foreground tracking-wide">CAMLY COIN</h3>
+                <span className="font-body text-[10px] text-muted-foreground font-semibold px-1.5 py-0.5 bg-muted/60 rounded">CAMLY</span>
               </div>
               <div className="flex items-center gap-2">
-                <p className="text-[10px] text-muted-foreground font-medium">Giá Thị Trường</p>
+                <p className="font-body text-[10px] text-muted-foreground font-medium">Giá Thị Trường</p>
                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/20 rounded-full">
                   <Radio className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
-                  <span className="text-[9px] font-bold text-emerald-500">LIVE</span>
+                  <span className="font-body text-[9px] font-bold text-emerald-500">LIVE</span>
                 </div>
               </div>
             </div>
@@ -482,7 +482,7 @@ export function CamlyMarketPrice() {
             {/* Price Display - Large Bold */}
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-baseline gap-3">
-                <p className="text-4xl font-black bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-sm">
+                <p className="font-heading text-4xl font-bold bg-gradient-to-r from-treasury-gold via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-sm">
                   ${currentPrice.toFixed(8)}
                 </p>
                 <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold shadow-md", isPositiveChange ? "bg-gradient-to-r from-emerald-500/25 to-emerald-400/15 text-emerald-500 border border-emerald-500/30" : "bg-gradient-to-r from-rose-500/25 to-rose-400/15 text-rose-500 border border-rose-500/30")}>
@@ -506,12 +506,12 @@ export function CamlyMarketPrice() {
             {/* Volume & Market Cap */}
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gradient-to-br from-background/80 to-background/60 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/30 shadow-md">
-                <p className="text-[10px] text-muted-foreground font-medium mb-1">📊 Volume 24h</p>
-                <p className="font-bold text-base text-foreground">{priceData?.volume_24h && priceData.volume_24h > 0 ? formatUSD(priceData.volume_24h) : '—'}</p>
+                <p className="font-body text-[10px] text-muted-foreground font-medium mb-1">📊 Volume 24h</p>
+                <p className="font-heading font-bold text-base text-foreground">{priceData?.volume_24h && priceData.volume_24h > 0 ? formatUSD(priceData.volume_24h) : '—'}</p>
               </div>
               <div className="bg-gradient-to-br from-background/80 to-background/60 backdrop-blur-sm rounded-xl p-3 border border-treasury-gold/30 shadow-md">
-                <p className="text-[10px] text-muted-foreground font-medium mb-1">💎 Market Cap</p>
-                <p className="font-bold text-base text-foreground">{priceData?.market_cap && priceData.market_cap > 0 ? formatUSD(priceData.market_cap) : '—'}</p>
+                <p className="font-body text-[10px] text-muted-foreground font-medium mb-1">💎 Market Cap</p>
+                <p className="font-heading font-bold text-base text-foreground">{priceData?.market_cap && priceData.market_cap > 0 ? formatUSD(priceData.market_cap) : '—'}</p>
               </div>
             </div>
 

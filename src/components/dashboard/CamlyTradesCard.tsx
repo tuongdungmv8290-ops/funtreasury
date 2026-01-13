@@ -18,8 +18,8 @@ export function CamlyTradesCard() {
               <img src={camlyLogo} alt="CAMLY" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-treasury-gold">CAMLY Analytics</h3>
-              <p className="text-xs text-muted-foreground">Xem giao dịch trên DexScreener</p>
+              <h3 className="font-heading text-lg font-bold text-treasury-gold tracking-wide">CAMLY Analytics</h3>
+              <p className="font-body text-xs text-muted-foreground">Xem giao dịch trên DexScreener</p>
             </div>
           </div>
         </div>

@@ -272,7 +272,7 @@ export function TokenBalancesCard() {
               <Coins className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Token Balances</h3>
+            <h3 className="font-heading text-lg font-semibold text-foreground tracking-wide">Token Balances</h3>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 Đang cập nhật...
@@ -322,8 +322,8 @@ export function TokenBalancesCard() {
             <Coins className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-foreground">Token Balances</h3>
-            <p className="text-xs text-muted-foreground">Realtime prices • CAMLY ${prices?.CAMLY?.toFixed(6) || '0.000032'}</p>
+            <h3 className="font-heading text-lg font-semibold text-foreground tracking-wide">Token Balances</h3>
+            <p className="font-body text-xs text-muted-foreground">Realtime prices • CAMLY ${prices?.CAMLY?.toFixed(6) || '0.000032'}</p>
           </div>
         </div>
         <Button
@@ -353,8 +353,8 @@ export function TokenBalancesCard() {
               <div className="flex items-center gap-3">
                 <TokenLogo symbol={token.symbol} size={36} chain={token.chain} />
                 <div>
-                  <p className="font-semibold text-foreground">{token.symbol}</p>
-                  <p className="text-xs text-muted-foreground">{getTokenDisplayName(token.symbol, token.name, token.chain)}</p>
+                  <p className="font-heading font-semibold text-foreground">{token.symbol}</p>
+                  <p className="font-body text-xs text-muted-foreground">{getTokenDisplayName(token.symbol, token.name, token.chain)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -389,7 +389,7 @@ export function TokenBalancesCard() {
       {/* Pie Chart with Animation */}
       {pieData.length > 0 && (
         <div className="mt-4 pt-4 border-t border-border/50">
-          <p className="text-xs text-muted-foreground mb-3">Phân bổ Portfolio</p>
+          <p className="font-body text-xs text-muted-foreground mb-3">Phân bổ Portfolio</p>
           <div className="flex items-center gap-4">
             <div className="w-28 h-28">
               <ResponsiveContainer width="100%" height="100%">
@@ -450,8 +450,8 @@ export function TokenBalancesCard() {
                       transform: activeIndex === index ? 'scale(1.3)' : 'scale(1)'
                     }}
                   />
-                  <span className="text-xs text-muted-foreground">
-                    {item.name} <span className="font-mono font-medium">{formatNumber(item.percentage, { minDecimals: 1, maxDecimals: 1 })}%</span>
+                  <span className="font-body text-xs text-muted-foreground">
+                    {item.name} <span className="font-heading font-medium">{formatNumber(item.percentage, { minDecimals: 1, maxDecimals: 1 })}%</span>
                   </span>
                 </div>
               ))}

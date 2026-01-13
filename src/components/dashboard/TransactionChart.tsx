@@ -51,17 +51,17 @@ export function TransactionChart() {
     <div className="treasury-card animate-fade-in bg-white" style={{ animationDelay: '400ms' }}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Transaction Flow</h3>
-          <p className="text-sm text-muted-foreground">Last 14 days</p>
+          <h3 className="font-heading text-lg font-semibold text-foreground tracking-wide">Transaction Flow</h3>
+          <p className="font-body text-sm text-muted-foreground">Last 14 days</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-inflow shadow-sm" />
-            <span className="text-sm text-foreground font-medium">Inflow</span>
+            <span className="font-body text-sm text-foreground font-medium">Inflow</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-outflow shadow-sm" />
-            <span className="text-sm text-foreground font-medium">Outflow</span>
+            <span className="font-body text-sm text-foreground font-medium">Outflow</span>
           </div>
         </div>
       </div>
