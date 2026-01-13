@@ -543,48 +543,60 @@ serve(async (req) => {
             } else {
               newTxCount++;
               console.log(`Inserted ${symbolUpper} tx: ${amount.toLocaleString()} ${symbolUpper}, direction: ${direction}`);
-              
-              // ============== DUAL-ENTRY LOGIC ==============
-              // Check if counterparty is also a tracked wallet in our system
-              // If so, create the corresponding IN/OUT entry for that wallet
-              const counterpartyAddress = direction === 'OUT' ? tx.to_address : tx.from_address;
-              const counterpartyWallet = (wallets as WalletData[]).find(w => 
-                w.address.toLowerCase() === counterpartyAddress?.toLowerCase() && w.id !== wallet.id
-              );
-
-              if (counterpartyWallet) {
-                const counterpartyDirection = direction === 'OUT' ? 'IN' : 'OUT';
-                
-                // Check if counterparty entry already exists
-                const { data: existingCounterparty } = await supabase
-                  .from('transactions')
-                  .select('id')
-                  .eq('tx_hash', tx.transaction_hash)
-                  .eq('wallet_id', counterpartyWallet.id)
-                  .maybeSingle();
-                  
-                if (!existingCounterparty) {
-                  const counterpartyData = {
-                    ...transactionData,
-                    wallet_id: counterpartyWallet.id,
-                    direction: counterpartyDirection,
-                  };
-                  
-                  const { error: dualError } = await supabase
-                    .from('transactions')
-                    .insert(counterpartyData);
-                    
-                  if (!dualError) {
-                    newTxCount++;
-                    console.log(`  ↳ Created dual-entry for ${counterpartyWallet.name}: ${counterpartyDirection}`);
-                  } else {
-                    console.error(`  ↳ Error creating dual-entry for ${counterpartyWallet.name}:`, dualError);
-                  }
-                }
-              }
-              // ============== END DUAL-ENTRY LOGIC ==============
             }
           }
+          
+          // ============== DUAL-ENTRY LOGIC (ALWAYS CHECK) ==============
+          // Check if counterparty is also a tracked wallet in our system
+          // If so, create the corresponding IN/OUT entry for that wallet
+          // This runs for BOTH new and existing transactions to backfill missing entries
+          const counterpartyAddress = direction === 'OUT' ? tx.to_address : tx.from_address;
+          const counterpartyWallet = (wallets as WalletData[]).find(w => 
+            w.address.toLowerCase() === counterpartyAddress?.toLowerCase() && w.id !== wallet.id
+          );
+
+          if (counterpartyWallet) {
+            const counterpartyDirection = direction === 'OUT' ? 'IN' : 'OUT';
+            
+            // Check if counterparty entry already exists
+            const { data: existingCounterparty } = await supabase
+              .from('transactions')
+              .select('id')
+              .eq('tx_hash', tx.transaction_hash)
+              .eq('wallet_id', counterpartyWallet.id)
+              .maybeSingle();
+              
+            if (!existingCounterparty) {
+              // Calculate USD value for counterparty (same as original)
+              const counterpartyData = {
+                wallet_id: counterpartyWallet.id,
+                tx_hash: tx.transaction_hash,
+                block_number: parseInt(tx.block_number) || 0,
+                timestamp: tx.block_timestamp || new Date().toISOString(),
+                from_address: tx.from_address || '',
+                to_address: tx.to_address || '',
+                direction: counterpartyDirection,
+                token_address: tx.token_address || null,
+                token_symbol: symbolUpper,
+                amount: amount,
+                usd_value: amount * (tokenPrices[symbolUpper] || 0),
+                gas_fee: 0,
+                status: 'success'
+              };
+              
+              const { error: dualError } = await supabase
+                .from('transactions')
+                .insert(counterpartyData);
+                
+              if (!dualError) {
+                newTxCount++;
+                console.log(`  ↳ Created dual-entry for ${counterpartyWallet.name}: ${counterpartyDirection} ${amount.toLocaleString()} ${symbolUpper}`);
+              } else {
+                console.error(`  ↳ Error creating dual-entry for ${counterpartyWallet.name}:`, dualError);
+              }
+            }
+          }
+          // ============== END DUAL-ENTRY LOGIC ==============
         }
 
         console.log(`Added ${newTxCount} new transactions for ${wallet.name}`);
