@@ -149,7 +149,7 @@ export function TreasurySidebar() {
       <SidebarHeader className="border-b border-border/50 p-4">
         <Link to="/" className="flex items-center gap-4 group">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden shadow-2xl shadow-primary/60 group-hover:shadow-[0_0_40px_rgba(201,162,39,0.8)] transition-all duration-300">
+            <div className="w-24 h-24 rounded-full overflow-hidden shadow-2xl shadow-primary/60 group-hover:shadow-[0_0_40px_rgba(201,162,39,0.8)] transition-all duration-300 animate-treasury-pulse">
               <img
                 src={funTreasuryLogo}
                 alt="FUN Treasury Logo"
