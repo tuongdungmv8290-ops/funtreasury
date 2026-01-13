@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const CAMLY_CONTRACT = "0x610b3b2b17603a7f6ddd9cca375b1f9ea52ada45";
+const CAMLY_CONTRACT = "0x0910320181889fefde0bb1ca63962b0a8882e413";
 const BSCSCAN_URL = `https://bscscan.com/token/${CAMLY_CONTRACT}`;
 
 interface TokenInfoRowProps {
