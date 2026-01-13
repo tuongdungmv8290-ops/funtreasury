@@ -29,7 +29,7 @@ const MeditationTimer = () => {
   const handleComplete = useCallback(() => {
     setIsRunning(false);
     toast.success("🙏 Thiền định hoàn thành!", {
-      description: "Cảm ơn bạn đã dành thời gian cho tâm hồn.",
+      description: "Cảm ơn con đã dành thời gian cho tâm hồn.",
       duration: 5000,
     });
   }, []);
@@ -189,7 +189,7 @@ const MeditationTimer = () => {
             </div>
             <p className="font-body text-sm text-muted-foreground italic">
               "Hãy hít thở sâu, thả lỏng cơ thể, và để tâm trí trở nên yên tĩnh. 
-              Cảm nhận năng lượng yêu thương của Cha Vũ Trụ đang bao bọc bạn."
+              Cảm nhận năng lượng yêu thương của Cha Vũ Trụ đang bao bọc con."
             </p>
           </div>
         </div>

@@ -2,41 +2,47 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { Sparkles, Check } from "lucide-react";
+import { Sparkles, Check, Rainbow } from "lucide-react";
 
 const lawsOfLight = [
   {
     id: 1,
-    title: "Luật Yêu Thương Vô Điều Kiện",
-    description: "Yêu thương tất cả mà không đòi hỏi, không mong đợi được đáp lại."
+    content: "Con sống chân thật với chính mình"
   },
   {
     id: 2,
-    title: "Luật Biết Ơn",
-    description: "Biết ơn mọi thứ trong cuộc sống, từ những điều nhỏ nhất đến lớn nhất."
+    content: "Con chịu trách nhiệm với năng lượng con phát ra"
   },
   {
     id: 3,
-    title: "Luật Sống Thật",
-    description: "Sống chân thật với chính mình, không giả tạo, không đeo mặt nạ."
+    content: "Con sẵn sàng học - sửa - nâng cấp"
   },
   {
     id: 4,
-    title: "Luật Cho Đi",
-    description: "Cho đi không mong nhận lại, vì cho đi chính là nhận lại nhiều hơn."
+    content: "Con chọn yêu thương thay vì phán xét"
   },
   {
     id: 5,
-    title: "Luật Tin Tưởng Vũ Trụ",
-    description: "Tin tưởng vào Cha Vũ Trụ, tin rằng mọi điều xảy ra đều có ý nghĩa."
+    content: "Con chọn ánh sáng thay vì cái tôi"
   }
 ];
 
 const STORAGE_KEY = "anhsang_laws_checked";
+const DATE_KEY = "anhsang_laws_date";
 
 const LawsOfLightChecklist = () => {
   const [checkedLaws, setCheckedLaws] = useState<number[]>(() => {
     if (typeof window !== 'undefined') {
+      const savedDate = localStorage.getItem(DATE_KEY);
+      const today = new Date().toDateString();
+
+      // Reset if different day
+      if (savedDate !== today) {
+        localStorage.setItem(DATE_KEY, today);
+        localStorage.removeItem(STORAGE_KEY);
+        return [];
+      }
+
       const saved = localStorage.getItem(STORAGE_KEY);
       return saved ? JSON.parse(saved) : [];
     }
@@ -60,13 +66,15 @@ const LawsOfLightChecklist = () => {
 
   return (
     <section className="space-y-6">
+      {/* Header */}
       <div className="text-center">
-        <h2 className="font-heading text-3xl font-bold text-foreground mb-2">
-          5 LUẬT ÁNH SÁNG
-        </h2>
-        <p className="font-body text-muted-foreground">
-          Checklist hàng ngày để sống theo Luật Ánh Sáng
-        </p>
+        <div className="inline-flex items-center gap-2 mb-2">
+          <Rainbow className="w-6 h-6 text-primary" />
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-primary">
+            Checklist cho Users FUN Ecosystem
+          </h2>
+          <Rainbow className="w-6 h-6 text-primary" />
+        </div>
       </div>
 
       {/* Progress */}
@@ -84,7 +92,7 @@ const LawsOfLightChecklist = () => {
           <div className="mt-3 flex items-center justify-center gap-2 text-primary">
             <Sparkles className="w-4 h-4" />
             <span className="font-body text-sm font-medium">
-              Tuyệt vời! Bạn đã hoàn thành tất cả Luật Ánh Sáng hôm nay!
+              Tuyệt vời! Con đã hoàn thành tất cả Luật Ánh Sáng hôm nay!
             </span>
             <Sparkles className="w-4 h-4" />
           </div>
@@ -92,53 +100,48 @@ const LawsOfLightChecklist = () => {
       </Card>
 
       {/* Checklist */}
-      <div className="space-y-3">
-        {lawsOfLight.map((law) => {
-          const isChecked = checkedLaws.includes(law.id);
-          return (
-            <Card
-              key={law.id}
-              className={`p-4 cursor-pointer transition-all duration-300 ${
-                isChecked 
-                  ? 'bg-primary/10 border-primary/40 shadow-md' 
-                  : 'bg-card hover:bg-card/80 border-border/50 hover:border-primary/30'
-              }`}
-              onClick={() => toggleLaw(law.id)}
-            >
-              <div className="flex items-start gap-4">
+      <Card className="p-6 md:p-8 bg-gradient-to-br from-card via-card to-primary/5 border-primary/30 shadow-lg">
+        <div className="space-y-4">
+          {lawsOfLight.map((law) => {
+            const isChecked = checkedLaws.includes(law.id);
+            return (
+              <div
+                key={law.id}
+                className={`flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+                  isChecked 
+                    ? 'bg-primary/10 border border-primary/40' 
+                    : 'bg-card/50 border border-border/30 hover:border-primary/30 hover:bg-card/80'
+                }`}
+                onClick={() => toggleLaw(law.id)}
+              >
                 {/* Checkbox */}
-                <div className="flex-shrink-0 mt-0.5">
-                  <Checkbox
-                    checked={isChecked}
-                    onCheckedChange={() => toggleLaw(law.id)}
-                    className="w-6 h-6 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                  />
-                </div>
+                <Checkbox
+                  checked={isChecked}
+                  onCheckedChange={() => toggleLaw(law.id)}
+                  className="w-6 h-6 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                />
 
                 {/* Content */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm text-primary/70">#{law.id}</span>
-                    <h3 className={`font-heading text-lg font-semibold transition-colors ${
-                      isChecked ? 'text-primary' : 'text-foreground'
-                    }`}>
-                      {law.title}
-                    </h3>
-                    {isChecked && (
-                      <Check className="w-5 h-5 text-primary animate-scale-in" />
-                    )}
-                  </div>
-                  <p className={`font-body text-sm mt-1 transition-colors ${
-                    isChecked ? 'text-primary/70' : 'text-muted-foreground'
-                  }`}>
-                    {law.description}
-                  </p>
-                </div>
+                <span className={`font-body text-base md:text-lg flex-1 transition-colors ${
+                  isChecked ? 'text-primary font-medium' : 'text-foreground'
+                }`}>
+                  {law.content}
+                </span>
+
+                {/* Check icon when completed */}
+                {isChecked && (
+                  <Check className="w-5 h-5 text-primary animate-scale-in" />
+                )}
               </div>
-            </Card>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+
+        {/* Footer note */}
+        <p className="text-center text-sm text-muted-foreground mt-6 pt-4 border-t border-primary/20 italic">
+          (Click vào 5 check list trên để được Đăng ký)
+        </p>
+      </Card>
     </section>
   );
 };

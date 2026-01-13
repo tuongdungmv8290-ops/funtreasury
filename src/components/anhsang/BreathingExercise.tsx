@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wind, Play, Square, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
 
 type Phase = 'idle' | 'inhale' | 'hold' | 'exhale';
 
@@ -59,6 +60,10 @@ const BreathingExercise = () => {
             setCycles(newCycles);
             
             if (newCycles >= targetCycles) {
+              toast.success("🌬️ Bài tập thở hoàn thành!", {
+                description: `Con đã hoàn thành ${targetCycles} vòng thở 4-7-8. Tâm con giờ đã bình an.`,
+                duration: 5000,
+              });
               resetExercise();
               return 0;
             }
