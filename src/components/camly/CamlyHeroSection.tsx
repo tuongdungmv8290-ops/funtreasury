@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useCamlyPrice } from "@/hooks/useCamlyPrice";
 import { formatNumber, formatUSD } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
-import camlyLogo from "@/assets/camly-coin-logo.png";
+import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
 const PANCAKESWAP_URL = "https://pancakeswap.finance/swap?outputCurrency=0x610b3b2b17603a7f6ddd9cca375b1f9ea52ada45";
 const DEXSCREENER_URL = "https://dexscreener.com/bsc/0x610b3b2b17603a7f6ddd9cca375b1f9ea52ada45";
