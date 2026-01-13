@@ -110,7 +110,7 @@ const primaryPlatforms: FunPlatform[] = [
   { url: 'https://angelkhanhi.fun.rich', labelKey: 'platforms.angelAi', descKey: 'platforms.angelAiDesc', logo: angelAiLogo, fallbackIcon: Bot, status: 'live' },
 ];
 
-// 10 Secondary platforms (hidden by default, shown when expanded)
+// 6 Secondary platforms (hidden by default, shown when expanded)
 const secondaryPlatforms: FunPlatform[] = [
   { url: 'https://funecademy.vn', labelKey: 'platforms.funEcademy', descKey: 'platforms.funEcademyDesc', logo: funAcademyLogo, fallbackIcon: GraduationCap, status: 'live' },
   { url: 'https://angelaivan.fun.rich', labelKey: 'platforms.funGreenEarth', descKey: 'platforms.funGreenEarthDesc', logo: greenEarthLogo, fallbackIcon: Leaf, status: 'live' },
@@ -118,10 +118,6 @@ const secondaryPlatforms: FunPlatform[] = [
   { url: 'https://camly.co', labelKey: 'platforms.camlyCoin', descKey: 'platforms.camlyCoinDesc', logo: camlyCoinGoldLogo, fallbackIcon: Heart, status: 'live' },
   { url: 'https://funnews.vn', labelKey: 'platforms.funNews', descKey: 'platforms.funNewsDesc', logo: funEcosystemLogo, fallbackIcon: Newspaper, status: 'live' },
   { url: 'https://funshop.vn', labelKey: 'platforms.funShop', descKey: 'platforms.funShopDesc', logo: funEcosystemLogo, fallbackIcon: ShoppingBag, status: 'live' },
-  { url: 'https://funcommunity.vn', labelKey: 'platforms.funCommunity', descKey: 'platforms.funCommunityDesc', logo: funEcosystemLogo, fallbackIcon: Users, status: 'live' },
-  { url: 'https://funtoken.vn', labelKey: 'platforms.mxhAnhSang', descKey: 'platforms.mxhAnhSangDesc', logo: funEcosystemLogo, fallbackIcon: Sparkles, status: 'live' },
-  { url: 'https://fundation.co', labelKey: 'platforms.funFoundation', descKey: 'platforms.funFoundationDesc', logo: funEcosystemLogo, fallbackIcon: Building, status: 'live' },
-  { url: 'https://fundgroup.space', labelKey: 'platforms.funTokenGlobal', descKey: 'platforms.funTokenGlobalDesc', logo: funEcosystemLogo, fallbackIcon: Globe, status: 'live' },
 ];
 
 export function TreasurySidebar() {
