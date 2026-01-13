@@ -21,8 +21,10 @@ import { useTreasuryReport, ReportFilters } from '@/hooks/useTreasuryReport';
 import { ReportFilterDialog } from '@/components/reports/ReportFilterDialog';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
 
 const Index = () => {
+  const { t } = useTranslation();
   const { isViewOnly } = useViewMode();
   const [dateRange, setDateRange] = useState<7 | 30>(30);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -144,10 +146,10 @@ const Index = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-1 tracking-wide">
-              Treasury <span className="gold-text">Dashboard</span>
+              Treasury <span className="gold-text">{t('dashboard.title')}</span>
             </h1>
             <p className="font-body text-sm md:text-base text-muted-foreground">
-              Monitor your FUN Treasury wallets in real-time
+              {t('dashboard.subtitle')}
             </p>
           </div>
           <div className="flex items-center gap-2 md:gap-3 flex-wrap">
@@ -160,7 +162,7 @@ const Index = () => {
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
-                7 Days
+                7 {t('dashboard.days')}
               </button>
               <button
                 onClick={() => setDateRange(30)}
@@ -170,7 +172,7 @@ const Index = () => {
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
-                30 Days
+                30 {t('dashboard.days')}
               </button>
             </div>
             {/* Admin actions - hidden in View Only mode */}
@@ -187,7 +189,7 @@ const Index = () => {
                   ) : (
                     <FileDown className="w-4 h-4" />
                   )}
-                  <span className="hidden sm:inline">Export PDF</span>
+                  <span className="hidden sm:inline">{t('dashboard.exportPdf')}</span>
                 </Button>
                 <div className="flex flex-col items-end gap-1">
                   <Button 
@@ -200,13 +202,13 @@ const Index = () => {
                     ) : (
                       <RefreshCw className="w-4 h-4" />
                     )}
-                    <span className="hidden sm:inline">Sync Now</span>
-                    <span className="sm:hidden">Sync</span>
+                    <span className="hidden sm:inline">{t('dashboard.syncNow')}</span>
+                    <span className="sm:hidden">{t('common.refresh')}</span>
                   </Button>
                   {getLastSyncedText() && (
                     <span className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      Last synced: {getLastSyncedText()}
+                      {t('dashboard.lastSynced')}: {getLastSyncedText()}
                     </span>
                   )}
                 </div>
@@ -217,7 +219,7 @@ const Index = () => {
             {isViewOnly && (
               <Badge variant="outline" className="flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1.5">
                 <Eye className="w-3.5 h-3.5" />
-                Chế độ Chỉ Xem
+                {t('common.viewOnly')}
               </Badge>
             )}
           </div>
@@ -242,18 +244,18 @@ const Index = () => {
                   <Crown className="w-8 h-8 md:w-10 md:h-10 text-white" />
                 </div>
                 <div>
-                <p className="font-body text-sm md:text-base text-muted-foreground font-medium mb-1">Total Treasury Balance</p>
+                <p className="font-body text-sm md:text-base text-muted-foreground font-medium mb-1">{t('dashboard.totalBalance')}</p>
                   <p className="font-mono text-4xl md:text-5xl font-semibold gold-text">
                     {formatCurrency(totalBalance)}
                   </p>
                   <p className="font-body text-xs md:text-sm text-muted-foreground mt-1">
-                    Across {wallets?.length || 0} wallets
+                    {t('dashboard.acrossWallets', { count: wallets?.length || 0 })}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground bg-secondary/60 px-3 py-2 rounded-lg border border-border/50">
                 <div className="w-2 h-2 rounded-full bg-inflow animate-pulse" />
-                Live sync active
+                {t('dashboard.liveSyncActive')}
               </div>
             </div>
           </div>
@@ -262,7 +264,7 @@ const Index = () => {
 
         {/* Wallet Cards */}
         <div className="mb-6 md:mb-8">
-          <h2 className="font-heading text-xl md:text-2xl font-semibold text-foreground mb-4 tracking-wide">Treasury Wallets</h2>
+          <h2 className="font-heading text-xl md:text-2xl font-semibold text-foreground mb-4 tracking-wide">{t('dashboard.treasuryWallets')}</h2>
           {walletsLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-treasury-gold" />
