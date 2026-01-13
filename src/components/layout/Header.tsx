@@ -41,19 +41,19 @@ export function Header() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-amber-500 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:shadow-primary/30 transition-all duration-300">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-amber-500 flex items-center justify-center shadow-md shadow-primary/20 group-hover:shadow-lg group-hover:shadow-primary/40 transition-all duration-300 ring-2 ring-primary/20 group-hover:ring-primary/40">
               <Wallet className="w-5 h-5 text-white" />
             </div>
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-bold gold-text">FUN Treasury</span>
-            <span className="text-xs text-muted-foreground -mt-1">Dashboard</span>
+            <span className="text-xl font-heading font-bold gold-text tracking-wide">FUN Treasury</span>
+            <span className="text-xs font-body text-muted-foreground -mt-1">Dashboard</span>
           </div>
         </Link>
 
         {/* View Only Badge */}
         {isViewOnly && (
-          <Badge variant="outline" className="hidden sm:flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1">
+          <Badge variant="outline" className="hidden sm:flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1 font-body">
             <Eye className="w-3 h-3" />
             Chế độ Chỉ Xem
           </Badge>
@@ -80,7 +80,7 @@ export function Header() {
                   "w-5 h-5 transition-colors duration-300",
                   isActive ? "text-primary" : "text-current"
                 )} />
-                <span className={cn(isActive && "gold-text")}>
+                <span className={cn("font-body", isActive && "gold-text")}>
                   {item.label}
                 </span>
               </Link>
@@ -98,7 +98,7 @@ export function Header() {
           {/* User info & Logout */}
           {user && !isViewOnly && (
             <div className="hidden sm:flex items-center gap-3">
-              <span className="text-sm text-muted-foreground truncate max-w-[150px]">
+              <span className="text-sm font-body text-muted-foreground truncate max-w-[150px]">
                 {user.email}
               </span>
               <Button
