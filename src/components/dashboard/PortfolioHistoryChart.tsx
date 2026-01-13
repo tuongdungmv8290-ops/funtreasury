@@ -87,11 +87,11 @@ export function PortfolioHistoryChart() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <h3 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2 tracking-wide">
             <Calendar className="w-5 h-5 text-treasury-gold" />
             Portfolio History
           </h3>
-          <p className="text-sm text-muted-foreground">Value over time</p>
+          <p className="font-body text-sm text-muted-foreground">Value over time</p>
         </div>
 
         {/* Time Range Selector */}
@@ -115,10 +115,10 @@ export function PortfolioHistoryChart() {
       {/* Current Value & Change */}
       <div className="flex items-end justify-between mb-6">
         <div>
-          <p className="text-2xl md:text-3xl font-bold gold-text font-mono">
+          <p className="font-heading text-3xl md:text-4xl font-bold gold-text">
             ${formatNumber(currentValue)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">Current value</p>
+          <p className="font-body text-xs text-muted-foreground mt-1">Current value</p>
         </div>
         {chartData.length >= 2 && (
           <div className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold ${
@@ -203,18 +203,18 @@ export function PortfolioHistoryChart() {
       {chartData.length >= 2 && (
         <div className="mt-4 pt-4 border-t border-border/50 grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-xs text-muted-foreground">Start</p>
-            <p className="text-sm font-semibold text-foreground">${formatNumber(chartData[0].value)}</p>
+            <p className="font-body text-xs text-muted-foreground">Start</p>
+            <p className="font-heading text-sm font-semibold text-foreground">${formatNumber(chartData[0].value)}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Change</p>
-            <p className={`text-sm font-semibold ${isPositive ? 'text-inflow' : 'text-outflow'}`}>
+            <p className="font-body text-xs text-muted-foreground">Change</p>
+            <p className={`font-heading text-sm font-semibold ${isPositive ? 'text-inflow' : 'text-outflow'}`}>
               {isPositive ? '+' : ''}{formatNumber(Math.abs(change))}
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Current</p>
-            <p className="text-sm font-semibold text-foreground">${formatNumber(currentValue)}</p>
+            <p className="font-body text-xs text-muted-foreground">Current</p>
+            <p className="font-heading text-sm font-semibold text-foreground">${formatNumber(currentValue)}</p>
           </div>
         </div>
       )}

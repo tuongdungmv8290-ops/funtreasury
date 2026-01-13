@@ -156,7 +156,7 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
               <WalletIcon className="w-6 h-6 text-treasury-gold" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground text-lg">{wallet.name}</h3>
+              <h3 className="font-heading font-semibold text-foreground text-xl tracking-wide">{wallet.name}</h3>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs text-muted-foreground font-mono bg-secondary/60 px-2 py-0.5 rounded">
                   {shortenAddress(wallet.address)}
@@ -194,7 +194,7 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
 
         {/* Balance */}
         <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-treasury-gold/5 to-transparent border border-treasury-gold/20">
-          <p className="text-sm text-muted-foreground mb-1">Total Balance</p>
+          <p className="font-body text-sm text-muted-foreground mb-1">Total Balance</p>
           <p className="stat-value-gold">{formatCurrency(wallet.totalBalance)}</p>
         </div>
 
@@ -218,7 +218,7 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
           
           return (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Token Holdings</p>
+              <p className="font-body text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Token Holdings</p>
               <div className="grid grid-cols-2 gap-2">
                 {filteredTokens.map((token) => (
                   <div
@@ -229,8 +229,8 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
                       <TokenLogo symbol={token.symbol} size={20} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-foreground">{token.symbol}</span>
-                          <span className="text-xs text-muted-foreground font-medium">
+                          <span className="font-heading text-xs font-semibold text-foreground">{token.symbol}</span>
+                          <span className="font-body text-xs text-muted-foreground font-medium">
                             {formatCurrency(token.usd_value)}
                           </span>
                         </div>

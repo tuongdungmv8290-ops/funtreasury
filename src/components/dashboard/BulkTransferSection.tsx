@@ -169,7 +169,7 @@ export const BulkTransferSection = ({ viewOnly = false }: BulkTransferSectionPro
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-treasury-gold to-treasury-gold-dark flex items-center justify-center shadow-lg">
               <Send className="w-5 h-5 text-white" />
             </div>
-            <span className="gold-text">Bulk Transfer</span>
+            <span className="font-heading gold-text tracking-wide">Bulk Transfer</span>
             <Badge variant="outline" className="border-treasury-gold/50 text-treasury-gold text-xs">
               Preview Only
             </Badge>
@@ -202,7 +202,7 @@ export const BulkTransferSection = ({ viewOnly = false }: BulkTransferSectionPro
         {/* Token Selection */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-2">
+            <Label className="font-body text-sm font-medium flex items-center gap-2">
               <Coins className="w-4 h-4 text-treasury-gold" />
               Token
             </Label>
@@ -235,13 +235,13 @@ export const BulkTransferSection = ({ viewOnly = false }: BulkTransferSectionPro
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
+            <p className="font-body text-xs text-muted-foreground">
               Price: {formatUSD(token.price)}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-2">
+            <Label className="font-body text-sm font-medium flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-inflow" />
               Amount per Address
             </Label>
@@ -261,7 +261,7 @@ export const BulkTransferSection = ({ viewOnly = false }: BulkTransferSectionPro
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-2">
+            <Label className="font-body text-sm font-medium flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-primary" />
               CSV Upload
             </Label>
@@ -286,7 +286,7 @@ export const BulkTransferSection = ({ viewOnly = false }: BulkTransferSectionPro
 
         {/* Address Input */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium flex items-center gap-2">
+          <Label className="font-body text-sm font-medium flex items-center gap-2">
             <Users className="w-4 h-4 text-treasury-gold" />
             Addresses (one per line or comma-separated)
           </Label>
@@ -385,25 +385,25 @@ export const BulkTransferSection = ({ viewOnly = false }: BulkTransferSectionPro
             {/* Summary Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-secondary/50 rounded-lg p-3 border border-border/50">
-                <p className="text-xs text-muted-foreground mb-1">Total Amount</p>
-                <p className="font-semibold text-foreground">
+                <p className="font-body text-xs text-muted-foreground mb-1">Total Amount</p>
+                <p className="font-heading font-semibold text-foreground">
                   {formatNumber(totalAmount)} {selectedToken}
                 </p>
               </div>
               <div className="bg-secondary/50 rounded-lg p-3 border border-border/50">
-                <p className="text-xs text-muted-foreground mb-1">Total USD</p>
-                <p className="font-semibold text-inflow">{formatUSD(totalUSD)}</p>
+                <p className="font-body text-xs text-muted-foreground mb-1">Total USD</p>
+                <p className="font-heading font-semibold text-inflow">{formatUSD(totalUSD)}</p>
               </div>
               <div className="bg-secondary/50 rounded-lg p-3 border border-border/50">
-                <p className="text-xs text-muted-foreground mb-1">Recipients</p>
-                <p className="font-semibold text-foreground">{validCount} addresses</p>
+                <p className="font-body text-xs text-muted-foreground mb-1">Recipients</p>
+                <p className="font-heading font-semibold text-foreground">{validCount} addresses</p>
               </div>
               <div className="bg-secondary/50 rounded-lg p-3 border border-border/50">
-                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <p className="font-body text-xs text-muted-foreground mb-1 flex items-center gap-1">
                   <Fuel className="w-3 h-3" />
                   Est. Gas Fee
                 </p>
-                <p className="font-semibold text-treasury-gold">~{formatUSD(estimatedGas)}</p>
+                <p className="font-heading font-semibold text-treasury-gold">~{formatUSD(estimatedGas)}</p>
               </div>
             </div>
 

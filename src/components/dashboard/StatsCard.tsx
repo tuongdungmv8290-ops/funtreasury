@@ -100,14 +100,14 @@ export function StatsCard({ title, value, type, icon: CustomIcon, subtitle, inde
             <Icon className={cn("w-5 h-5", styles.iconColor)} />
           </div>
           {subtitle && (
-            <span className="text-xs font-medium text-muted-foreground bg-secondary/80 px-2.5 py-1 rounded-lg border border-border/50">
+            <span className="font-body text-xs font-medium text-muted-foreground bg-secondary/80 px-2.5 py-1 rounded-lg border border-border/50">
               {subtitle}
             </span>
           )}
         </div>
 
         <div>
-          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+          <p className="font-body text-sm font-medium text-muted-foreground mb-1">{title}</p>
           <p className={cn("stat-value", styles.valueClass)}>
             {type === 'netflow' && value > 0 ? '+' : ''}
             {formatCurrency(Math.abs(value))}
