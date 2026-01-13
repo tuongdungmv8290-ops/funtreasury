@@ -456,19 +456,17 @@
 .platform-item:nth-child(15) { animation-delay: 0.45s; }
 .platform-item:nth-child(16) { animation-delay: 0.48s; }
 
-/* Gold-White Elegant Border for Platform Logos */
+/* Pure Gold Elegant Border for Platform Logos */
 .platform-logo-border {
   position: relative;
   padding: 2px;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(201, 162, 39, 0.5) 20%,
-    rgba(245, 215, 66, 0.7) 40%,
-    rgba(255, 255, 255, 0.9) 50%,
-    rgba(245, 215, 66, 0.7) 60%,
-    rgba(201, 162, 39, 0.5) 80%,
-    rgba(255, 255, 255, 0.95) 100%
+    rgba(201, 162, 39, 0.8) 0%,
+    rgba(245, 215, 66, 1) 25%,
+    rgba(218, 165, 32, 0.9) 50%,
+    rgba(245, 215, 66, 1) 75%,
+    rgba(201, 162, 39, 0.8) 100%
   );
   border-radius: 50%;
 }
