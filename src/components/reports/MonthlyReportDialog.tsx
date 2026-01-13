@@ -77,7 +77,7 @@ export function MonthlyReportDialog({ open, onOpenChange }: MonthlyReportDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
+          <DialogTitle className="flex items-center gap-2 font-heading text-xl tracking-wide">
             <CalendarDays className="w-5 h-5 text-treasury-gold" />
             Báo cáo theo tháng
           </DialogTitle>

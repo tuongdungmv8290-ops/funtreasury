@@ -514,10 +514,10 @@ const Transactions = () => {
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-1">
+            <h1 className="font-heading text-3xl font-bold tracking-wide text-foreground mb-1">
               <span className="gold-text">📊 Transactions</span>
             </h1>
-            <p className="text-muted-foreground">
+            <p className="font-body text-muted-foreground">
               {sortedTransactions.length} transactions found • Excel-style view
             </p>
           </div>
@@ -679,18 +679,18 @@ const Transactions = () => {
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-gradient-to-r from-treasury-gold/10 to-amber-100 border-b-2 border-treasury-gold/30">
                       <th 
-                        className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider cursor-pointer hover:bg-treasury-gold/20 transition-colors"
                         onClick={() => handleSort('timestamp')}
                       >
                         <div className="flex items-center gap-1.5">
                           Date {getSortIcon('timestamp')}
                         </div>
                       </th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                      <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
                         Wallet
                       </th>
                       <th 
-                        className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider cursor-pointer hover:bg-treasury-gold/20 transition-colors"
                         onClick={() => handleSort('direction')}
                       >
                         <div className="flex items-center gap-1.5">
@@ -698,7 +698,7 @@ const Transactions = () => {
                         </div>
                       </th>
                       <th 
-                        className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider cursor-pointer hover:bg-treasury-gold/20 transition-colors"
                         onClick={() => handleSort('token_symbol')}
                       >
                         <div className="flex items-center gap-1.5">
@@ -706,7 +706,7 @@ const Transactions = () => {
                         </div>
                       </th>
                       <th 
-                        className="text-right py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        className="text-right py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider cursor-pointer hover:bg-treasury-gold/20 transition-colors"
                         onClick={() => handleSort('amount')}
                       >
                         <div className="flex items-center justify-end gap-1.5">
@@ -714,29 +714,29 @@ const Transactions = () => {
                         </div>
                       </th>
                       <th 
-                        className="text-right py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide cursor-pointer hover:bg-treasury-gold/20 transition-colors"
+                        className="text-right py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider cursor-pointer hover:bg-treasury-gold/20 transition-colors"
                         onClick={() => handleSort('usd_value')}
                       >
                         <div className="flex items-center justify-end gap-1.5">
                           USD Value {getSortIcon('usd_value')}
                         </div>
                       </th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                      <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
                         From/To
                       </th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                      <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
                         Tx Hash
                       </th>
-                      <th className="text-center py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                      <th className="text-center py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                      <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
                         Category
                       </th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                      <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
                         Note
                       </th>
-                      <th className="text-left py-3 px-4 text-xs font-bold text-treasury-dark uppercase tracking-wide">
+                      <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
                         Tags
                       </th>
                     </tr>
@@ -751,12 +751,12 @@ const Transactions = () => {
                         )}
                       >
                         <td className="py-3 px-4">
-                          <span className="text-sm text-foreground font-medium">
+                          <span className="font-body text-sm text-foreground font-medium">
                             {formatDate(tx.timestamp)}
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="text-sm text-muted-foreground font-medium bg-secondary/50 px-2 py-0.5 rounded">
+                          <span className="font-body text-sm text-muted-foreground font-medium bg-secondary/50 px-2 py-0.5 rounded">
                             {getWalletShortName(tx.wallet_id)}
                           </span>
                         </td>
@@ -778,7 +778,7 @@ const Transactions = () => {
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="text-sm font-bold text-foreground bg-treasury-gold/10 px-2 py-0.5 rounded">
+                          <span className="font-heading text-sm font-bold text-foreground bg-treasury-gold/10 px-2 py-0.5 rounded">
                             {tx.token_symbol}
                           </span>
                         </td>
@@ -794,7 +794,7 @@ const Transactions = () => {
                           </p>
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <p className="text-sm font-semibold text-foreground">
+                          <p className="font-mono text-sm font-semibold text-foreground">
                             {formatCurrency(tx.usd_value)}
                           </p>
                         </td>
@@ -904,10 +904,10 @@ const Transactions = () => {
 
               {/* Pagination - Excel-style footer */}
               <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t-2 border-treasury-gold/20 bg-gradient-to-r from-amber-50 to-yellow-50 gap-3">
-                <p className="text-sm text-muted-foreground">
-                  Showing <span className="font-bold text-foreground">{(currentPage - 1) * pageSize + 1}</span> to{' '}
-                  <span className="font-bold text-foreground">{Math.min(currentPage * pageSize, sortedTransactions.length)}</span> of{' '}
-                  <span className="font-bold text-treasury-gold">{sortedTransactions.length}</span> transactions
+                <p className="font-body text-sm text-muted-foreground">
+                  Showing <span className="font-mono font-bold text-foreground">{(currentPage - 1) * pageSize + 1}</span> to{' '}
+                  <span className="font-mono font-bold text-foreground">{Math.min(currentPage * pageSize, sortedTransactions.length)}</span> of{' '}
+                  <span className="font-mono font-bold text-treasury-gold">{sortedTransactions.length}</span> transactions
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
