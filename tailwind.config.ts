@@ -18,6 +18,7 @@ export default {
         mono: ['JetBrains Mono', 'monospace'],
         heading: ['Inter', 'system-ui', 'sans-serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
+        story: ['Lora', 'Georgia', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
