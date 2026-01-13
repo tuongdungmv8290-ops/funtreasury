@@ -650,6 +650,86 @@ serve(async (req) => {
       }
     }
 
+    // ============== BACKFILL DUAL-ENTRY FOR EXISTING TRANSACTIONS ==============
+    // This runs ONLY on force full sync to create missing dual-entries
+    // for transactions that were synced before dual-entry logic was added
+    if (forceFullSync) {
+      console.log('=== Backfilling dual-entry for existing transactions ===');
+      
+      // Get ALL wallets (not just target) to check counterparty relationships
+      const { data: allWallets } = await supabase
+        .from('wallets')
+        .select('id, address, chain, name');
+      
+      if (allWallets && allWallets.length > 0) {
+        // Get all existing transactions
+        const { data: existingTxs, error: existingError } = await supabase
+          .from('transactions')
+          .select('*');
+        
+        if (!existingError && existingTxs && existingTxs.length > 0) {
+          console.log(`Checking ${existingTxs.length} existing transactions for missing dual-entries...`);
+          
+          let backfillCount = 0;
+          
+          for (const tx of existingTxs) {
+            // Find the counterparty address based on direction
+            const counterpartyAddress = tx.direction === 'OUT' ? tx.to_address : tx.from_address;
+            
+            // Check if counterparty is one of our tracked wallets (but not the same wallet)
+            const counterpartyWallet = allWallets.find(w => 
+              w.address.toLowerCase() === counterpartyAddress?.toLowerCase() && w.id !== tx.wallet_id
+            );
+            
+            if (counterpartyWallet) {
+              // Check if dual-entry already exists
+              const { data: existingDual } = await supabase
+                .from('transactions')
+                .select('id')
+                .eq('tx_hash', tx.tx_hash)
+                .eq('wallet_id', counterpartyWallet.id)
+                .maybeSingle();
+              
+              if (!existingDual) {
+                const counterpartyDirection = tx.direction === 'OUT' ? 'IN' : 'OUT';
+                
+                const dualEntryData = {
+                  wallet_id: counterpartyWallet.id,
+                  tx_hash: tx.tx_hash,
+                  block_number: tx.block_number,
+                  timestamp: tx.timestamp,
+                  from_address: tx.from_address,
+                  to_address: tx.to_address,
+                  direction: counterpartyDirection,
+                  token_address: tx.token_address,
+                  token_symbol: tx.token_symbol,
+                  amount: tx.amount,
+                  usd_value: tx.usd_value,
+                  gas_fee: 0,
+                  status: 'success'
+                };
+                
+                const { error: dualError } = await supabase
+                  .from('transactions')
+                  .insert(dualEntryData);
+                
+                if (!dualError) {
+                  backfillCount++;
+                  console.log(`  ↳ Backfilled: ${tx.token_symbol} ${counterpartyDirection} ${tx.amount.toLocaleString()} for ${counterpartyWallet.name}`);
+                } else {
+                  console.error(`  ↳ Error backfilling for ${counterpartyWallet.name}:`, dualError);
+                }
+              }
+            }
+          }
+          
+          console.log(`=== Backfill complete: Created ${backfillCount} dual-entry transactions ===`);
+          totalNewTransactions += backfillCount;
+        }
+      }
+    }
+    // ============== END BACKFILL DUAL-ENTRY ==============
+
     // 6. Clean up: Delete spam tokens, zero-amount, and dust USDT transactions
     console.log('Cleaning up spam transactions...');
     
