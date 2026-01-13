@@ -25,9 +25,18 @@
     "dashboard": "仪表板",
     "transactions": "交易",
     "prices": "价格",
+    "ecosystem": "FUN 生态系统",
     "camly": "CAMLY 币",
     "anhSang": "爱之光",
     "settings": "设置"
+  },
+  "ecosystem": {
+    "title": "FUN 生态系统",
+    "subtitle": "多元化的FUN生态系统 - 使用即赚取!",
+    "tagline": "使用赚钱，玩游戏赚钱，听音乐赚钱!",
+    "visitPlatform": "访问",
+    "showAll": "查看全部",
+    "hideExtra": "收起"
   },
 "platforms": {
     "funProfile": "FUN PROFILE",

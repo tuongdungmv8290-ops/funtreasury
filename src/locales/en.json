@@ -25,9 +25,18 @@
     "dashboard": "Dashboard",
     "transactions": "Transactions",
     "prices": "Prices",
+    "ecosystem": "FUN Ecosystem",
     "camly": "CAMLY Coin",
     "anhSang": "Light of Love",
     "settings": "Settings"
+  },
+  "ecosystem": {
+    "title": "FUN ECOSYSTEM",
+    "subtitle": "The diverse FUN ecosystem - Use and Earn!",
+    "tagline": "Use and earn, play games and earn, listen to music and earn!",
+    "visitPlatform": "Visit",
+    "showAll": "Show all",
+    "hideExtra": "Show less"
   },
 "platforms": {
     "funProfile": "FUN PROFILE",

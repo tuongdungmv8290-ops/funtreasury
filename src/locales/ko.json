@@ -25,9 +25,18 @@
     "dashboard": "대시보드",
     "transactions": "거래",
     "prices": "가격",
+    "ecosystem": "FUN 생태계",
     "camly": "CAMLY 코인",
     "anhSang": "사랑의 빛",
     "settings": "설정"
+  },
+  "ecosystem": {
+    "title": "FUN 생태계",
+    "subtitle": "다양한 FUN 생태계 - 사용하고 수익 창출!",
+    "tagline": "사용하면 수익, 게임하면 수익, 음악 들으면 수익!",
+    "visitPlatform": "방문",
+    "showAll": "전체 보기",
+    "hideExtra": "접기"
   },
 "platforms": {
     "funProfile": "FUN PROFILE",

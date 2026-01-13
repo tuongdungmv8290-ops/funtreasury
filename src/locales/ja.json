@@ -25,9 +25,18 @@
     "dashboard": "ダッシュボード",
     "transactions": "取引",
     "prices": "価格",
+    "ecosystem": "FUNエコシステム",
     "camly": "CAMLYコイン",
     "anhSang": "愛の光",
     "settings": "設定"
+  },
+  "ecosystem": {
+    "title": "FUNエコシステム",
+    "subtitle": "多様なFUNエコシステム - 使って稼ぐ!",
+    "tagline": "使って稼ぐ、ゲームで稼ぐ、音楽で稼ぐ!",
+    "visitPlatform": "訪問",
+    "showAll": "すべて表示",
+    "hideExtra": "閉じる"
   },
 "platforms": {
     "funProfile": "FUN PROFILE",
