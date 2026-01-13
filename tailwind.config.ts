@@ -77,6 +77,11 @@ export default {
           DEFAULT: "hsl(var(--outflow))",
           glow: "hsl(var(--outflow-glow))",
         },
+        crypto: {
+          blue: "hsl(var(--crypto-blue))",
+          purple: "hsl(var(--crypto-purple))",
+          pink: "hsl(var(--crypto-pink))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
