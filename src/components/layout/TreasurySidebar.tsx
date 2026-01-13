@@ -147,16 +147,16 @@ export function TreasurySidebar() {
     <Sidebar className="border-r border-border/50">
       {/* Header with Logo */}
       <SidebarHeader className="border-b border-border/50 p-4">
-        <Link to="/" className="flex items-center gap-3 group">
+        <Link to="/" className="flex items-center gap-4 group">
           <div className="relative">
-            <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg shadow-primary/40 group-hover:shadow-[0_0_25px_rgba(201,162,39,0.6)] transition-all duration-300">
+            <div className="w-24 h-24 rounded-full overflow-hidden shadow-2xl shadow-primary/60 group-hover:shadow-[0_0_40px_rgba(201,162,39,0.8)] transition-all duration-300">
               <img
                 src={funTreasuryLogo}
                 alt="FUN Treasury Logo"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover brightness-110"
               />
             </div>
-            <div className="absolute inset-0 -z-10 w-12 h-12 rounded-full bg-primary/30 blur-lg" />
+            <div className="absolute inset-0 -z-10 w-24 h-24 rounded-full bg-primary/40 blur-xl" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
@@ -247,9 +247,10 @@ export function TreasurySidebar() {
                           href={platform.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium
-                                     text-muted-foreground hover:text-foreground hover:bg-secondary/80
-                                     transition-all duration-200 group animate-fade-in"
+                          className="flex items-center gap-4 px-3 py-3 text-sm font-medium
+                                     text-muted-foreground hover:text-foreground
+                                     transition-all duration-200 group animate-fade-in
+                                     focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
                           style={{ animationDelay: `${index * 0.03}s` }}
                         >
                           {/* Logo - TO GẤP ĐÔI, KHÔNG NỀN, KHÔNG VIỀN */}
@@ -315,9 +316,10 @@ export function TreasurySidebar() {
                               href={platform.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium
-                                         text-muted-foreground hover:text-foreground hover:bg-secondary/80
-                                         transition-all duration-200 group animate-fade-in"
+                              className="flex items-center gap-4 px-3 py-3 text-sm font-medium
+                                         text-muted-foreground hover:text-foreground
+                                         transition-all duration-200 group animate-fade-in
+                                         focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
                               style={{ animationDelay: `${index * 0.03}s` }}
                             >
                               {/* Logo - TO GẤP ĐÔI, KHÔNG NỀN, KHÔNG VIỀN */}
