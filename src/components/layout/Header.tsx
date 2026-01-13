@@ -43,7 +43,7 @@ export function Header() {
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
             {/* Logo với Gold Glow Effect - TO & SÁNG */}
-            <div className="w-14 h-14 rounded-full overflow-hidden shadow-xl shadow-primary/50 group-hover:shadow-2xl group-hover:shadow-primary/70 transition-all duration-300 group-hover:scale-110">
+            <div className="w-16 h-16 rounded-full overflow-hidden shadow-2xl shadow-primary/60 group-hover:shadow-[0_0_30px_rgba(201,162,39,0.8)] transition-all duration-300 group-hover:scale-110">
               <img 
                 src={funTreasuryLogo} 
                 alt="FUN Treasury Logo" 
@@ -51,7 +51,7 @@ export function Header() {
               />
             </div>
             {/* Bright Gold Glow Behind Logo */}
-            <div className="absolute inset-0 -z-10 w-14 h-14 rounded-full bg-primary/40 blur-lg group-hover:bg-primary/60 transition-all duration-300" />
+            <div className="absolute inset-0 -z-10 w-16 h-16 rounded-full bg-primary/50 blur-xl group-hover:bg-primary/70 transition-all duration-300" />
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-heading font-bold gold-text tracking-wide">FUN Treasury</span>
