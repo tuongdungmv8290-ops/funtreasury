@@ -1,7 +1,5 @@
-import { Header } from '@/components/layout/Header';
 import { WalletCard } from '@/components/dashboard/WalletCard';
 import { TransactionChart } from '@/components/dashboard/TransactionChart';
-
 import { TokenBalancesCard } from '@/components/dashboard/TokenBalancesCard';
 import { PortfolioHistoryChart } from '@/components/dashboard/PortfolioHistoryChart';
 import { BulkTransferSection } from '@/components/dashboard/BulkTransferSection';
@@ -141,8 +139,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       <main className="container py-6 md:py-8">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
