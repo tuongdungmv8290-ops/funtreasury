@@ -5,6 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Loader2, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ChartExportMenu } from './ChartExportMenu';
 
 type TimeRange = 1 | 7 | 30 | 90;
 
@@ -107,7 +108,7 @@ export function EnhancedPortfolioChart() {
   const isPositive = stats.changePercent >= 0;
 
   return (
-    <div className="treasury-card p-4 lg:p-6">
+    <div id="portfolio-history-chart" className="treasury-card p-4 lg:p-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
@@ -126,24 +127,27 @@ export function EnhancedPortfolioChart() {
           </div>
         </div>
 
-        {/* Time Range Buttons */}
-        <div className="flex gap-1 bg-secondary/50 p-1 rounded-lg">
-          {timeRangeOptions.map(option => (
-            <Button
-              key={option.value}
-              variant="ghost"
-              size="sm"
-              onClick={() => setTimeRange(option.value)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-medium transition-all",
-                timeRange === option.value
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {option.label}
-            </Button>
-          ))}
+        <div className="flex items-center gap-2">
+          {/* Time Range Buttons */}
+          <div className="flex gap-1 bg-secondary/50 p-1 rounded-lg">
+            {timeRangeOptions.map(option => (
+              <Button
+                key={option.value}
+                variant="ghost"
+                size="sm"
+                onClick={() => setTimeRange(option.value)}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium transition-all",
+                  timeRange === option.value
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <ChartExportMenu chartId="portfolio-history-chart" filename="Portfolio-History" />
         </div>
       </div>
 
