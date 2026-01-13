@@ -247,7 +247,7 @@ const Index = () => {
                 </div>
                 <div>
                 <p className="font-body text-sm md:text-base text-muted-foreground font-medium mb-1">Total Treasury Balance</p>
-                  <p className="font-heading text-4xl md:text-5xl font-bold gold-text tracking-tight">
+                  <p className="font-mono text-4xl md:text-5xl font-semibold gold-text">
                     {formatCurrency(totalBalance)}
                   </p>
                   <p className="font-body text-xs md:text-sm text-muted-foreground mt-1">

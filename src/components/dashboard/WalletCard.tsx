@@ -195,7 +195,7 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
         {/* Balance */}
         <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-treasury-gold/5 to-transparent border border-treasury-gold/20">
           <p className="font-body text-sm text-muted-foreground mb-1">Total Balance</p>
-          <p className="stat-value-gold">{formatCurrency(wallet.totalBalance)}</p>
+          <p className="font-mono stat-value-gold">{formatCurrency(wallet.totalBalance)}</p>
         </div>
 
         {/* Token Balances - Only show sacred tokens based on chain */}
@@ -230,7 +230,7 @@ export function WalletCard({ wallet, index }: WalletCardProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <span className="font-heading text-xs font-semibold text-foreground">{token.symbol}</span>
-                          <span className="font-body text-xs text-muted-foreground font-medium">
+                          <span className="font-mono text-xs text-muted-foreground font-medium">
                             {formatCurrency(token.usd_value)}
                           </span>
                         </div>
