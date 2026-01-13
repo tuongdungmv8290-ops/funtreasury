@@ -488,17 +488,17 @@ const Settings = () => {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Crown className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold">
+            <h1 className="font-heading text-3xl font-bold tracking-wide">
               <span className="gold-text">Treasury Wallet Settings</span>
             </h1>
             {isViewOnly && (
-              <Badge variant="outline" className="flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1">
+              <Badge variant="outline" className="flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1 font-body">
                 <Eye className="w-3.5 h-3.5" />
                 Chế độ Chỉ Xem
               </Badge>
             )}
           </div>
-          <p className="text-muted-foreground">
+          <p className="font-body text-muted-foreground">
             {isViewOnly 
               ? 'Xem cấu hình ví Treasury (chế độ chỉ xem - không thể chỉnh sửa)'
               : 'Quản lý và cấu hình các ví thiêng liêng của Treasury'}
@@ -512,15 +512,15 @@ const Settings = () => {
               <span className="text-primary-foreground font-bold text-lg">1</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Treasury Wallet 1</h2>
-              <p className="text-sm text-muted-foreground">Ví chính của Treasury</p>
+              <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Treasury Wallet 1</h2>
+              <p className="font-body text-sm text-muted-foreground">Ví chính của Treasury</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="wallet1Name" className="text-foreground font-medium">
+                <Label htmlFor="wallet1Name" className="font-body text-foreground font-medium">
                   Wallet Name
                 </Label>
                 <Input
@@ -533,7 +533,7 @@ const Settings = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wallet1Chain" className="text-foreground font-medium">
+                <Label htmlFor="wallet1Chain" className="font-body text-foreground font-medium">
                   Blockchain Network
                 </Label>
                 <Select value={wallet1Chain} onValueChange={setWallet1Chain} disabled={isViewOnly}>
@@ -588,7 +588,7 @@ const Settings = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wallet1Address" className="text-foreground font-medium">
+              <Label htmlFor="wallet1Address" className="font-body text-foreground font-medium">
                 Wallet Address
               </Label>
               <Input
@@ -610,15 +610,15 @@ const Settings = () => {
               <span className="text-primary-foreground font-bold text-lg">2</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Treasury Wallet 2</h2>
-              <p className="text-sm text-muted-foreground">Ví phụ của Treasury</p>
+              <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Treasury Wallet 2</h2>
+              <p className="font-body text-sm text-muted-foreground">Ví phụ của Treasury</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="wallet2Name" className="text-foreground font-medium">
+                <Label htmlFor="wallet2Name" className="font-body text-foreground font-medium">
                   Wallet Name
                 </Label>
                 <Input
@@ -631,7 +631,7 @@ const Settings = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wallet2Chain" className="text-foreground font-medium">
+                <Label htmlFor="wallet2Chain" className="font-body text-foreground font-medium">
                   Blockchain Network
                 </Label>
                 <Select value={wallet2Chain} onValueChange={setWallet2Chain} disabled={isViewOnly}>
@@ -686,7 +686,7 @@ const Settings = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wallet2Address" className="text-foreground font-medium">
+              <Label htmlFor="wallet2Address" className="font-body text-foreground font-medium">
                 Wallet Address
               </Label>
               <Input
@@ -708,15 +708,15 @@ const Settings = () => {
               <span className="text-primary-foreground font-bold text-lg">3</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Treasury Wallet 3</h2>
-              <p className="text-sm text-muted-foreground">Ví bổ sung của Treasury</p>
+              <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Treasury Wallet 3</h2>
+              <p className="font-body text-sm text-muted-foreground">Ví bổ sung của Treasury</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="wallet3Name" className="text-foreground font-medium">
+                <Label htmlFor="wallet3Name" className="font-body text-foreground font-medium">
                   Wallet Name
                 </Label>
                 <Input
@@ -729,7 +729,7 @@ const Settings = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wallet3Chain" className="text-foreground font-medium">
+                <Label htmlFor="wallet3Chain" className="font-body text-foreground font-medium">
                   Blockchain Network
                 </Label>
                 <Select value={wallet3Chain} onValueChange={setWallet3Chain} disabled={isViewOnly}>
@@ -784,7 +784,7 @@ const Settings = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wallet3Address" className="text-foreground font-medium">
+              <Label htmlFor="wallet3Address" className="font-body text-foreground font-medium">
                 Wallet Address
               </Label>
               <Input
@@ -806,14 +806,14 @@ const Settings = () => {
               <span className="text-white font-bold text-lg">4</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Treasury Wallet 4</h2>
-              <p className="text-sm text-muted-foreground">Ví Bitcoin Treasury 1</p>
+              <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Treasury Wallet 4</h2>
+              <p className="font-body text-sm text-muted-foreground">Ví Bitcoin Treasury 1</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="wallet4Name" className="text-foreground font-medium">
+              <Label htmlFor="wallet4Name" className="font-body text-foreground font-medium">
                 Wallet Name
               </Label>
               <Input
@@ -827,7 +827,7 @@ const Settings = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="wallet4Chain" className="text-foreground font-medium">
+                <Label htmlFor="wallet4Chain" className="font-body text-foreground font-medium">
                   Blockchain Network
                 </Label>
                 <Select value={wallet4Chain} onValueChange={setWallet4Chain} disabled={isViewOnly}>
@@ -864,7 +864,7 @@ const Settings = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wallet4Address" className="text-foreground font-medium">
+              <Label htmlFor="wallet4Address" className="font-body text-foreground font-medium">
                 Wallet Address
               </Label>
               <Input
@@ -886,14 +886,14 @@ const Settings = () => {
               <span className="text-white font-bold text-lg">5</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Treasury Wallet 5</h2>
-              <p className="text-sm text-muted-foreground">Ví Bitcoin Treasury 2</p>
+              <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Treasury Wallet 5</h2>
+              <p className="font-body text-sm text-muted-foreground">Ví Bitcoin Treasury 2</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="wallet5Name" className="text-foreground font-medium">
+              <Label htmlFor="wallet5Name" className="font-body text-foreground font-medium">
                 Wallet Name
               </Label>
               <Input
@@ -907,7 +907,7 @@ const Settings = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="wallet5Chain" className="text-foreground font-medium">
+                <Label htmlFor="wallet5Chain" className="font-body text-foreground font-medium">
                   Blockchain Network
                 </Label>
                 <Select value={wallet5Chain} onValueChange={setWallet5Chain} disabled={isViewOnly}>
@@ -944,7 +944,7 @@ const Settings = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wallet5Address" className="text-foreground font-medium">
+              <Label htmlFor="wallet5Address" className="font-body text-foreground font-medium">
                 Wallet Address
               </Label>
               <Input
@@ -966,15 +966,15 @@ const Settings = () => {
               <span className="text-white font-bold text-lg">💎</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Token Contracts</h2>
-              <p className="text-sm text-muted-foreground">Nhập contract address các token cần theo dõi</p>
+              <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Token Contracts</h2>
+              <p className="font-body text-sm text-muted-foreground">Nhập contract address các token cần theo dõi</p>
             </div>
           </div>
 
           <div className="space-y-4">
             {/* CAMLY COIN */}
             <div className="space-y-1.5">
-              <Label htmlFor="camlyCoin" className="text-foreground font-medium flex items-center gap-2">
+              <Label htmlFor="camlyCoin" className="font-heading text-foreground font-medium flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></span>
                 CAMLY COIN
               </Label>
@@ -1005,7 +1005,7 @@ const Settings = () => {
 
             {/* USDT */}
             <div className="space-y-1.5">
-              <Label htmlFor="usdt" className="text-foreground font-medium flex items-center gap-2">
+              <Label htmlFor="usdt" className="font-heading text-foreground font-medium flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 USDT (Tether)
               </Label>
@@ -1036,7 +1036,7 @@ const Settings = () => {
 
             {/* BTCB */}
             <div className="space-y-1.5">
-              <Label htmlFor="btcb" className="text-foreground font-medium flex items-center gap-2">
+              <Label htmlFor="btcb" className="font-heading text-foreground font-medium flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-orange-500"></span>
                 BTCB (Bitcoin BEP20)
               </Label>
@@ -1068,7 +1068,7 @@ const Settings = () => {
 
           {/* Note */}
           <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
-            <p className="text-xs text-muted-foreground flex items-center gap-2">
+            <p className="font-body text-xs text-muted-foreground flex items-center gap-2">
               <ClipboardPaste className="w-3.5 h-3.5 text-primary" />
               <span>Paste contract/API key suôn sẻ – lưu vĩnh viễn! Ctrl+V hoặc nhấn icon paste.</span>
             </p>
@@ -1129,8 +1129,8 @@ const Settings = () => {
                 <Link className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground">Moralis Realtime Sync (Free Tier)</h2>
-                <p className="text-sm text-muted-foreground">Kết nối on-chain sync miễn phí với Moralis API</p>
+                <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Moralis Realtime Sync (Free Tier)</h2>
+                <p className="font-body text-sm text-muted-foreground">Kết nối on-chain sync miễn phí với Moralis API</p>
               </div>
             </div>
 
@@ -1139,7 +1139,7 @@ const Settings = () => {
               <div className="flex items-start gap-3">
                 <span className="text-xl">💡</span>
                 <div>
-                  <p className="text-sm text-foreground font-medium mb-1">
+                  <p className="font-body text-sm text-foreground font-medium mb-1">
                     Đăng ký miễn phí tại{' '}
                     <a 
                       href="https://moralis.io/" 
@@ -1151,7 +1151,7 @@ const Settings = () => {
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-body text-xs text-muted-foreground">
                     Free tier đủ sync hàng nghìn transactions/ngày!
                   </p>
                 </div>
@@ -1161,7 +1161,7 @@ const Settings = () => {
             {/* API Key Input */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="moralisApiKey" className="text-foreground font-medium">
+                <Label htmlFor="moralisApiKey" className="font-body text-foreground font-medium">
                   Moralis API Key <span className="text-outflow">*</span>
                 </Label>
                 <div className="relative">
@@ -1269,16 +1269,16 @@ const Settings = () => {
                 <RefreshCw className="w-5 h-5 text-inflow" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Sync Settings</h2>
-                <p className="text-sm text-muted-foreground">Cấu hình đồng bộ dữ liệu (Bước 4.2)</p>
+                <h2 className="font-heading text-lg font-semibold tracking-wide text-foreground">Sync Settings</h2>
+                <p className="font-body text-sm text-muted-foreground">Cấu hình đồng bộ dữ liệu (Bước 4.2)</p>
               </div>
             </div>
 
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 border border-border">
                 <div>
-                  <Label htmlFor="autoSync" className="text-foreground font-medium">Auto Sync</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <Label htmlFor="autoSync" className="font-body text-foreground font-medium">Auto Sync</Label>
+                  <p className="font-body text-sm text-muted-foreground">
                     Tự động đồng bộ transactions theo chu kỳ
                   </p>
                 </div>
@@ -1291,7 +1291,7 @@ const Settings = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="syncInterval" className="text-foreground font-medium">Sync Interval</Label>
+                <Label htmlFor="syncInterval" className="font-body text-foreground font-medium">Sync Interval</Label>
                 <Select value={syncInterval} onValueChange={setSyncInterval} disabled={!autoSync}>
                   <SelectTrigger className="w-full md:w-[200px] bg-white border-border hover:border-primary/50 transition-colors shadow-sm disabled:opacity-50">
                     <SelectValue placeholder="Select interval" />
@@ -1327,14 +1327,14 @@ const Settings = () => {
                 <Shield className="w-6 h-6 text-destructive" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground">Admin Management</h2>
-                <p className="text-sm text-muted-foreground">Quản lý quyền admin cho Treasury</p>
+                <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Admin Management</h2>
+                <p className="font-body text-sm text-muted-foreground">Quản lý quyền admin cho Treasury</p>
               </div>
             </div>
 
             {/* Add New Admin */}
             <div className="space-y-4 mb-6">
-              <Label className="text-foreground font-medium">Thêm Admin mới bằng User ID</Label>
+              <Label className="font-body text-foreground font-medium">Thêm Admin mới bằng User ID</Label>
               <div className="flex gap-3">
                 <Input
                   value={newAdminUserId}
@@ -1355,7 +1355,7 @@ const Settings = () => {
                   Thêm Admin
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-body text-xs text-muted-foreground">
                 Lưu ý: User ID là UUID của user trong database (có thể tìm trong bảng profiles)
               </p>
             </div>
@@ -1363,7 +1363,7 @@ const Settings = () => {
             {/* Admin List */}
             <div className="border-t border-border pt-6">
               <div className="flex items-center justify-between mb-4">
-                <Label className="text-foreground font-medium">Danh sách Admin hiện tại</Label>
+                <Label className="font-body text-foreground font-medium">Danh sách Admin hiện tại</Label>
                 <Button
                   variant="ghost"
                   size="sm"
