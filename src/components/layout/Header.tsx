@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, Settings, Wallet, LogOut, Eye, LogIn } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Settings, LogOut, Eye, LogIn } from 'lucide-react';
+import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
@@ -41,13 +42,20 @@ export function Header() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-amber-500 flex items-center justify-center shadow-md shadow-primary/20 group-hover:shadow-lg group-hover:shadow-primary/40 transition-all duration-300 ring-2 ring-primary/20 group-hover:ring-primary/40">
-              <Wallet className="w-5 h-5 text-white" />
+            {/* Logo với Gold Glow Effect */}
+            <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg shadow-primary/30 group-hover:shadow-xl group-hover:shadow-primary/50 transition-all duration-300 ring-2 ring-primary/30 group-hover:ring-primary/50 group-hover:scale-105">
+              <img 
+                src={funTreasuryLogo} 
+                alt="FUN Treasury Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
+            {/* Subtle Glow Behind Logo */}
+            <div className="absolute inset-0 -z-10 w-12 h-12 rounded-full bg-primary/20 blur-md group-hover:bg-primary/30 transition-all duration-300" />
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-heading font-bold gold-text tracking-wide">FUN Treasury</span>
-            <span className="text-xs font-body text-muted-foreground -mt-1">Dashboard</span>
+            <span className="text-xs font-body text-muted-foreground -mt-1">A Treasury of the Universe</span>
           </div>
         </Link>
 
