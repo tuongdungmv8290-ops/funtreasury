@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -25,10 +26,12 @@ import {
   Newspaper,
   ShoppingBag,
   Building,
+  ChevronDown,
   type LucideIcon,
 } from 'lucide-react';
 import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
 // Logo imports for FUN Platforms
+import funProfileLogo from '@/assets/fun-profile-logo.png';
 import funEcosystemLogo from '@/assets/fun-ecosystem-logo.png';
 import camlyCoinGoldLogo from '@/assets/camly-coin-gold-logo.png';
 import funLifeLogo from '@/assets/fun-life-logo.png';
@@ -60,6 +63,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from '@/components/ui/tooltip';
 
 // TREASURY navigation items with translation keys
 const treasuryItems = [
@@ -82,7 +96,7 @@ interface FunPlatform {
 }
 
 const funPlatforms: FunPlatform[] = [
-  { url: 'https://fun.rich', labelKey: 'platforms.funProfile', descKey: 'platforms.funProfileDesc', logo: funEcosystemLogo, fallbackIcon: User, status: 'live' },
+  { url: 'https://fun.rich', labelKey: 'platforms.funProfile', descKey: 'platforms.funProfileDesc', logo: funProfileLogo, fallbackIcon: User, status: 'live' },
   { url: 'https://funfarm.life', labelKey: 'platforms.funFarm', descKey: 'platforms.funFarmDesc', logo: funFarmLogo, fallbackIcon: Sprout, status: 'live' },
   { url: 'https://play.fun.rich', labelKey: 'platforms.funPlay', descKey: 'platforms.funPlayDesc', logo: funPlayLogo, fallbackIcon: Gamepad2, status: 'live' },
   { url: 'https://planet.fun.rich', labelKey: 'platforms.funPlanet', descKey: 'platforms.funPlanetDesc', logo: funPlanetLogo, fallbackIcon: Globe2, status: 'live' },
@@ -108,6 +122,7 @@ export function TreasurySidebar() {
   const { isViewOnly, exitViewMode } = useViewMode();
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
+  const [platformsOpen, setPlatformsOpen] = useState(false);
 
   const handleLogout = async () => {
     if (isViewOnly) {
@@ -206,93 +221,106 @@ export function TreasurySidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* FUN PLATFORMS Group - Blockchain.com Style with Logos */}
+        {/* FUN PLATFORMS Group - Collapsible with Logo Grid */}
         <SidebarGroup className="mt-6">
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-            {t('nav.funPlatforms')}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {funPlatforms.map((platform, index) => {
-                const FallbackIcon = platform.fallbackIcon;
-                return (
-                  <SidebarMenuItem 
-                    key={platform.url}
-                    className="platform-item"
-                    style={{ animationDelay: `${index * 0.03}s` }}
-                  >
-                    <SidebarMenuButton asChild>
-                      <a
-                        href={platform.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
-                          'text-muted-foreground hover:text-foreground',
-                          'hover:bg-gradient-to-r hover:from-primary/15 hover:to-purple-500/15',
-                          'border border-transparent hover:border-primary/40',
-                          'hover:shadow-[0_0_20px_rgba(201,162,39,0.25)]',
-                          'transition-all duration-300 group'
-                        )}
-                      >
-                        {/* Logo with glow effect */}
-                        <div className="relative flex-shrink-0">
-                          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary/30 
-                                          group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(201,162,39,0.5)]
-                                          group-hover:scale-110 transition-all duration-300 bg-background/50">
-                            <img 
-                              src={platform.logo} 
-                              alt={t(platform.labelKey)}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                const fallbackEl = e.currentTarget.nextElementSibling as HTMLElement;
-                                if (fallbackEl) fallbackEl.style.display = 'flex';
-                              }}
-                            />
-                            <div className="hidden w-full h-full items-center justify-center">
-                              <FallbackIcon className="w-4 h-4 text-primary/60" />
+          <Collapsible open={platformsOpen} onOpenChange={setPlatformsOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg hover:bg-secondary/50 group cursor-pointer transition-colors">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-primary" />
+                {!isCollapsed && (
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t('nav.funPlatforms')}
+                  </span>
+                )}
+              </div>
+              
+              {/* Preview logos when collapsed */}
+              {!platformsOpen && !isCollapsed && (
+                <div className="flex -space-x-2 mx-2">
+                  {funPlatforms.slice(0, 4).map((p, i) => (
+                    <img 
+                      key={i} 
+                      src={p.logo} 
+                      alt=""
+                      className="w-6 h-6 rounded-full border-2 border-background object-cover"
+                    />
+                  ))}
+                  <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-[9px] 
+                                  flex items-center justify-center font-bold border-2 border-background">
+                    +{funPlatforms.length - 4}
+                  </span>
+                </div>
+              )}
+              
+              <ChevronDown className={cn(
+                "w-4 h-4 text-muted-foreground transition-transform duration-300", 
+                platformsOpen && "rotate-180"
+              )} />
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent className="pt-3 px-2 animate-in slide-in-from-top-2 duration-200">
+              {/* Grid 4 columns of circular logos */}
+              <div className="grid grid-cols-4 gap-3">
+                <TooltipProvider delayDuration={200}>
+                  {funPlatforms.map((platform) => {
+                    const FallbackIcon = platform.fallbackIcon;
+                    return (
+                      <Tooltip key={platform.url}>
+                        <TooltipTrigger asChild>
+                          <a
+                            href={platform.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group relative flex flex-col items-center"
+                          >
+                            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/30 
+                                            hover:border-primary hover:shadow-[0_0_20px_rgba(201,162,39,0.6)]
+                                            hover:scale-110 transition-all duration-300 bg-background/50">
+                              <img 
+                                src={platform.logo} 
+                                alt=""
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  const fallbackEl = e.currentTarget.nextElementSibling as HTMLElement;
+                                  if (fallbackEl) fallbackEl.style.display = 'flex';
+                                }}
+                              />
+                              <div className="hidden w-full h-full items-center justify-center bg-background/80">
+                                <FallbackIcon className="w-5 h-5 text-primary/60" />
+                              </div>
                             </div>
-                          </div>
-                          {/* Glow backdrop */}
-                          <div className="absolute inset-0 bg-primary/40 blur-lg opacity-0 
-                                          group-hover:opacity-100 transition-opacity duration-300 rounded-full -z-10" />
-                        </div>
-                        
-                        {!isCollapsed && (
-                          <>
-                            {/* Text content */}
-                            <div className="flex-1 min-w-0">
-                              <span className="block font-semibold text-xs group-hover:text-primary transition-colors duration-300">
-                                {t(platform.labelKey)}
-                              </span>
-                              <span className="block text-[9px] text-muted-foreground/70 truncate">
-                                {t(platform.descKey)}
-                              </span>
-                            </div>
-                            
-                            {/* Status Badge */}
-                            {platform.status === 'live' ? (
-                              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] px-1.5 py-0 h-4 font-bold shrink-0">
+                            {/* LIVE badge mini */}
+                            {platform.status === 'live' && (
+                              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 
+                                               text-[6px] font-bold text-green-400 bg-green-500/20 
+                                               px-1 py-0.5 rounded border border-green-500/30">
                                 LIVE
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0 h-4 font-bold shrink-0">
-                                SOON
-                              </Badge>
+                              </span>
                             )}
-                            
-                            {/* External link icon */}
-                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-70 group-hover:text-primary transition-all duration-300 shrink-0" />
-                          </>
-                        )}
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
+                            {platform.status === 'soon' && (
+                              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 
+                                               text-[6px] font-bold text-amber-400 bg-amber-500/20 
+                                               px-1 py-0.5 rounded border border-amber-500/30">
+                                SOON
+                              </span>
+                            )}
+                            {/* Glow backdrop */}
+                            <div className="absolute inset-0 bg-primary/40 blur-lg opacity-0 
+                                            group-hover:opacity-100 transition-opacity duration-300 rounded-full -z-10" />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-background/95 border-primary/30 backdrop-blur-sm max-w-[200px]">
+                          <p className="font-semibold text-xs text-primary">{t(platform.labelKey)}</p>
+                          <p className="text-[10px] text-muted-foreground">{t(platform.descKey)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </TooltipProvider>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
       </SidebarContent>
 
