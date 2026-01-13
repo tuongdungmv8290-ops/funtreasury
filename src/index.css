@@ -456,6 +456,37 @@
 .platform-item:nth-child(15) { animation-delay: 0.45s; }
 .platform-item:nth-child(16) { animation-delay: 0.48s; }
 
+/* Gold-White Elegant Border for Platform Logos */
+.platform-logo-border {
+  position: relative;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(201, 162, 39, 0.5) 20%,
+    rgba(245, 215, 66, 0.7) 40%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(245, 215, 66, 0.7) 60%,
+    rgba(201, 162, 39, 0.5) 80%,
+    rgba(255, 255, 255, 0.95) 100%
+  );
+  border-radius: 50%;
+}
+
+.platform-logo-border::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: hsl(var(--card));
+  z-index: 0;
+}
+
+.platform-logo-border > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* Treasury Logo Glow Pulse Animation - CHỈ GLOW, KHÔNG SCALE */
 @keyframes treasury-glow-pulse {
   0%, 100% {

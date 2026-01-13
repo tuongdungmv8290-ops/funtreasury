@@ -265,8 +265,9 @@ export function TreasurySidebar() {
                                      focus:outline-none"
                           style={{ animationDelay: `${index * 0.03}s` }}
                         >
-                          {/* Logo - CHỈ LOGO THUẦN TÚY, KHÔNG VIỀN */}
+                          {/* Logo với viền gold-trắng sang trọng */}
                           <div className="w-14 h-14 shrink-0 rounded-full overflow-hidden 
+                                          platform-logo-border
                                           group-hover:scale-110 
                                           group-hover:drop-shadow-[0_0_15px_rgba(201,162,39,0.6)]
                                           transition-all duration-300">
@@ -337,8 +338,9 @@ export function TreasurySidebar() {
                                          focus:outline-none"
                               style={{ animationDelay: `${index * 0.03}s` }}
                             >
-                              {/* Logo - CHỈ LOGO THUẦN TÚY, KHÔNG VIỀN */}
+                              {/* Logo với viền gold-trắng sang trọng */}
                               <div className="w-14 h-14 shrink-0 rounded-full overflow-hidden 
+                                              platform-logo-border
                                               group-hover:scale-110 
                                               group-hover:drop-shadow-[0_0_15px_rgba(201,162,39,0.6)]
                                               transition-all duration-300">
