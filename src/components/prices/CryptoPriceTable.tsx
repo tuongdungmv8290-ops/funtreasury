@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { CryptoPrice } from "@/hooks/useCryptoPrices";
 import {
   Table,
@@ -8,12 +9,50 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface CryptoPriceTableProps {
   data: CryptoPrice[];
   isLoading?: boolean;
+}
+
+type SortKey = 'price' | 'change' | 'volume' | 'marketCap';
+type SortOrder = 'asc' | 'desc';
+
+interface SortableHeaderProps {
+  label: string;
+  sortKey: SortKey;
+  currentKey: SortKey;
+  currentOrder: SortOrder;
+  onSort: (key: SortKey) => void;
+}
+
+function SortableHeader({ label, sortKey, currentKey, currentOrder, onSort }: SortableHeaderProps) {
+  const isActive = sortKey === currentKey;
+  
+  return (
+    <TableHead 
+      className={cn(
+        "text-right text-muted-foreground font-medium cursor-pointer hover:text-foreground transition-colors select-none group",
+        isActive && "text-primary"
+      )}
+      onClick={() => onSort(sortKey)}
+    >
+      <div className="flex items-center justify-end gap-1">
+        {label}
+        {isActive ? (
+          currentOrder === 'desc' ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronUp className="w-4 h-4" />
+          )
+        ) : (
+          <ArrowUpDown className="w-3 h-3 opacity-40 group-hover:opacity-70 transition-opacity" />
+        )}
+      </div>
+    </TableHead>
+  );
 }
 
 function formatPrice(price: number, symbol: string): string {
@@ -96,6 +135,43 @@ function TableRowSkeleton() {
 }
 
 export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
+  const [sortKey, setSortKey] = useState<SortKey>('marketCap');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  const handleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortKey(key);
+      setSortOrder('desc');
+    }
+  };
+
+  const sortedData = useMemo(() => {
+    return [...data].sort((a, b) => {
+      let aVal: number, bVal: number;
+      switch (sortKey) {
+        case 'price':
+          aVal = a.current_price;
+          bVal = b.current_price;
+          break;
+        case 'change':
+          aVal = a.price_change_percentage_24h;
+          bVal = b.price_change_percentage_24h;
+          break;
+        case 'volume':
+          aVal = a.total_volume;
+          bVal = b.total_volume;
+          break;
+        case 'marketCap':
+          aVal = a.market_cap;
+          bVal = b.market_cap;
+          break;
+      }
+      return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+    });
+  }, [data, sortKey, sortOrder]);
+
   if (isLoading) {
     return (
       <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
@@ -128,15 +204,15 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
           <TableRow className="hover:bg-transparent border-border/50">
             <TableHead className="w-12 text-muted-foreground font-medium">#</TableHead>
             <TableHead className="text-muted-foreground font-medium">Coin</TableHead>
-            <TableHead className="text-right text-muted-foreground font-medium">Price</TableHead>
-            <TableHead className="text-right text-muted-foreground font-medium">24h %</TableHead>
-            <TableHead className="text-right text-muted-foreground font-medium">Volume (24h)</TableHead>
-            <TableHead className="text-right text-muted-foreground font-medium">Market Cap</TableHead>
+            <SortableHeader label="Price" sortKey="price" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+            <SortableHeader label="24h %" sortKey="change" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+            <SortableHeader label="Volume (24h)" sortKey="volume" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+            <SortableHeader label="Market Cap" sortKey="marketCap" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
             <TableHead className="text-right text-muted-foreground font-medium">Last 7 Days</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((coin, index) => {
+          {sortedData.map((coin, index) => {
             const isPositive = coin.price_change_percentage_24h >= 0;
             const isCamly = coin.symbol.toUpperCase() === 'CAMLY';
             
