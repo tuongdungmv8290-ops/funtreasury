@@ -160,10 +160,11 @@ export function TreasurySidebar() {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <span className="text-lg font-heading font-bold gold-text tracking-wide">
+              <span className="text-2xl font-heading font-bold gold-text tracking-wide 
+                               drop-shadow-[0_0_12px_rgba(201,162,39,0.5)]">
                 FUN Treasury
               </span>
-              <span className="text-[10px] font-body text-muted-foreground -mt-0.5">
+              <span className="text-sm font-body text-primary/70">
                 A Treasury of the Universe
               </span>
             </div>
@@ -174,7 +175,8 @@ export function TreasurySidebar() {
       <SidebarContent className="px-2 py-4">
         {/* TREASURY Group */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
+          <SidebarGroupLabel className="text-sm font-bold font-heading text-primary/80 uppercase tracking-widest mb-3 px-3
+                                         drop-shadow-[0_0_8px_rgba(201,162,39,0.3)]">
             {t('nav.treasury')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -190,22 +192,27 @@ export function TreasurySidebar() {
                       <Link
                         to={item.path}
                         className={cn(
-                          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group',
+                          'flex items-center gap-3 px-3 py-3 text-base font-semibold font-heading transition-all duration-200 group',
                           active
-                            ? 'bg-primary/15 text-primary border-l-4 border-primary shadow-[0_0_15px_rgba(201,162,39,0.3)]'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80',
+                            ? 'text-primary border-l-4 border-primary bg-primary/10'
+                            : 'text-foreground/80 hover:text-primary hover:bg-primary/5',
                           isComingSoon && 'opacity-60'
                         )}
                       >
                         <Icon
                           className={cn(
-                            'w-5 h-5 shrink-0 transition-colors',
-                            active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                            'w-6 h-6 shrink-0 transition-all',
+                            active 
+                              ? 'text-primary drop-shadow-[0_0_8px_rgba(201,162,39,0.6)]' 
+                              : 'text-foreground/60 group-hover:text-primary group-hover:drop-shadow-[0_0_6px_rgba(201,162,39,0.4)]'
                           )}
                         />
                         {!isCollapsed && (
                           <>
-                            <span className={cn(active && 'gold-text font-semibold')}>
+                            <span className={cn(
+                              'transition-colors',
+                              active && 'gold-text'
+                            )}>
                               {t(item.labelKey)}
                             </span>
                             {isComingSoon && (
@@ -229,8 +236,9 @@ export function TreasurySidebar() {
 
         {/* FUN PLATFORMS Group - Vertical list with collapsible */}
         <SidebarGroup className="mt-6">
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
+          <SidebarGroupLabel className="text-sm font-bold font-heading text-primary/80 uppercase tracking-widest mb-3 px-3 flex items-center gap-2
+                                         drop-shadow-[0_0_8px_rgba(201,162,39,0.3)]">
+            <Globe className="w-5 h-5 text-primary" />
             {!isCollapsed && t('nav.funPlatforms')}
           </SidebarGroupLabel>
           
@@ -247,10 +255,11 @@ export function TreasurySidebar() {
                           href={platform.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-4 px-3 py-3 text-sm font-medium
-                                     text-muted-foreground hover:text-foreground
+                          className="flex items-center gap-4 px-3 py-3 
+                                     text-foreground/80 hover:text-primary
                                      transition-all duration-200 group animate-fade-in
-                                     focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
+                                     bg-transparent hover:bg-transparent
+                                     focus:outline-none"
                           style={{ animationDelay: `${index * 0.03}s` }}
                         >
                           {/* Logo - TO GẤP ĐÔI, KHÔNG NỀN, KHÔNG VIỀN */}
@@ -273,7 +282,8 @@ export function TreasurySidebar() {
                           </div>
                           
                           {!isCollapsed && (
-                            <span className="flex-1 truncate group-hover:text-primary transition-colors">
+                            <span className="flex-1 truncate text-base font-semibold font-heading 
+                                             group-hover:gold-text transition-colors">
                               {t(platform.labelKey)}
                             </span>
                           )}
@@ -316,10 +326,11 @@ export function TreasurySidebar() {
                               href={platform.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-4 px-3 py-3 text-sm font-medium
-                                         text-muted-foreground hover:text-foreground
+                              className="flex items-center gap-4 px-3 py-3 
+                                         text-foreground/80 hover:text-primary
                                          transition-all duration-200 group animate-fade-in
-                                         focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2"
+                                         bg-transparent hover:bg-transparent
+                                         focus:outline-none"
                               style={{ animationDelay: `${index * 0.03}s` }}
                             >
                               {/* Logo - TO GẤP ĐÔI, KHÔNG NỀN, KHÔNG VIỀN */}
@@ -342,7 +353,8 @@ export function TreasurySidebar() {
                               </div>
                               
                               {!isCollapsed && (
-                                <span className="flex-1 truncate group-hover:text-primary transition-colors">
+                                <span className="flex-1 truncate text-base font-semibold font-heading 
+                                                 group-hover:gold-text transition-colors">
                                   {t(platform.labelKey)}
                                 </span>
                               )}
