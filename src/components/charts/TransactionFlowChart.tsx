@@ -4,6 +4,7 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { Loader2, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ChartExportMenu } from './ChartExportMenu';
 
 type TimeRange = 7 | 14 | 30;
 
@@ -72,7 +73,7 @@ export function TransactionFlowChart() {
   const isPositiveNet = netFlow >= 0;
 
   return (
-    <div className="treasury-card p-4 lg:p-6">
+    <div id="transaction-flow-chart" className="treasury-card p-4 lg:p-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
@@ -95,24 +96,27 @@ export function TransactionFlowChart() {
           </div>
         </div>
 
-        {/* Time Range Buttons */}
-        <div className="flex gap-1 bg-secondary/50 p-1 rounded-lg">
-          {timeRangeOptions.map(option => (
-            <Button
-              key={option.value}
-              variant="ghost"
-              size="sm"
-              onClick={() => setTimeRange(option.value)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-medium transition-all",
-                timeRange === option.value
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {option.label}
-            </Button>
-          ))}
+        <div className="flex items-center gap-2">
+          {/* Time Range Buttons */}
+          <div className="flex gap-1 bg-secondary/50 p-1 rounded-lg">
+            {timeRangeOptions.map(option => (
+              <Button
+                key={option.value}
+                variant="ghost"
+                size="sm"
+                onClick={() => setTimeRange(option.value)}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium transition-all",
+                  timeRange === option.value
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <ChartExportMenu chartId="transaction-flow-chart" filename="Transaction-Flow" />
         </div>
       </div>
 

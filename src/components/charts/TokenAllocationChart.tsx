@@ -3,6 +3,7 @@ import { PieChart as PieChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Sector } from 'recharts';
 import { useAggregatedTokenBalances } from '@/hooks/useTokenBalancesFromDB';
 import { formatUSD } from '@/lib/formatNumber';
+import { ChartExportMenu } from './ChartExportMenu';
 
 // Token logos
 const TOKEN_LOGOS: Record<string, string> = {
@@ -141,16 +142,19 @@ export function TokenAllocationChart() {
   }
 
   return (
-    <div className="treasury-card">
+    <div id="token-allocation-chart" className="treasury-card">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-primary/10 shadow-lg shadow-primary/20">
-          <PieChartIcon className="w-5 h-5 text-primary" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10 shadow-lg shadow-primary/20">
+            <PieChartIcon className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-heading font-semibold gold-text">Portfolio Allocation</h3>
+            <p className="text-xs text-muted-foreground">Phân bổ token theo giá trị USD</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-heading font-semibold gold-text">Portfolio Allocation</h3>
-          <p className="text-xs text-muted-foreground">Phân bổ token theo giá trị USD</p>
-        </div>
+        <ChartExportMenu chartId="token-allocation-chart" filename="Portfolio-Allocation" />
       </div>
 
       {/* Content: Chart + Legend */}
