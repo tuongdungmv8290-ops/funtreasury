@@ -42,16 +42,16 @@ export function Header() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
-            {/* Logo với Gold Glow Effect */}
-            <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg shadow-primary/30 group-hover:shadow-xl group-hover:shadow-primary/50 transition-all duration-300 ring-2 ring-primary/30 group-hover:ring-primary/50 group-hover:scale-105">
+            {/* Logo với Gold Glow Effect - TO & SÁNG */}
+            <div className="w-14 h-14 rounded-full overflow-hidden shadow-xl shadow-primary/50 group-hover:shadow-2xl group-hover:shadow-primary/70 transition-all duration-300 ring-2 ring-primary/50 group-hover:ring-primary/70 group-hover:scale-110">
               <img 
                 src={funTreasuryLogo} 
                 alt="FUN Treasury Logo" 
                 className="w-full h-full object-cover"
               />
             </div>
-            {/* Subtle Glow Behind Logo */}
-            <div className="absolute inset-0 -z-10 w-12 h-12 rounded-full bg-primary/20 blur-md group-hover:bg-primary/30 transition-all duration-300" />
+            {/* Bright Gold Glow Behind Logo */}
+            <div className="absolute inset-0 -z-10 w-14 h-14 rounded-full bg-primary/40 blur-lg group-hover:bg-primary/60 transition-all duration-300" />
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-heading font-bold gold-text tracking-wide">FUN Treasury</span>
