@@ -43,6 +43,11 @@
     --treasury-light: 210 20% 98%;
     --treasury-light-accent: 210 20% 94%;
     
+    /* Crypto Trading Style Colors - Light Theme */
+    --crypto-blue: 216 50% 25%;
+    --crypto-purple: 280 60% 50%;
+    --crypto-pink: 330 80% 60%;
+    
     --inflow: 217 91% 60%;
     --inflow-glow: 217 91% 70%;
     --outflow: 0 84% 60%;
@@ -59,6 +64,11 @@
     --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%), hsl(210, 20%, 98%));
     --gradient-inflow: linear-gradient(135deg, hsl(217, 91%, 60%), hsl(217, 91%, 50%));
     --gradient-outflow: linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 84%, 50%));
+    
+    /* Crypto Trading Style Gradients - Light Theme */
+    --gradient-crypto: linear-gradient(135deg, hsl(46, 65%, 52%) 0%, hsl(216, 50%, 25%) 50%, hsl(280, 60%, 50%) 100%);
+    --gradient-gold-purple: linear-gradient(135deg, hsl(46, 65%, 52%) 0%, hsl(280, 60%, 50%) 100%);
+    --gradient-blue-purple: linear-gradient(135deg, hsl(216, 50%, 35%) 0%, hsl(280, 60%, 50%) 100%);
 
     /* Shadows - Light Theme */
     --shadow: 221 39% 17% / 0.08;
@@ -112,6 +122,11 @@
     --treasury-light: 220 20% 15%;
     --treasury-light-accent: 220 20% 20%;
     
+    /* Crypto Trading Style Colors - Dark Theme */
+    --crypto-blue: 216 50% 35%;
+    --crypto-purple: 280 60% 60%;
+    --crypto-pink: 330 80% 70%;
+    
     --inflow: 217 91% 65%;
     --inflow-glow: 217 91% 75%;
     --outflow: 0 84% 65%;
@@ -128,6 +143,11 @@
     --gradient-card: linear-gradient(135deg, hsl(220, 20%, 15%), hsl(220, 20%, 12%));
     --gradient-inflow: linear-gradient(135deg, hsl(217, 91%, 65%), hsl(217, 91%, 55%));
     --gradient-outflow: linear-gradient(135deg, hsl(0, 84%, 65%), hsl(0, 84%, 55%));
+    
+    /* Crypto Trading Style Gradients - Dark Theme */
+    --gradient-crypto: linear-gradient(135deg, hsl(46, 65%, 52%) 0%, hsl(216, 50%, 35%) 50%, hsl(280, 60%, 60%) 100%);
+    --gradient-gold-purple: linear-gradient(135deg, hsl(46, 65%, 52%) 0%, hsl(280, 60%, 60%) 100%);
+    --gradient-blue-purple: linear-gradient(135deg, hsl(216, 50%, 45%) 0%, hsl(280, 60%, 60%) 100%);
 
     /* Shadows - Dark Theme */
     --shadow: 0 0% 0% / 0.3;
@@ -223,6 +243,33 @@
 
   .gold-text {
     background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Crypto Trading Style Text Classes */
+  .crypto-blue-text {
+    color: hsl(var(--crypto-blue));
+  }
+
+  .crypto-purple-text {
+    color: hsl(var(--crypto-purple));
+  }
+
+  .crypto-pink-text {
+    color: hsl(var(--crypto-pink));
+  }
+
+  .crypto-gradient-text {
+    background: var(--gradient-crypto);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gold-purple-gradient-text {
+    background: var(--gradient-gold-purple);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
