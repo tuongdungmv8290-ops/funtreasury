@@ -25,9 +25,18 @@
     "dashboard": "แดชบอร์ด",
     "transactions": "ธุรกรรม",
     "prices": "ราคา",
+    "ecosystem": "ระบบนิเวศ FUN",
     "camly": "เหรียญ CAMLY",
     "anhSang": "แสงแห่งความรัก",
     "settings": "การตั้งค่า"
+  },
+  "ecosystem": {
+    "title": "ระบบนิเวศ FUN",
+    "subtitle": "ระบบนิเวศที่หลากหลายของ FUN - ใช้และได้เงิน!",
+    "tagline": "ใช้แล้วได้เงิน เล่นเกมได้เงิน ฟังเพลงได้เงิน!",
+    "visitPlatform": "เยี่ยมชม",
+    "showAll": "ดูทั้งหมด",
+    "hideExtra": "ซ่อน"
   },
 "platforms": {
     "funProfile": "FUN PROFILE",

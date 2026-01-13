@@ -17,6 +17,7 @@ import ComingSoon from "./pages/ComingSoon";
 import Prices from "./pages/Prices";
 import CamlyCoin from "./pages/CamlyCoin";
 import AnhSang from "./pages/AnhSang";
+import FunEcosystem from "./pages/FunEcosystem";
 
 
 const queryClient = new QueryClient();
@@ -43,7 +44,7 @@ const App = () => (
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/prices" element={<Prices />} />
-                  
+                  <Route path="/ecosystem" element={<FunEcosystem />} />
                   <Route path="/camly" element={<CamlyCoin />} />
                   <Route path="/anh-sang" element={<AnhSang />} />
                 </Route>

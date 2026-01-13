@@ -25,9 +25,18 @@
     "dashboard": "Panel",
     "transactions": "Transacciones",
     "prices": "Precios",
+    "ecosystem": "Ecosistema FUN",
     "camly": "CAMLY Coin",
     "anhSang": "Luz de Amor",
     "settings": "Configuración"
+  },
+  "ecosystem": {
+    "title": "ECOSISTEMA FUN",
+    "subtitle": "El ecosistema diverso de FUN - ¡Usa y Gana!",
+    "tagline": "¡Usa y gana, juega y gana, escucha música y gana!",
+    "visitPlatform": "Visitar",
+    "showAll": "Ver todo",
+    "hideExtra": "Mostrar menos"
   },
 "platforms": {
     "funProfile": "FUN PROFILE",

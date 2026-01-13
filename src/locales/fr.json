@@ -25,9 +25,18 @@
     "dashboard": "Tableau de bord",
     "transactions": "Transactions",
     "prices": "Prix",
+    "ecosystem": "Écosystème FUN",
     "camly": "CAMLY Coin",
     "anhSang": "Lumière d'Amour",
     "settings": "Paramètres"
+  },
+  "ecosystem": {
+    "title": "ÉCOSYSTÈME FUN",
+    "subtitle": "L'écosystème diversifié de FUN - Utilisez et Gagnez!",
+    "tagline": "Utilisez et gagnez, jouez et gagnez, écoutez de la musique et gagnez!",
+    "visitPlatform": "Visiter",
+    "showAll": "Voir tout",
+    "hideExtra": "Voir moins"
   },
 "platforms": {
     "funProfile": "FUN PROFILE",

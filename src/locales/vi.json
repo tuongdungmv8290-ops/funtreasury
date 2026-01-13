@@ -25,9 +25,18 @@
     "dashboard": "Bảng Điều Khiển",
     "transactions": "Giao Dịch",
     "prices": "Giá Crypto",
+    "ecosystem": "FUN Ecosystem",
     "camly": "CAMLY Coin",
     "anhSang": "Ánh Sáng",
     "settings": "Cài Đặt"
+  },
+  "ecosystem": {
+    "title": "FUN ECOSYSTEM",
+    "subtitle": "Hệ sinh thái đa dạng của FUN - Use and Earn!",
+    "tagline": "Dùng và có tiền, chơi Game có tiền, nghe nhạc có tiền!",
+    "visitPlatform": "Truy cập",
+    "showAll": "Xem tất cả",
+    "hideExtra": "Ẩn bớt"
   },
 "platforms": {
     "funProfile": "FUN PROFILE",
