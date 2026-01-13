@@ -63,14 +63,10 @@
     "funNewsDesc": "ข่าวคริปโต",
     "funShop": "FUN SHOP",
     "funShopDesc": "ตลาด",
-    "funCommunity": "FUN COMMUNITY",
-    "funCommunityDesc": "ศูนย์กลางชุมชน",
-    "mxhAnhSang": "เครือข่ายแสง 5D",
-    "mxhAnhSangDesc": "เครือข่ายสังคม",
-    "funFoundation": "FUN Foundation",
-    "funFoundationDesc": "มูลนิธิการกุศล",
-    "funTokenGlobal": "FUN Token Global",
-    "funTokenGlobalDesc": "ระบบนิเวศโลก"
+    "funEcosystem": "FUN ECOSYSTEM",
+    "funEcosystemDesc": "ระบบนิเวศ Web3",
+    "funCharity": "FUN CHARITY",
+    "funCharityDesc": "แพลตฟอร์มการกุศล"
   },
   "dashboard": {
     "title": "แดชบอร์ด",

@@ -63,14 +63,10 @@
     "funNewsDesc": "암호화폐 뉴스",
     "funShop": "FUN SHOP",
     "funShopDesc": "마켓플레이스",
-    "funCommunity": "FUN COMMUNITY",
-    "funCommunityDesc": "커뮤니티 허브",
-    "mxhAnhSang": "라이트 소셜 5D",
-    "mxhAnhSangDesc": "소셜 네트워크",
-    "funFoundation": "FUN Foundation",
-    "funFoundationDesc": "자선 재단",
-    "funTokenGlobal": "FUN Token Global",
-    "funTokenGlobalDesc": "글로벌 생태계"
+    "funEcosystem": "FUN ECOSYSTEM",
+    "funEcosystemDesc": "Web3 생태계",
+    "funCharity": "FUN CHARITY",
+    "funCharityDesc": "자선 플랫폼"
   },
   "dashboard": {
     "title": "대시보드",

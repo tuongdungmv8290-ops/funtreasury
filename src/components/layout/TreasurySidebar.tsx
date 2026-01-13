@@ -45,6 +45,8 @@ import funPlanetLogo from '@/assets/fun-planet-logo.png';
 // New logos for TREASURY menu items
 import camlyCoinNewLogo from '@/assets/camly-coin-new-logo.png';
 import funEcosystemWeb3Logo from '@/assets/fun-ecosystem-web3-logo.png';
+import funEcosystemWeb3NewLogo from '@/assets/fun-ecosystem-web3-new-logo.png';
+import funCharityLogo from '@/assets/fun-charity-logo.png';
 
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -84,7 +86,6 @@ const treasuryItems: { path: string; labelKey: string; icon: LucideIcon; status:
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard, status: 'active' },
   { path: '/transactions', labelKey: 'nav.transactions', icon: ArrowLeftRight, status: 'active' },
   { path: '/prices', labelKey: 'nav.prices', icon: TrendingUp, status: 'active' },
-  { path: '/ecosystem', labelKey: 'nav.ecosystem', icon: Globe, status: 'active', logo: funEcosystemWeb3Logo },
   { path: '/camly', labelKey: 'nav.camly', icon: Coins, status: 'active', logo: camlyCoinNewLogo },
   { path: '/anh-sang', labelKey: 'nav.anhSang', icon: Sparkles, status: 'active' },
   { path: '/settings', labelKey: 'nav.settings', icon: Settings, status: 'active' },
@@ -100,7 +101,7 @@ interface FunPlatform {
   status: 'live' | 'soon';
 }
 
-// 6 Primary platforms shown by default
+// 8 Primary platforms shown by default
 const primaryPlatforms: FunPlatform[] = [
   { url: 'https://fun.rich', labelKey: 'platforms.funProfile', descKey: 'platforms.funProfileDesc', logo: funProfileLogo, fallbackIcon: User, status: 'live' },
   { url: 'https://funfarm.life', labelKey: 'platforms.funFarm', descKey: 'platforms.funFarmDesc', logo: funFarmLogo, fallbackIcon: Sprout, status: 'live' },
@@ -108,6 +109,8 @@ const primaryPlatforms: FunPlatform[] = [
   { url: 'https://planet.fun.rich', labelKey: 'platforms.funPlanet', descKey: 'platforms.funPlanetDesc', logo: funPlanetLogo, fallbackIcon: Globe2, status: 'live' },
   { url: 'https://funwallet-rich.lovable.app', labelKey: 'platforms.funWallet', descKey: 'platforms.funWalletDesc', logo: funWalletLogo, fallbackIcon: Wallet, status: 'live' },
   { url: 'https://angelkhanhi.fun.rich', labelKey: 'platforms.angelAi', descKey: 'platforms.angelAiDesc', logo: angelAiLogo, fallbackIcon: Bot, status: 'live' },
+  { url: 'https://funecosystem.io', labelKey: 'platforms.funEcosystem', descKey: 'platforms.funEcosystemDesc', logo: funEcosystemWeb3NewLogo, fallbackIcon: Globe, status: 'live' },
+  { url: 'https://funcharity.io', labelKey: 'platforms.funCharity', descKey: 'platforms.funCharityDesc', logo: funCharityLogo, fallbackIcon: Heart, status: 'live' },
 ];
 
 // 6 Secondary platforms (hidden by default, shown when expanded)

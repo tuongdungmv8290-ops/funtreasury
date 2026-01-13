@@ -63,14 +63,10 @@
     "funNewsDesc": "Actualités crypto",
     "funShop": "FUN SHOP",
     "funShopDesc": "Marketplace",
-    "funCommunity": "FUN COMMUNITY",
-    "funCommunityDesc": "Hub communauté",
-    "mxhAnhSang": "Social Lumière 5D",
-    "mxhAnhSangDesc": "Réseau social",
-    "funFoundation": "FUN Foundation",
-    "funFoundationDesc": "Fondation caritative",
-    "funTokenGlobal": "FUN Token Global",
-    "funTokenGlobalDesc": "Écosystème mondial"
+    "funEcosystem": "FUN ECOSYSTEM",
+    "funEcosystemDesc": "Écosystème Web3",
+    "funCharity": "FUN CHARITY",
+    "funCharityDesc": "Plateforme caritative"
   },
   "dashboard": {
     "title": "Tableau de bord",
