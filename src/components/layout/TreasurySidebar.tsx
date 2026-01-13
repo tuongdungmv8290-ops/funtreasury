@@ -28,6 +28,18 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
+// Logo imports for FUN Platforms
+import funEcosystemLogo from '@/assets/fun-ecosystem-logo.png';
+import camlyCoinGoldLogo from '@/assets/camly-coin-gold-logo.png';
+import funLifeLogo from '@/assets/fun-life-logo.png';
+import funAcademyLogo from '@/assets/fun-academy-logo.png';
+import greenEarthLogo from '@/assets/green-earth-logo.png';
+import funFarmLogo from '@/assets/fun-farm-logo.png';
+import funWalletLogo from '@/assets/fun-wallet-logo.png';
+import angelAiLogo from '@/assets/angel-ai-logo.png';
+import funPlayLogo from '@/assets/fun-play-logo.png';
+import funPlanetLogo from '@/assets/fun-planet-logo.png';
+
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
@@ -59,32 +71,33 @@ const treasuryItems = [
   { path: '/settings', labelKey: 'nav.settings', icon: Settings, status: 'active' },
 ];
 
-// FUN PLATFORMS with status, descriptions, and enhanced UI
+// FUN PLATFORMS with logo images, status, and descriptions
 interface FunPlatform {
   url: string;
   labelKey: string;
   descKey: string;
-  icon: LucideIcon;
+  logo: string;
+  fallbackIcon: LucideIcon;
   status: 'live' | 'soon';
 }
 
 const funPlatforms: FunPlatform[] = [
-  { url: 'https://funprofile.vn', labelKey: 'platforms.funProfile', descKey: 'platforms.funProfileDesc', icon: User, status: 'live' },
-  { url: 'https://funfarm.vn', labelKey: 'platforms.funFarm', descKey: 'platforms.funFarmDesc', icon: Sprout, status: 'live' },
-  { url: 'https://funplay.vn', labelKey: 'platforms.funPlay', descKey: 'platforms.funPlayDesc', icon: Gamepad2, status: 'live' },
-  { url: 'https://funplanet.vn', labelKey: 'platforms.funPlanet', descKey: 'platforms.funPlanetDesc', icon: Globe2, status: 'live' },
-  { url: 'https://funwallet.vn', labelKey: 'platforms.funWallet', descKey: 'platforms.funWalletDesc', icon: Wallet, status: 'live' },
-  { url: 'https://angelai.vn', labelKey: 'platforms.angelAi', descKey: 'platforms.angelAiDesc', icon: Bot, status: 'live' },
-  { url: 'https://funecademy.vn', labelKey: 'platforms.funEcademy', descKey: 'platforms.funEcademyDesc', icon: GraduationCap, status: 'live' },
-  { url: 'https://fungreenearth.vn', labelKey: 'platforms.funGreenEarth', descKey: 'platforms.funGreenEarthDesc', icon: Leaf, status: 'live' },
-  { url: 'https://funmoney.vn', labelKey: 'platforms.funMoney', descKey: 'platforms.funMoneyDesc', icon: Banknote, status: 'live' },
-  { url: 'https://camly.co', labelKey: 'platforms.camlyCoin', descKey: 'platforms.camlyCoinDesc', icon: Heart, status: 'live' },
-  { url: 'https://funnews.vn', labelKey: 'platforms.funNews', descKey: 'platforms.funNewsDesc', icon: Newspaper, status: 'live' },
-  { url: 'https://funshop.vn', labelKey: 'platforms.funShop', descKey: 'platforms.funShopDesc', icon: ShoppingBag, status: 'live' },
-  { url: 'https://funcommunity.vn', labelKey: 'platforms.funCommunity', descKey: 'platforms.funCommunityDesc', icon: Users, status: 'live' },
-  { url: 'https://funtoken.vn', labelKey: 'platforms.mxhAnhSang', descKey: 'platforms.mxhAnhSangDesc', icon: Sparkles, status: 'live' },
-  { url: 'https://fundation.co', labelKey: 'platforms.funFoundation', descKey: 'platforms.funFoundationDesc', icon: Building, status: 'live' },
-  { url: 'https://fundgroup.space', labelKey: 'platforms.funTokenGlobal', descKey: 'platforms.funTokenGlobalDesc', icon: Globe, status: 'live' },
+  { url: 'https://fun.rich', labelKey: 'platforms.funProfile', descKey: 'platforms.funProfileDesc', logo: funEcosystemLogo, fallbackIcon: User, status: 'live' },
+  { url: 'https://funfarm.life', labelKey: 'platforms.funFarm', descKey: 'platforms.funFarmDesc', logo: funFarmLogo, fallbackIcon: Sprout, status: 'live' },
+  { url: 'https://play.fun.rich', labelKey: 'platforms.funPlay', descKey: 'platforms.funPlayDesc', logo: funPlayLogo, fallbackIcon: Gamepad2, status: 'live' },
+  { url: 'https://planet.fun.rich', labelKey: 'platforms.funPlanet', descKey: 'platforms.funPlanetDesc', logo: funPlanetLogo, fallbackIcon: Globe2, status: 'live' },
+  { url: 'https://funwallet-rich.lovable.app', labelKey: 'platforms.funWallet', descKey: 'platforms.funWalletDesc', logo: funWalletLogo, fallbackIcon: Wallet, status: 'live' },
+  { url: 'https://angelkhanhi.fun.rich', labelKey: 'platforms.angelAi', descKey: 'platforms.angelAiDesc', logo: angelAiLogo, fallbackIcon: Bot, status: 'live' },
+  { url: 'https://funecademy.vn', labelKey: 'platforms.funEcademy', descKey: 'platforms.funEcademyDesc', logo: funAcademyLogo, fallbackIcon: GraduationCap, status: 'live' },
+  { url: 'https://angelaivan.fun.rich', labelKey: 'platforms.funGreenEarth', descKey: 'platforms.funGreenEarthDesc', logo: greenEarthLogo, fallbackIcon: Leaf, status: 'live' },
+  { url: 'https://funmoney.vn', labelKey: 'platforms.funMoney', descKey: 'platforms.funMoneyDesc', logo: funLifeLogo, fallbackIcon: Banknote, status: 'live' },
+  { url: 'https://camly.co', labelKey: 'platforms.camlyCoin', descKey: 'platforms.camlyCoinDesc', logo: camlyCoinGoldLogo, fallbackIcon: Heart, status: 'live' },
+  { url: 'https://funnews.vn', labelKey: 'platforms.funNews', descKey: 'platforms.funNewsDesc', logo: funEcosystemLogo, fallbackIcon: Newspaper, status: 'live' },
+  { url: 'https://funshop.vn', labelKey: 'platforms.funShop', descKey: 'platforms.funShopDesc', logo: funEcosystemLogo, fallbackIcon: ShoppingBag, status: 'live' },
+  { url: 'https://funcommunity.vn', labelKey: 'platforms.funCommunity', descKey: 'platforms.funCommunityDesc', logo: funEcosystemLogo, fallbackIcon: Users, status: 'live' },
+  { url: 'https://funtoken.vn', labelKey: 'platforms.mxhAnhSang', descKey: 'platforms.mxhAnhSangDesc', logo: funEcosystemLogo, fallbackIcon: Sparkles, status: 'live' },
+  { url: 'https://fundation.co', labelKey: 'platforms.funFoundation', descKey: 'platforms.funFoundationDesc', logo: funEcosystemLogo, fallbackIcon: Building, status: 'live' },
+  { url: 'https://fundgroup.space', labelKey: 'platforms.funTokenGlobal', descKey: 'platforms.funTokenGlobalDesc', logo: funEcosystemLogo, fallbackIcon: Globe, status: 'live' },
 ];
 
 export function TreasurySidebar() {
@@ -193,7 +206,7 @@ export function TreasurySidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* FUN PLATFORMS Group - Blockchain.com Style */}
+        {/* FUN PLATFORMS Group - Blockchain.com Style with Logos */}
         <SidebarGroup className="mt-6">
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
             {t('nav.funPlatforms')}
@@ -201,7 +214,7 @@ export function TreasurySidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {funPlatforms.map((platform, index) => {
-                const Icon = platform.icon;
+                const FallbackIcon = platform.fallbackIcon;
                 return (
                   <SidebarMenuItem 
                     key={platform.url}
@@ -222,10 +235,28 @@ export function TreasurySidebar() {
                           'transition-all duration-300 group'
                         )}
                       >
-                        {/* Icon with glow effect */}
+                        {/* Logo with glow effect */}
                         <div className="relative flex-shrink-0">
-                          <Icon className="w-5 h-5 text-primary/60 group-hover:text-primary transition-colors duration-300" />
-                          <div className="absolute inset-0 bg-primary/40 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
+                          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary/30 
+                                          group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(201,162,39,0.5)]
+                                          group-hover:scale-110 transition-all duration-300 bg-background/50">
+                            <img 
+                              src={platform.logo} 
+                              alt={t(platform.labelKey)}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallbackEl = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (fallbackEl) fallbackEl.style.display = 'flex';
+                              }}
+                            />
+                            <div className="hidden w-full h-full items-center justify-center">
+                              <FallbackIcon className="w-4 h-4 text-primary/60" />
+                            </div>
+                          </div>
+                          {/* Glow backdrop */}
+                          <div className="absolute inset-0 bg-primary/40 blur-lg opacity-0 
+                                          group-hover:opacity-100 transition-opacity duration-300 rounded-full -z-10" />
                         </div>
                         
                         {!isCollapsed && (
