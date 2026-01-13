@@ -63,14 +63,10 @@
     "funNewsDesc": "Crypto news",
     "funShop": "FUN SHOP",
     "funShopDesc": "Marketplace",
-    "funCommunity": "FUN COMMUNITY",
-    "funCommunityDesc": "Community hub",
-    "mxhAnhSang": "Light Social 5D",
-    "mxhAnhSangDesc": "Social network",
-    "funFoundation": "FUN Foundation",
-    "funFoundationDesc": "Charity foundation",
-    "funTokenGlobal": "FUN Token Global",
-    "funTokenGlobalDesc": "Global ecosystem"
+    "funEcosystem": "FUN ECOSYSTEM",
+    "funEcosystemDesc": "Web3 Ecosystem",
+    "funCharity": "FUN CHARITY",
+    "funCharityDesc": "Charity platform"
   },
   "dashboard": {
     "title": "Dashboard",

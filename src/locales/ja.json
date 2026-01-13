@@ -63,14 +63,10 @@
     "funNewsDesc": "暗号通貨ニュース",
     "funShop": "FUN SHOP",
     "funShopDesc": "マーケットプレイス",
-    "funCommunity": "FUN COMMUNITY",
-    "funCommunityDesc": "コミュニティハブ",
-    "mxhAnhSang": "ライトソーシャル 5D",
-    "mxhAnhSangDesc": "ソーシャルネットワーク",
-    "funFoundation": "FUN Foundation",
-    "funFoundationDesc": "慈善財団",
-    "funTokenGlobal": "FUN Token Global",
-    "funTokenGlobalDesc": "グローバルエコシステム"
+    "funEcosystem": "FUN ECOSYSTEM",
+    "funEcosystemDesc": "Web3エコシステム",
+    "funCharity": "FUN CHARITY",
+    "funCharityDesc": "慈善プラットフォーム"
   },
   "dashboard": {
     "title": "ダッシュボード",

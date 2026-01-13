@@ -63,14 +63,10 @@
     "funNewsDesc": "加密货币新闻",
     "funShop": "FUN SHOP",
     "funShopDesc": "市场",
-    "funCommunity": "FUN COMMUNITY",
-    "funCommunityDesc": "社区中心",
-    "mxhAnhSang": "光明社交 5D",
-    "mxhAnhSangDesc": "社交网络",
-    "funFoundation": "FUN Foundation",
-    "funFoundationDesc": "慈善基金会",
-    "funTokenGlobal": "FUN Token Global",
-    "funTokenGlobalDesc": "全球生态系统"
+    "funEcosystem": "FUN ECOSYSTEM",
+    "funEcosystemDesc": "Web3生态系统",
+    "funCharity": "FUN CHARITY",
+    "funCharityDesc": "公益慈善平台"
   },
   "dashboard": {
     "title": "仪表板",

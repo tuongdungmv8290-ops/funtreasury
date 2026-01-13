@@ -63,14 +63,10 @@
     "funNewsDesc": "Tin tức crypto",
     "funShop": "FUN SHOP",
     "funShopDesc": "Marketplace",
-    "funCommunity": "FUN COMMUNITY",
-    "funCommunityDesc": "Community hub",
-    "mxhAnhSang": "MXH Ánh Sáng 5D",
-    "mxhAnhSangDesc": "Mạng xã hội",
-    "funFoundation": "FUN Foundation",
-    "funFoundationDesc": "Quỹ từ thiện",
-    "funTokenGlobal": "FUN Token Global",
-    "funTokenGlobalDesc": "Global ecosystem"
+    "funEcosystem": "FUN ECOSYSTEM",
+    "funEcosystemDesc": "Hệ sinh thái Web3",
+    "funCharity": "FUN CHARITY",
+    "funCharityDesc": "Nền tảng từ thiện"
   },
   "dashboard": {
     "title": "Bảng Điều Khiển",
