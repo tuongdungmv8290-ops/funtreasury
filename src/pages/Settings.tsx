@@ -22,6 +22,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { TwoFactorSetup } from '@/components/security/TwoFactorSetup';
 import { WalletConnect } from '@/components/security/WalletConnect';
 import { useViewMode } from '@/contexts/ViewModeContext';
+import { useTranslation } from 'react-i18next';
 
 
 // Chain display names
@@ -36,6 +37,7 @@ const CHAIN_NAMES: Record<string, string> = {
 };
 
 const Settings = () => {
+  const { t } = useTranslation();
   const { isViewOnly } = useViewMode();
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
   const { contracts, isLoading: isLoadingContracts, updateAllContracts, getContractBySymbol } = useTokenContracts();
@@ -485,19 +487,19 @@ const Settings = () => {
           <div className="flex items-center gap-3 mb-2">
             <Crown className="w-8 h-8 text-primary" />
             <h1 className="font-heading text-3xl font-bold tracking-wide">
-              <span className="gold-text">Treasury Wallet Settings</span>
+              <span className="gold-text">{t('settings.title')}</span>
             </h1>
             {isViewOnly && (
               <Badge variant="outline" className="flex items-center gap-1 border-primary/50 bg-primary/10 text-primary px-3 py-1 font-body">
                 <Eye className="w-3.5 h-3.5" />
-                Chế độ Chỉ Xem
+                {t('common.viewOnly')}
               </Badge>
             )}
           </div>
           <p className="font-body text-muted-foreground">
             {isViewOnly 
-              ? 'Xem cấu hình ví Treasury (chế độ chỉ xem - không thể chỉnh sửa)'
-              : 'Quản lý và cấu hình các ví thiêng liêng của Treasury'}
+              ? t('settings.viewOnlyDescription')
+              : t('settings.description')}
           </p>
         </div>
 

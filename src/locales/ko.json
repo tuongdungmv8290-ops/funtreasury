@@ -84,7 +84,8 @@
     "marketCap": "시가총액",
     "lastUpdated": "마지막 업데이트",
     "tradeNow": "지금 거래",
-    "viewChart": "차트 보기"
+    "viewChart": "차트 보기",
+    "topCryptos": "인기 암호화폐"
   },
   "anhsang": {
     "title": "사랑의 빛",

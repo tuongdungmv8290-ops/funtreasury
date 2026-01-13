@@ -42,6 +42,7 @@
   },
   "dashboard": {
     "title": "仪表板",
+    "subtitle": "实时监控您的FUN财务库钱包",
     "totalBalance": "财务库总余额",
     "inflow": "总流入",
     "outflow": "总流出",
@@ -54,7 +55,12 @@
     "tokenBalances": "代币余额",
     "transactionFlow": "交易流",
     "camlyMarket": "CAMLY 市场",
-    "bulkTransfer": "批量转账"
+    "bulkTransfer": "批量转账",
+    "days": "天",
+    "exportPdf": "导出PDF",
+    "liveSyncActive": "实时同步中",
+    "treasuryWallets": "财务库钱包",
+    "acrossWallets": "共 {{count}} 个钱包"
   },
   "transactions": {
     "title": "交易",
@@ -84,7 +90,8 @@
     "marketCap": "市值",
     "lastUpdated": "最后更新",
     "tradeNow": "立即交易",
-    "viewChart": "查看图表"
+    "viewChart": "查看图表",
+    "topCryptos": "热门加密货币"
   },
   "anhsang": {
     "title": "爱之光",

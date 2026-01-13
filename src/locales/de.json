@@ -42,6 +42,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "subtitle": "Überwachen Sie Ihre FUN Treasury Wallets in Echtzeit",
     "totalBalance": "Gesamtes Treasury-Guthaben",
     "inflow": "Gesamtzufluss",
     "outflow": "Gesamtabfluss",
@@ -54,7 +55,12 @@
     "tokenBalances": "Token-Guthaben",
     "transactionFlow": "Transaktionsfluss",
     "camlyMarket": "CAMLY Markt",
-    "bulkTransfer": "Massenüberweisung"
+    "bulkTransfer": "Massenüberweisung",
+    "days": "Tage",
+    "exportPdf": "PDF exportieren",
+    "liveSyncActive": "Live-Synchronisierung aktiv",
+    "treasuryWallets": "Treasury Wallets",
+    "acrossWallets": "Über {{count}} Wallets"
   },
   "transactions": {
     "title": "Transaktionen",
@@ -84,7 +90,8 @@
     "marketCap": "Marktkapitalisierung",
     "lastUpdated": "Zuletzt aktualisiert",
     "tradeNow": "Jetzt handeln",
-    "viewChart": "Chart ansehen"
+    "viewChart": "Chart ansehen",
+    "topCryptos": "Top Kryptowährungen"
   },
   "anhsang": {
     "title": "Licht der Liebe",

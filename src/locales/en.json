@@ -42,6 +42,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "subtitle": "Monitor your FUN Treasury wallets in real-time",
     "totalBalance": "Total Treasury Balance",
     "inflow": "Total Inflow",
     "outflow": "Total Outflow",
@@ -54,7 +55,12 @@
     "tokenBalances": "Token Balances",
     "transactionFlow": "Transaction Flow",
     "camlyMarket": "CAMLY Market",
-    "bulkTransfer": "Bulk Transfer"
+    "bulkTransfer": "Bulk Transfer",
+    "days": "Days",
+    "exportPdf": "Export PDF",
+    "liveSyncActive": "Live sync active",
+    "treasuryWallets": "Treasury Wallets",
+    "acrossWallets": "Across {{count}} wallets"
   },
   "transactions": {
     "title": "Transactions",
@@ -74,8 +80,8 @@
     "noTransactions": "No transactions found"
   },
   "prices": {
-    "title": "Crypto Prices",
-    "subtitle": "Track real-time cryptocurrency market prices",
+    "title": "Cryptocurrency Prices",
+    "subtitle": "Track crypto market prices in real-time",
     "featured": "Featured",
     "market": "Market",
     "price": "Price",
@@ -84,7 +90,8 @@
     "marketCap": "Market Cap",
     "lastUpdated": "Last updated",
     "tradeNow": "Trade Now",
-    "viewChart": "View Chart"
+    "viewChart": "View Chart",
+    "topCryptos": "Top Cryptocurrencies"
   },
   "anhsang": {
     "title": "Light of Love",

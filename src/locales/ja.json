@@ -42,6 +42,7 @@
   },
   "dashboard": {
     "title": "ダッシュボード",
+    "subtitle": "FUNトレジャリーウォレットをリアルタイムで監視",
     "totalBalance": "トレジャリー総残高",
     "inflow": "総流入",
     "outflow": "総流出",
@@ -54,7 +55,12 @@
     "tokenBalances": "トークン残高",
     "transactionFlow": "取引フロー",
     "camlyMarket": "CAMLYマーケット",
-    "bulkTransfer": "一括転送"
+    "bulkTransfer": "一括転送",
+    "days": "日",
+    "exportPdf": "PDFエクスポート",
+    "liveSyncActive": "ライブ同期中",
+    "treasuryWallets": "トレジャリーウォレット",
+    "acrossWallets": "{{count}}ウォレット全体"
   },
   "transactions": {
     "title": "取引",
@@ -84,7 +90,8 @@
     "marketCap": "時価総額",
     "lastUpdated": "最終更新",
     "tradeNow": "今すぐ取引",
-    "viewChart": "チャートを見る"
+    "viewChart": "チャートを見る",
+    "topCryptos": "トップ暗号資産"
   },
   "anhsang": {
     "title": "愛の光",

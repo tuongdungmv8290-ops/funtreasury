@@ -26,6 +26,7 @@ import { useViewMode } from '@/contexts/ViewModeContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import {
   Sidebar,
   SidebarContent,
@@ -40,31 +41,31 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-// TREASURY navigation items
+// TREASURY navigation items with translation keys
 const treasuryItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard, status: 'active' },
-  { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight, status: 'active' },
-  { path: '/prices', label: 'Prices', icon: TrendingUp, status: 'active' },
-  
-  { path: '/camly', label: 'CAMLY Coin', icon: Coins, status: 'active' },
-  { path: '/anh-sang', label: 'Ánh Sáng', icon: Sparkles, status: 'active' },
-  { path: '/settings', label: 'Settings', icon: Settings, status: 'active' },
+  { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard, status: 'active' },
+  { path: '/transactions', labelKey: 'nav.transactions', icon: ArrowLeftRight, status: 'active' },
+  { path: '/prices', labelKey: 'nav.prices', icon: TrendingUp, status: 'active' },
+  { path: '/camly', labelKey: 'nav.camly', icon: Coins, status: 'active' },
+  { path: '/anh-sang', labelKey: 'nav.anhSang', icon: Sparkles, status: 'active' },
+  { path: '/settings', labelKey: 'nav.settings', icon: Settings, status: 'active' },
 ];
 
-// FUN PLATFORMS external links
+// FUN PLATFORMS external links with translation keys
 const funPlatforms = [
-  { url: 'https://funtoken.vn', label: 'funtoken.vn', icon: Globe },
-  { url: 'https://camly.co', label: 'camly.co', icon: Heart },
-  { url: 'https://fundgroup.space', label: 'fundgroup.space', icon: Rocket },
-  { url: 'https://funtoken.co', label: 'funtoken.co', icon: Coins },
-  { url: 'https://fundgroup.co', label: 'fundgroup.co', icon: Users },
-  { url: 'https://fundland.co', label: 'fundland.co', icon: Map },
-  { url: 'https://funland.vn', label: 'funland.vn', icon: Home },
-  { url: 'https://fundation.co', label: 'fundation.co', icon: Building },
-  { url: 'https://fangtay.com', label: 'fangtay.com', icon: Star },
+  { url: 'https://funtoken.vn', labelKey: 'platforms.funtokenVn', icon: Globe },
+  { url: 'https://camly.co', labelKey: 'platforms.camlyCo', icon: Heart },
+  { url: 'https://fundgroup.space', labelKey: 'platforms.funTokenIo', icon: Rocket },
+  { url: 'https://funtoken.co', labelKey: 'platforms.funVn', icon: Coins },
+  { url: 'https://fundgroup.co', labelKey: 'platforms.mxhVn', icon: Users },
+  { url: 'https://fundland.co', labelKey: 'platforms.funCommunity', icon: Map },
+  { url: 'https://funland.vn', labelKey: 'platforms.funShop', icon: Home },
+  { url: 'https://fundation.co', labelKey: 'platforms.funNews', icon: Building },
+  { url: 'https://fangtay.com', labelKey: 'platforms.funGames', icon: Star },
 ];
 
 export function TreasurySidebar() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
@@ -75,11 +76,11 @@ export function TreasurySidebar() {
   const handleLogout = async () => {
     if (isViewOnly) {
       exitViewMode();
-      toast.success('Đã thoát chế độ Chỉ Xem');
+      toast.success(t('common.viewOnly') + ' - ' + t('common.logout'));
       navigate('/login');
     } else {
       await signOut();
-      toast.success('Đã đăng xuất thành công');
+      toast.success(t('common.logout'));
     }
   };
 
@@ -117,7 +118,7 @@ export function TreasurySidebar() {
         {/* TREASURY Group */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-            Treasury
+            {t('nav.treasury')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -148,14 +149,14 @@ export function TreasurySidebar() {
                         {!isCollapsed && (
                           <>
                             <span className={cn(active && 'gold-text font-semibold')}>
-                              {item.label}
+                              {t(item.labelKey)}
                             </span>
                             {isComingSoon && (
                               <Badge
                                 variant="outline"
                                 className="ml-auto text-[10px] px-1.5 py-0 h-4 border-primary/40 text-primary/70"
                               >
-                                Soon
+                                {t('common.comingSoon')}
                               </Badge>
                             )}
                           </>
@@ -172,7 +173,7 @@ export function TreasurySidebar() {
         {/* FUN PLATFORMS Group */}
         <SidebarGroup className="mt-6">
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-            FUN Platforms
+            {t('nav.funPlatforms')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -190,7 +191,7 @@ export function TreasurySidebar() {
                         <Icon className="w-4 h-4 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
                         {!isCollapsed && (
                           <>
-                            <span className="flex-1">{platform.label}</span>
+                            <span className="flex-1">{t(platform.labelKey)}</span>
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity" />
                           </>
                         )}
@@ -213,7 +214,7 @@ export function TreasurySidebar() {
               className="w-full justify-center gap-1 border-primary/50 bg-primary/10 text-primary py-1.5"
             >
               <Eye className="w-3.5 h-3.5" />
-              {!isCollapsed && 'Chế độ Chỉ Xem'}
+              {!isCollapsed && t('common.viewOnly')}
             </Badge>
             {!isCollapsed && (
               <div className="flex gap-2">
@@ -227,7 +228,7 @@ export function TreasurySidebar() {
                   className="flex-1 text-xs border-primary/30 text-primary hover:bg-primary/10"
                 >
                   <LogIn className="w-3.5 h-3.5 mr-1" />
-                  Đăng nhập
+                  {t('auth.signIn')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -257,7 +258,7 @@ export function TreasurySidebar() {
               )}
             >
               <LogOut className="w-4 h-4" />
-              {!isCollapsed && <span className="ml-2">Đăng xuất</span>}
+              {!isCollapsed && <span className="ml-2">{t('common.logout')}</span>}
             </Button>
           </div>
         ) : null}

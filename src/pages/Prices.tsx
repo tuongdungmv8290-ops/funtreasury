@@ -4,8 +4,10 @@ import { CamlyFeaturedCard } from "@/components/prices/CamlyFeaturedCard";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export default function Prices() {
+  const { t } = useTranslation();
   const { data: cryptoPrices, isLoading, refetch, isFetching } = useCryptoPrices();
   
   // Find CAMLY in the data
@@ -27,9 +29,9 @@ export default function Prices() {
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Market Prices</h1>
+            <h1 className="text-2xl font-bold">{t('prices.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              Real-time cryptocurrency prices • Auto-refresh every 60s
+              {t('prices.subtitle')}
             </p>
           </div>
         </div>
@@ -42,7 +44,7 @@ export default function Prices() {
           className="gap-2"
         >
           <RefreshCw className={cn("w-4 h-4", isFetching && "animate-spin")} />
-          Refresh
+          {t('common.refresh')}
         </Button>
       </div>
 
@@ -52,7 +54,7 @@ export default function Prices() {
       {/* Crypto Price Table */}
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-muted-foreground">
-          Top Cryptocurrencies
+          {t('prices.topCryptos')}
         </h2>
         <CryptoPriceTable data={tableData} isLoading={isLoading} />
       </div>

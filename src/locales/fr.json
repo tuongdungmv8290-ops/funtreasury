@@ -42,6 +42,7 @@
   },
   "dashboard": {
     "title": "Tableau de bord",
+    "subtitle": "Surveillez vos portefeuilles FUN Treasury en temps réel",
     "totalBalance": "Solde Total de Trésorerie",
     "inflow": "Entrées Totales",
     "outflow": "Sorties Totales",
@@ -54,7 +55,12 @@
     "tokenBalances": "Soldes des Tokens",
     "transactionFlow": "Flux de Transactions",
     "camlyMarket": "Marché CAMLY",
-    "bulkTransfer": "Transfert Groupé"
+    "bulkTransfer": "Transfert Groupé",
+    "days": "Jours",
+    "exportPdf": "Exporter PDF",
+    "liveSyncActive": "Synchronisation en direct",
+    "treasuryWallets": "Portefeuilles Treasury",
+    "acrossWallets": "Sur {{count}} portefeuilles"
   },
   "transactions": {
     "title": "Transactions",
@@ -84,7 +90,8 @@
     "marketCap": "Cap. Marché",
     "lastUpdated": "Dernière mise à jour",
     "tradeNow": "Trader maintenant",
-    "viewChart": "Voir le graphique"
+    "viewChart": "Voir le graphique",
+    "topCryptos": "Top Cryptomonnaies"
   },
   "anhsang": {
     "title": "Lumière d'Amour",

@@ -42,6 +42,7 @@
   },
   "dashboard": {
     "title": "แดชบอร์ด",
+    "subtitle": "ติดตามกระเป๋า FUN Treasury แบบเรียลไทม์",
     "totalBalance": "ยอดรวมคลัง",
     "inflow": "เงินเข้ารวม",
     "outflow": "เงินออกรวม",
@@ -54,7 +55,12 @@
     "tokenBalances": "ยอดคงเหลือโทเค็น",
     "transactionFlow": "กระแสธุรกรรม",
     "camlyMarket": "ตลาด CAMLY",
-    "bulkTransfer": "โอนจำนวนมาก"
+    "bulkTransfer": "โอนจำนวนมาก",
+    "days": "วัน",
+    "exportPdf": "ส่งออก PDF",
+    "liveSyncActive": "ซิงค์สดกำลังทำงาน",
+    "treasuryWallets": "กระเป๋า Treasury",
+    "acrossWallets": "ใน {{count}} กระเป๋า"
   },
   "transactions": {
     "title": "ธุรกรรม",
@@ -84,7 +90,8 @@
     "marketCap": "มูลค่าตลาด",
     "lastUpdated": "อัปเดตล่าสุด",
     "tradeNow": "ซื้อขายตอนนี้",
-    "viewChart": "ดูกราฟ"
+    "viewChart": "ดูกราฟ",
+    "topCryptos": "คริปโตยอดนิยม"
   },
   "anhsang": {
     "title": "แสงแห่งความรัก",
