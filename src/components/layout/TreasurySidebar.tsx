@@ -74,6 +74,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from '@/components/ui/tooltip';
+import { SparkleOnClick } from '@/components/effects/SparkleOnClick';
 
 // TREASURY navigation items with translation keys
 const treasuryItems = [
@@ -148,16 +149,18 @@ export function TreasurySidebar() {
       {/* Header with Logo */}
       <SidebarHeader className="border-b border-border/50 p-4">
         <Link to="/" className="flex items-center gap-4 group">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden shadow-2xl shadow-primary/60 group-hover:shadow-[0_0_40px_rgba(201,162,39,0.8)] transition-all duration-300 animate-treasury-pulse">
-              <img
-                src={funTreasuryLogo}
-                alt="FUN Treasury Logo"
-                className="w-full h-full object-cover brightness-110"
-              />
+          <SparkleOnClick>
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden gold-shimmer-border animate-treasury-glow-pulse transition-all duration-300">
+                <img
+                  src={funTreasuryLogo}
+                  alt="FUN Treasury Logo"
+                  className="w-full h-full object-cover brightness-110 relative z-10"
+                />
+              </div>
+              <div className="absolute inset-0 -z-10 w-24 h-24 rounded-full bg-primary/40 blur-xl" />
             </div>
-            <div className="absolute inset-0 -z-10 w-24 h-24 rounded-full bg-primary/40 blur-xl" />
-          </div>
+          </SparkleOnClick>
           {!isCollapsed && (
             <div className="flex flex-col">
               <span className="text-2xl font-heading font-bold gold-text tracking-wide 
