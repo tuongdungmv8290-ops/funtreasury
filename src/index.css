@@ -456,19 +456,81 @@
 .platform-item:nth-child(15) { animation-delay: 0.45s; }
 .platform-item:nth-child(16) { animation-delay: 0.48s; }
 
-/* Treasury Logo Pulse Animation */
-@keyframes treasury-logo-pulse {
+/* Treasury Logo Glow Pulse Animation - CHỈ GLOW, KHÔNG SCALE */
+@keyframes treasury-glow-pulse {
   0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 25px 50px -12px rgba(201, 162, 39, 0.5);
+    box-shadow: 0 0 20px rgba(201, 162, 39, 0.4),
+                0 0 40px rgba(201, 162, 39, 0.2);
   }
   50% {
-    transform: scale(1.03);
-    box-shadow: 0 25px 60px -8px rgba(201, 162, 39, 0.7),
-                0 0 30px rgba(201, 162, 39, 0.4);
+    box-shadow: 0 0 30px rgba(201, 162, 39, 0.7),
+                0 0 60px rgba(201, 162, 39, 0.4),
+                0 0 80px rgba(201, 162, 39, 0.2);
   }
 }
 
-.animate-treasury-pulse {
-  animation: treasury-logo-pulse 3s ease-in-out infinite;
+.animate-treasury-glow-pulse {
+  animation: treasury-glow-pulse 3s ease-in-out infinite;
+}
+
+/* Gold Shimmer Border Animation - Viền Vàng Lấp Lánh */
+@keyframes gold-shimmer-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.gold-shimmer-border {
+  position: relative;
+}
+
+.gold-shimmer-border::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #c9a227,
+    #f5d742,
+    #fffacd,
+    #f5d742,
+    #c9a227,
+    #f5d742,
+    #fffacd,
+    #f5d742,
+    #c9a227
+  );
+  animation: gold-shimmer-rotate 4s linear infinite;
+  z-index: -1;
+  opacity: 0.9;
+}
+
+/* Sparkle Particle Animation - Hiệu Ứng Confetti Click */
+@keyframes sparkle-burst {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--sparkle-x), var(--sparkle-y)) scale(1);
+    opacity: 0;
+  }
+}
+
+.sparkle-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--sparkle-size);
+  height: var(--sparkle-size);
+  background: radial-gradient(circle, #fffacd, #f5d742, #c9a227);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: sparkle-burst 0.8s ease-out forwards;
+  animation-delay: var(--sparkle-delay);
+  box-shadow: 0 0 6px #f5d742, 0 0 12px rgba(201, 162, 39, 0.5);
+  z-index: 100;
 }
