@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
 import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
@@ -143,6 +144,7 @@ const getFileNameDate = (): string => {
 };
 
 const Transactions = () => {
+  const { t } = useTranslation();
   const { isViewOnly } = useViewMode();
   const [search, setSearch] = useState('');
   const [walletFilter, setWalletFilter] = useState<string>('all');
