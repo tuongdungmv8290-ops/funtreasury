@@ -421,3 +421,37 @@
 .animate-spin-slow {
   animation: spin-slow 20s linear infinite;
 }
+
+/* Platform link stagger animation */
+@keyframes slideInPlatform {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.platform-item {
+  opacity: 0;
+  animation: slideInPlatform 0.3s ease-out forwards;
+}
+
+.platform-item:nth-child(1) { animation-delay: 0.03s; }
+.platform-item:nth-child(2) { animation-delay: 0.06s; }
+.platform-item:nth-child(3) { animation-delay: 0.09s; }
+.platform-item:nth-child(4) { animation-delay: 0.12s; }
+.platform-item:nth-child(5) { animation-delay: 0.15s; }
+.platform-item:nth-child(6) { animation-delay: 0.18s; }
+.platform-item:nth-child(7) { animation-delay: 0.21s; }
+.platform-item:nth-child(8) { animation-delay: 0.24s; }
+.platform-item:nth-child(9) { animation-delay: 0.27s; }
+.platform-item:nth-child(10) { animation-delay: 0.30s; }
+.platform-item:nth-child(11) { animation-delay: 0.33s; }
+.platform-item:nth-child(12) { animation-delay: 0.36s; }
+.platform-item:nth-child(13) { animation-delay: 0.39s; }
+.platform-item:nth-child(14) { animation-delay: 0.42s; }
+.platform-item:nth-child(15) { animation-delay: 0.45s; }
+.platform-item:nth-child(16) { animation-delay: 0.48s; }

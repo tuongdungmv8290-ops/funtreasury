@@ -9,15 +9,23 @@ import {
   ExternalLink,
   Globe,
   Heart,
-  Rocket,
   Users,
-  Map,
-  Home,
-  Building,
-  Star,
   LogOut,
   LogIn,
   Eye,
+  User,
+  Sprout,
+  Gamepad2,
+  Globe2,
+  Wallet,
+  Bot,
+  GraduationCap,
+  Leaf,
+  Banknote,
+  Newspaper,
+  ShoppingBag,
+  Building,
+  type LucideIcon,
 } from 'lucide-react';
 import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
 import { cn } from '@/lib/utils';
@@ -51,17 +59,32 @@ const treasuryItems = [
   { path: '/settings', labelKey: 'nav.settings', icon: Settings, status: 'active' },
 ];
 
-// FUN PLATFORMS external links with translation keys
-const funPlatforms = [
-  { url: 'https://funtoken.vn', labelKey: 'platforms.funtokenVn', icon: Globe },
-  { url: 'https://camly.co', labelKey: 'platforms.camlyCo', icon: Heart },
-  { url: 'https://fundgroup.space', labelKey: 'platforms.funTokenIo', icon: Rocket },
-  { url: 'https://funtoken.co', labelKey: 'platforms.funVn', icon: Coins },
-  { url: 'https://fundgroup.co', labelKey: 'platforms.mxhVn', icon: Users },
-  { url: 'https://fundland.co', labelKey: 'platforms.funCommunity', icon: Map },
-  { url: 'https://funland.vn', labelKey: 'platforms.funShop', icon: Home },
-  { url: 'https://fundation.co', labelKey: 'platforms.funNews', icon: Building },
-  { url: 'https://fangtay.com', labelKey: 'platforms.funGames', icon: Star },
+// FUN PLATFORMS with status, descriptions, and enhanced UI
+interface FunPlatform {
+  url: string;
+  labelKey: string;
+  descKey: string;
+  icon: LucideIcon;
+  status: 'live' | 'soon';
+}
+
+const funPlatforms: FunPlatform[] = [
+  { url: 'https://funprofile.vn', labelKey: 'platforms.funProfile', descKey: 'platforms.funProfileDesc', icon: User, status: 'live' },
+  { url: 'https://funfarm.vn', labelKey: 'platforms.funFarm', descKey: 'platforms.funFarmDesc', icon: Sprout, status: 'live' },
+  { url: 'https://funplay.vn', labelKey: 'platforms.funPlay', descKey: 'platforms.funPlayDesc', icon: Gamepad2, status: 'live' },
+  { url: 'https://funplanet.vn', labelKey: 'platforms.funPlanet', descKey: 'platforms.funPlanetDesc', icon: Globe2, status: 'live' },
+  { url: 'https://funwallet.vn', labelKey: 'platforms.funWallet', descKey: 'platforms.funWalletDesc', icon: Wallet, status: 'live' },
+  { url: 'https://angelai.vn', labelKey: 'platforms.angelAi', descKey: 'platforms.angelAiDesc', icon: Bot, status: 'live' },
+  { url: 'https://funecademy.vn', labelKey: 'platforms.funEcademy', descKey: 'platforms.funEcademyDesc', icon: GraduationCap, status: 'live' },
+  { url: 'https://fungreenearth.vn', labelKey: 'platforms.funGreenEarth', descKey: 'platforms.funGreenEarthDesc', icon: Leaf, status: 'live' },
+  { url: 'https://funmoney.vn', labelKey: 'platforms.funMoney', descKey: 'platforms.funMoneyDesc', icon: Banknote, status: 'live' },
+  { url: 'https://camly.co', labelKey: 'platforms.camlyCoin', descKey: 'platforms.camlyCoinDesc', icon: Heart, status: 'live' },
+  { url: 'https://funnews.vn', labelKey: 'platforms.funNews', descKey: 'platforms.funNewsDesc', icon: Newspaper, status: 'live' },
+  { url: 'https://funshop.vn', labelKey: 'platforms.funShop', descKey: 'platforms.funShopDesc', icon: ShoppingBag, status: 'live' },
+  { url: 'https://funcommunity.vn', labelKey: 'platforms.funCommunity', descKey: 'platforms.funCommunityDesc', icon: Users, status: 'live' },
+  { url: 'https://funtoken.vn', labelKey: 'platforms.mxhAnhSang', descKey: 'platforms.mxhAnhSangDesc', icon: Sparkles, status: 'live' },
+  { url: 'https://fundation.co', labelKey: 'platforms.funFoundation', descKey: 'platforms.funFoundationDesc', icon: Building, status: 'live' },
+  { url: 'https://fundgroup.space', labelKey: 'platforms.funTokenGlobal', descKey: 'platforms.funTokenGlobalDesc', icon: Globe, status: 'live' },
 ];
 
 export function TreasurySidebar() {
@@ -170,29 +193,66 @@ export function TreasurySidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* FUN PLATFORMS Group */}
+        {/* FUN PLATFORMS Group - Blockchain.com Style */}
         <SidebarGroup className="mt-6">
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
             {t('nav.funPlatforms')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {funPlatforms.map((platform) => {
+            <SidebarMenu className="space-y-1">
+              {funPlatforms.map((platform, index) => {
                 const Icon = platform.icon;
                 return (
-                  <SidebarMenuItem key={platform.url}>
+                  <SidebarMenuItem 
+                    key={platform.url}
+                    className="platform-item"
+                    style={{ animationDelay: `${index * 0.03}s` }}
+                  >
                     <SidebarMenuButton asChild>
                       <a
                         href={platform.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all duration-200 group"
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
+                          'text-muted-foreground hover:text-foreground',
+                          'hover:bg-gradient-to-r hover:from-primary/15 hover:to-purple-500/15',
+                          'border border-transparent hover:border-primary/40',
+                          'hover:shadow-[0_0_20px_rgba(201,162,39,0.25)]',
+                          'transition-all duration-300 group'
+                        )}
                       >
-                        <Icon className="w-4 h-4 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
+                        {/* Icon with glow effect */}
+                        <div className="relative flex-shrink-0">
+                          <Icon className="w-5 h-5 text-primary/60 group-hover:text-primary transition-colors duration-300" />
+                          <div className="absolute inset-0 bg-primary/40 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
+                        </div>
+                        
                         {!isCollapsed && (
                           <>
-                            <span className="flex-1">{t(platform.labelKey)}</span>
-                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                            {/* Text content */}
+                            <div className="flex-1 min-w-0">
+                              <span className="block font-semibold text-xs group-hover:text-primary transition-colors duration-300">
+                                {t(platform.labelKey)}
+                              </span>
+                              <span className="block text-[9px] text-muted-foreground/70 truncate">
+                                {t(platform.descKey)}
+                              </span>
+                            </div>
+                            
+                            {/* Status Badge */}
+                            {platform.status === 'live' ? (
+                              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[8px] px-1.5 py-0 h-4 font-bold shrink-0">
+                                LIVE
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] px-1.5 py-0 h-4 font-bold shrink-0">
+                                SOON
+                              </Badge>
+                            )}
+                            
+                            {/* External link icon */}
+                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-70 group-hover:text-primary transition-all duration-300 shrink-0" />
                           </>
                         )}
                       </a>
