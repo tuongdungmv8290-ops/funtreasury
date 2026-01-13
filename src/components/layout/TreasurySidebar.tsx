@@ -262,22 +262,26 @@ export function TreasurySidebar() {
                                      focus:outline-none"
                           style={{ animationDelay: `${index * 0.03}s` }}
                         >
-                          {/* Logo - TO GẤP ĐÔI, KHÔNG NỀN, KHÔNG VIỀN */}
-                          <div className="w-16 h-16 shrink-0 group-hover:scale-110 
-                                          group-hover:drop-shadow-[0_0_15px_rgba(201,162,39,0.6)]
-                                          transition-all duration-300">
+                          {/* Logo - BO TRÒN NHƯ FUN TREASURY */}
+                          <div className="w-14 h-14 shrink-0 rounded-full overflow-hidden 
+                                          bg-white dark:bg-white/95
+                                          shadow-lg shadow-primary/30
+                                          group-hover:scale-110 
+                                          group-hover:shadow-[0_0_20px_rgba(201,162,39,0.6)]
+                                          transition-all duration-300
+                                          flex items-center justify-center p-1">
                             <img
                               src={platform.logo}
                               alt=""
-                              className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-screen"
+                              className="w-full h-full object-cover rounded-full"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                                 const fallbackEl = e.currentTarget.nextElementSibling as HTMLElement;
                                 if (fallbackEl) fallbackEl.style.display = 'flex';
                               }}
                             />
-                            <div className="hidden w-full h-full items-center justify-center">
-                              <FallbackIcon className="w-8 h-8 text-primary/60" />
+                            <div className="hidden w-full h-full items-center justify-center rounded-full bg-primary/10">
+                              <FallbackIcon className="w-6 h-6 text-primary/60" />
                             </div>
                           </div>
                           
@@ -333,22 +337,26 @@ export function TreasurySidebar() {
                                          focus:outline-none"
                               style={{ animationDelay: `${index * 0.03}s` }}
                             >
-                              {/* Logo - TO GẤP ĐÔI, KHÔNG NỀN, KHÔNG VIỀN */}
-                              <div className="w-16 h-16 shrink-0 group-hover:scale-110 
-                                              group-hover:drop-shadow-[0_0_15px_rgba(201,162,39,0.6)]
-                                              transition-all duration-300">
+                              {/* Logo - BO TRÒN NHƯ FUN TREASURY */}
+                              <div className="w-14 h-14 shrink-0 rounded-full overflow-hidden 
+                                              bg-white dark:bg-white/95
+                                              shadow-lg shadow-primary/30
+                                              group-hover:scale-110 
+                                              group-hover:shadow-[0_0_20px_rgba(201,162,39,0.6)]
+                                              transition-all duration-300
+                                              flex items-center justify-center p-1">
                                 <img
                                   src={platform.logo}
                                   alt=""
-                                  className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-screen"
+                                  className="w-full h-full object-cover rounded-full"
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                     const fallbackEl = e.currentTarget.nextElementSibling as HTMLElement;
                                     if (fallbackEl) fallbackEl.style.display = 'flex';
                                   }}
                                 />
-                                <div className="hidden w-full h-full items-center justify-center">
-                                  <FallbackIcon className="w-8 h-8 text-primary/60" />
+                                <div className="hidden w-full h-full items-center justify-center rounded-full bg-primary/10">
+                                  <FallbackIcon className="w-6 h-6 text-primary/60" />
                                 </div>
                               </div>
                               
