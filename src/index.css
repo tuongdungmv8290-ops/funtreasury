@@ -455,3 +455,20 @@
 .platform-item:nth-child(14) { animation-delay: 0.42s; }
 .platform-item:nth-child(15) { animation-delay: 0.45s; }
 .platform-item:nth-child(16) { animation-delay: 0.48s; }
+
+/* Treasury Logo Pulse Animation */
+@keyframes treasury-logo-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 25px 50px -12px rgba(201, 162, 39, 0.5);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 25px 60px -8px rgba(201, 162, 39, 0.7),
+                0 0 30px rgba(201, 162, 39, 0.4);
+  }
+}
+
+.animate-treasury-pulse {
+  animation: treasury-logo-pulse 3s ease-in-out infinite;
+}
