@@ -53,118 +53,129 @@ export function CamlyWalletPanel() {
         "bg-gradient-to-br from-card via-card to-primary/5",
         "shadow-[0_0_40px_rgba(212,175,55,0.15)]"
       )}>
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            {/* Logo & Name */}
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary/50">
-                  <img
-                    src={camlyLogo}
-                    alt="CAMLY"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-[10px] font-bold text-white">
-                  BSC
-                </div>
+        {/* Large Logo Header - Center Layout */}
+        <CardContent className="pt-8 pb-4">
+          <div className="flex flex-col items-center text-center">
+            {/* Large Logo with Glow Effect */}
+            <div className="relative mb-4">
+              <div className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden ring-4 ring-primary/50 shadow-[0_0_50px_rgba(212,175,55,0.4)]">
+                <img
+                  src={camlyLogo}
+                  alt="CAMLY"
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div>
-                <CardTitle className="text-xl font-heading gold-text">
-                  CAMLY COIN
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  BNB Smart Chain
+              {/* BSC Badge */}
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-sm font-bold text-white shadow-lg border-2 border-background">
+                BSC
+              </div>
+              {/* Glow effect */}
+              <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl -z-10" />
+            </div>
+
+            {/* Name & Slogan */}
+            <h2 className="text-2xl md:text-3xl font-heading font-bold gold-text">
+              CAMLY COIN
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1">Love of Value</p>
+
+            {/* Price Display - Large */}
+            <div className="mt-6">
+              {priceLoading ? (
+                <div className="h-12 w-48 bg-muted animate-pulse rounded-lg mx-auto" />
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <span className="font-mono text-4xl md:text-5xl font-bold text-foreground">
+                    ${formatNumber(price, { minDecimals: 6, maxDecimals: 8 })}
+                  </span>
+                  <span className={cn(
+                    "flex items-center gap-1 text-lg font-medium px-3 py-1 rounded-full",
+                    isPositive ? "text-inflow bg-inflow/10" : "text-outflow bg-outflow/10"
+                  )}>
+                    {isPositive ? (
+                      <TrendingUp className="w-5 h-5" />
+                    ) : (
+                      <TrendingDown className="w-5 h-5" />
+                    )}
+                    {isPositive ? "+" : ""}{change24h.toFixed(2)}%
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Stats: Volume + Market Cap */}
+            <div className="grid grid-cols-2 gap-4 mt-6 w-full max-w-sm">
+              <div className="bg-card/50 dark:bg-card/30 rounded-xl p-3 border border-border/50">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">24H Volume</p>
+                <p className="font-mono font-semibold text-foreground">
+                  {formatUSD(priceData?.volume_24h ?? 0)}
+                </p>
+              </div>
+              <div className="bg-card/50 dark:bg-card/30 rounded-xl p-3 border border-border/50">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Market Cap</p>
+                <p className="font-mono font-semibold text-foreground">
+                  {priceData?.market_cap ? formatUSD(priceData.market_cap) : "—"}
                 </p>
               </div>
             </div>
 
             {/* Connect Wallet Button */}
-            {!wallet.isConnected ? (
-              <Button
-                onClick={wallet.connectWallet}
-                disabled={wallet.isConnecting}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                {wallet.isConnecting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Wallet className="w-4 h-4" />
-                )}
-                Kết nối ví
-              </Button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Đã kết nối</p>
-                  <p className="text-sm font-mono text-primary">
+            <div className="mt-6 w-full max-w-sm">
+              {!wallet.isConnected ? (
+                <Button
+                  onClick={wallet.connectWallet}
+                  disabled={wallet.isConnecting}
+                  className="w-full gap-2 h-12"
+                >
+                  {wallet.isConnecting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Wallet className="w-5 h-5" />
+                  )}
+                  Kết nối ví MetaMask
+                </Button>
+              ) : (
+                <div className="flex items-center justify-center gap-2 bg-primary/10 rounded-xl px-4 py-3">
+                  <div className="w-3 h-3 rounded-full bg-inflow animate-pulse" />
+                  <span className="text-sm font-mono text-primary">
                     {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
-                  </p>
-                </div>
-                {/* Copy Button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={handleCopyAddress}
-                >
-                  {copied ? (
-                    <Check className="w-4 h-4 text-inflow" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-muted-foreground hover:text-primary" />
-                  )}
-                </Button>
-                {/* BscScan Link */}
-                <a
-                  href={`https://bscscan.com/address/${wallet.address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={handleCopyAddress}
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-inflow" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                    )}
                   </Button>
-                </a>
-                {/* Disconnect Button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={wallet.disconnectWallet}
-                >
-                  <LogOut className="w-4 h-4 text-muted-foreground hover:text-outflow" />
-                </Button>
-              </div>
-            )}
+                  <a
+                    href={`https://bscscan.com/address/${wallet.address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                    </Button>
+                  </a>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={wallet.disconnectWallet}
+                  >
+                    <LogOut className="w-4 h-4 text-muted-foreground hover:text-outflow" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
-        </CardHeader>
+        </CardContent>
 
-        <CardContent className="space-y-6">
-          {/* Price Display */}
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Giá hiện tại</p>
-            {priceLoading ? (
-              <div className="h-10 w-40 bg-muted animate-pulse rounded" />
-            ) : (
-              <div className="flex items-baseline gap-3">
-                <span className="font-mono text-3xl font-bold text-foreground">
-                  ${formatNumber(price, { minDecimals: 6, maxDecimals: 8 })}
-                </span>
-                <span className={cn(
-                  "flex items-center gap-1 text-sm font-medium",
-                  isPositive ? "text-inflow" : "text-outflow"
-                )}>
-                  {isPositive ? (
-                    <TrendingUp className="w-4 h-4" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4" />
-                  )}
-                  {isPositive ? "+" : ""}{change24h.toFixed(2)}%
-                </span>
-              </div>
-            )}
-          </div>
+        <CardContent className="space-y-6 pt-0">
 
           {/* Price Chart */}
           <CamlyPriceChart />
