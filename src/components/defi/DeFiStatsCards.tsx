@@ -38,7 +38,9 @@ export function DeFiStatsCards({ data, isLoading }: DeFiStatsCardsProps) {
     
     // Find top gainer (highest 24h % change)
     const topGainer = data.reduce((best, coin) => {
-      if (!best || coin.price_change_percentage_24h > best.price_change_percentage_24h) {
+      const coinChange = coin.price_change_percentage_24h ?? 0;
+      const bestChange = best?.price_change_percentage_24h ?? 0;
+      if (!best || coinChange > bestChange) {
         return coin;
       }
       return best;
@@ -108,7 +110,7 @@ export function DeFiStatsCards({ data, isLoading }: DeFiStatsCardsProps) {
                 {stats.topGainer.symbol}
               </span>
               <span className="text-lg font-bold text-inflow">
-                +{stats.topGainer.price_change_percentage_24h.toFixed(2)}%
+                +{(stats.topGainer.price_change_percentage_24h ?? 0).toFixed(2)}%
               </span>
             </div>
           ) : (

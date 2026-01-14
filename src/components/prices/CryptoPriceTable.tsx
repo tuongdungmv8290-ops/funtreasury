@@ -184,24 +184,24 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
       let aVal: number, bVal: number;
       switch (sortKey) {
         case 'price':
-          aVal = a.current_price;
-          bVal = b.current_price;
+          aVal = a.current_price ?? 0;
+          bVal = b.current_price ?? 0;
           break;
         case 'change':
-          aVal = a.price_change_percentage_24h;
-          bVal = b.price_change_percentage_24h;
+          aVal = a.price_change_percentage_24h ?? 0;
+          bVal = b.price_change_percentage_24h ?? 0;
           break;
         case 'volume':
-          aVal = a.total_volume;
-          bVal = b.total_volume;
+          aVal = a.total_volume ?? 0;
+          bVal = b.total_volume ?? 0;
           break;
         case 'marketCap':
-          aVal = a.market_cap;
-          bVal = b.market_cap;
+          aVal = a.market_cap ?? 0;
+          bVal = b.market_cap ?? 0;
           break;
         case 'supply':
-          aVal = a.circulating_supply || 0;
-          bVal = b.circulating_supply || 0;
+          aVal = a.circulating_supply ?? 0;
+          bVal = b.circulating_supply ?? 0;
           break;
       }
       return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
@@ -252,8 +252,8 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedData.map((coin, index) => {
-            const isPositive = coin.price_change_percentage_24h >= 0;
+        {sortedData.map((coin, index) => {
+            const isPositive = (coin.price_change_percentage_24h ?? 0) >= 0;
             const isCamly = coin.symbol.toUpperCase() === 'CAMLY';
             
             return (
@@ -305,7 +305,7 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
                     ) : (
                       <TrendingDown className="w-3 h-3" />
                     )}
-                    {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
+                    {Math.abs(coin.price_change_percentage_24h ?? 0).toFixed(2)}%
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-mono text-muted-foreground">
