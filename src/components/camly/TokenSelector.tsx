@@ -19,7 +19,7 @@ import { formatNumber } from "@/lib/formatNumber";
 import { TokenInfo, WBNB_ADDRESS } from "@/hooks/usePancakeSwap";
 import { CAMLY_CONTRACT } from "@/hooks/useCamlyWallet";
 
-// Pre-defined popular tokens on BSC
+// Pre-defined popular tokens on BSC (38+ tokens)
 export const POPULAR_TOKENS: TokenInfo[] = [
   { symbol: 'BNB', name: 'BNB', address: 'BNB', decimals: 18 },
   { symbol: 'CAMLY', name: 'Camly Coin', address: CAMLY_CONTRACT, decimals: 18 },
@@ -44,6 +44,22 @@ export const POPULAR_TOKENS: TokenInfo[] = [
   { symbol: 'ATOM', name: 'Cosmos', address: '0x0Eb3a705fc54725037CC9e008bDede697f62F335', decimals: 18 },
   { symbol: 'FTM', name: 'Fantom', address: '0xAD29AbB318791D579433D831ed122aFeAf29dcfe', decimals: 18 },
   { symbol: 'AAVE', name: 'Aave', address: '0xfb6115445Bff7b52FeB98650C87f44907E58f802', decimals: 18 },
+  // New tokens added
+  { symbol: 'SOL', name: 'Solana', address: '0x570A5D26f7765Ecb712C0924E4De545B89fD43dF', decimals: 18 },
+  { symbol: 'PEPE', name: 'Pepe', address: '0x25d887Ce7a35172C62FeBFD67a1856F20FaEbB00', decimals: 18 },
+  { symbol: 'FIL', name: 'Filecoin', address: '0x0D8Ce2A99Bb6e3B7Db580eD848240e4a0F9aE153', decimals: 18 },
+  { symbol: 'INJ', name: 'Injective', address: '0xa2B726B1145A4773F68cBA6974Cd534699a0206D', decimals: 18 },
+  { symbol: 'SUI', name: 'Sui', address: '0x1Ae369A6AB222aFf166325B7b87EB9aF06C86E57', decimals: 9 },
+  { symbol: 'APT', name: 'Aptos', address: '0x0b079b33B6e72311c6BE245F9F660CC385029fC3', decimals: 8 },
+  { symbol: 'SEI', name: 'Sei', address: '0x23cE9e926048273eF83be0A3A8Ba9Cb6D45cd978', decimals: 18 },
+  { symbol: 'WLD', name: 'Worldcoin', address: '0x163f8C2467924be0ae7B5347228CABF260318753', decimals: 18 },
+  { symbol: 'NEAR', name: 'NEAR Protocol', address: '0x1Fa4a73a3F0133f0025378af00236f3aBDEE5D63', decimals: 18 },
+  { symbol: 'DAI', name: 'Dai Stablecoin', address: '0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3', decimals: 18 },
+  { symbol: 'FDUSD', name: 'First Digital USD', address: '0xc5f0f7b66764F6ec8C8Dff7BA683102295E16409', decimals: 18 },
+  { symbol: 'TUSD', name: 'TrueUSD', address: '0x14016E85a25aeb13065688cAFB43044C2ef86784', decimals: 18 },
+  { symbol: 'FLOKI', name: 'Floki', address: '0xfb5B838b6cfEEdC2873aB27866079AC55363D37E', decimals: 9 },
+  { symbol: 'ARB', name: 'Arbitrum', address: '0xa050FFb3eEb8200eEB7F61ce34FF644420FD3522', decimals: 18 },
+  { symbol: 'OP', name: 'Optimism', address: '0x170C84E3b1d282F9628229836086716141995200', decimals: 18 },
 ];
 
 // Token logo mapping
@@ -71,6 +87,22 @@ const TOKEN_LOGOS: Record<string, string> = {
   ATOM: '⚛️',
   FTM: '👻',
   AAVE: '👁️',
+  // New tokens
+  SOL: '☀️',
+  PEPE: '🐸',
+  FIL: '📁',
+  INJ: '💉',
+  SUI: '🌊',
+  APT: '🅰️',
+  SEI: '🌸',
+  WLD: '🌍',
+  NEAR: '🎯',
+  DAI: '💛',
+  FDUSD: '🔷',
+  TUSD: '🔵',
+  FLOKI: '🐕',
+  ARB: '🔷',
+  OP: '🔴',
 };
 
 interface TokenBalance {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DollarSign, ArrowLeftRight, Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut } from "lucide-react";
+import { ArrowLeftRight, Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -15,13 +15,11 @@ import { CamlyPriceChart } from "./CamlyPriceChart";
 import { CamlyTransactionHistory } from "./CamlyTransactionHistory";
 import { UniversalSwap } from "./UniversalSwap";
 import { SwapHistory } from "./SwapHistory";
-import { CamlyBuyModal } from "./modals/CamlyBuyModal";
 import { CamlySwapModal } from "./modals/CamlySwapModal";
 import { CamlySendModal } from "./modals/CamlySendModal";
 import { CamlyReceiveModal } from "./modals/CamlyReceiveModal";
 
 export function CamlyWalletPanel() {
-  const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
@@ -171,50 +169,39 @@ export function CamlyWalletPanel() {
           {/* Price Chart */}
           <CamlyPriceChart />
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-4 gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setBuyModalOpen(true)}
-              className="flex flex-col items-center gap-1 h-auto py-3 hover:border-primary hover:bg-primary/5"
-            >
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-primary" />
-              </div>
-              <span className="text-xs font-medium">Mua</span>
-            </Button>
-
+          {/* Action Buttons - 3 buttons with larger text */}
+          <div className="grid grid-cols-3 gap-4">
             <Button
               variant="outline"
               onClick={() => setSwapModalOpen(true)}
-              className="flex flex-col items-center gap-1 h-auto py-3 hover:border-primary hover:bg-primary/5"
+              className="flex flex-col items-center gap-2 h-auto py-4 hover:border-primary hover:bg-primary/5"
             >
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <ArrowLeftRight className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <ArrowLeftRight className="w-6 h-6 text-primary" />
               </div>
-              <span className="text-xs font-medium">Hoán đổi</span>
+              <span className="text-sm font-semibold">Hoán đổi</span>
             </Button>
 
             <Button
               variant="outline"
               onClick={() => setSendModalOpen(true)}
-              className="flex flex-col items-center gap-1 h-auto py-3 hover:border-primary hover:bg-primary/5"
+              className="flex flex-col items-center gap-2 h-auto py-4 hover:border-primary hover:bg-primary/5"
             >
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Send className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Send className="w-6 h-6 text-primary" />
               </div>
-              <span className="text-xs font-medium">Gửi</span>
+              <span className="text-sm font-semibold">Gửi</span>
             </Button>
 
             <Button
               variant="outline"
               onClick={() => setReceiveModalOpen(true)}
-              className="flex flex-col items-center gap-1 h-auto py-3 hover:border-primary hover:bg-primary/5"
+              className="flex flex-col items-center gap-2 h-auto py-4 hover:border-primary hover:bg-primary/5"
             >
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Download className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Download className="w-6 h-6 text-primary" />
               </div>
-              <span className="text-xs font-medium">Nhận</span>
+              <span className="text-sm font-semibold">Nhận</span>
             </Button>
           </div>
 
@@ -274,7 +261,6 @@ export function CamlyWalletPanel() {
       </Card>
 
       {/* Modals */}
-      <CamlyBuyModal open={buyModalOpen} onOpenChange={setBuyModalOpen} />
       <CamlySwapModal open={swapModalOpen} onOpenChange={setSwapModalOpen} />
       <CamlySendModal open={sendModalOpen} onOpenChange={setSendModalOpen} />
       <CamlyReceiveModal open={receiveModalOpen} onOpenChange={setReceiveModalOpen} />

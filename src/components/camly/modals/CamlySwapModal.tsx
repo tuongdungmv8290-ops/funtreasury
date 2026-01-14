@@ -294,58 +294,6 @@ export function CamlySwapModal({ open, onOpenChange }: CamlySwapModalProps) {
             </div>
           </div>
 
-          {/* DEX Links */}
-          <div className="space-y-3">
-            <a
-              href={pancakeSwapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                "flex items-center justify-between p-4 rounded-xl",
-                "border border-border/50 bg-card/50",
-                "hover:border-primary hover:bg-primary/5 transition-colors",
-                "group"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-lg">
-                  🥞
-                </div>
-                <div>
-                  <p className="font-semibold">Swap trên PancakeSwap</p>
-                  <p className="text-sm text-muted-foreground">
-                    Thanh khoản tốt nhất
-                  </p>
-                </div>
-              </div>
-              <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
-            </a>
-
-            <a
-              href={oneInchUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                "flex items-center justify-between p-4 rounded-xl",
-                "border border-border/50 bg-card/50",
-                "hover:border-primary hover:bg-primary/5 transition-colors",
-                "group"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
-                  1"
-                </div>
-                <div>
-                  <p className="font-semibold">Swap trên 1inch</p>
-                  <p className="text-sm text-muted-foreground">
-                    Tìm giá tốt nhất từ nhiều DEX
-                  </p>
-                </div>
-              </div>
-              <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
-            </a>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
