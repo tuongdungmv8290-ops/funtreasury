@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { ArrowLeftRight, Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut, LineChart, Info } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut, LineChart, Info } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,12 +17,10 @@ import { CamlyDetailSection } from "./CamlyDetailSection";
 import { CamlyTransactionHistory } from "./CamlyTransactionHistory";
 import { UniversalSwap } from "./UniversalSwap";
 import { SwapHistory } from "./SwapHistory";
-import { CamlySwapModal } from "./modals/CamlySwapModal";
 import { CamlySendModal } from "./modals/CamlySendModal";
 import { CamlyReceiveModal } from "./modals/CamlyReceiveModal";
 
 export function CamlyWalletPanel() {
-  const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -201,19 +199,8 @@ export function CamlyWalletPanel() {
             </TabsContent>
           </Tabs>
 
-          {/* Action Buttons - 3 buttons with larger text */}
-          <div className="grid grid-cols-3 gap-4">
-            <Button
-              variant="outline"
-              onClick={() => setSwapModalOpen(true)}
-              className="flex flex-col items-center gap-2 h-auto py-4 hover:border-primary hover:bg-primary/5"
-            >
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <ArrowLeftRight className="w-6 h-6 text-primary" />
-              </div>
-              <span className="text-sm font-semibold">Hoán đổi</span>
-            </Button>
-
+          {/* Action Buttons - 2 buttons: Gửi & Nhận */}
+          <div className="grid grid-cols-2 gap-4">
             <Button
               variant="outline"
               onClick={() => setSendModalOpen(true)}
@@ -293,7 +280,6 @@ export function CamlyWalletPanel() {
       </Card>
 
       {/* Modals */}
-      <CamlySwapModal open={swapModalOpen} onOpenChange={setSwapModalOpen} />
       <CamlySendModal open={sendModalOpen} onOpenChange={setSendModalOpen} />
       <CamlyReceiveModal open={receiveModalOpen} onOpenChange={setReceiveModalOpen} />
     </>
