@@ -138,7 +138,7 @@ export function useCamlyWallet(): UseCamlyWalletReturn {
         method: 'eth_requestAccounts',
       });
 
-      if (!accounts || accounts.length === 0) {
+      if (!accounts || (accounts as string[]).length === 0) {
         throw new Error('Không tìm thấy tài khoản');
       }
 
