@@ -1,8 +1,9 @@
 import { useCryptoPrices } from "@/hooks/useCryptoPrices";
 import { CryptoPriceTable } from "@/components/prices/CryptoPriceTable";
 import { CamlyFeaturedCard } from "@/components/prices/CamlyFeaturedCard";
+import { DeFiStatsCards } from "@/components/defi/DeFiStatsCards";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, TrendingUp } from "lucide-react";
+import { RefreshCw, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
@@ -26,12 +27,12 @@ export default function Prices() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-            <TrendingUp className="w-6 h-6" />
+            <Coins className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{t('prices.title')}</h1>
+            <h1 className="text-2xl font-bold">{t('defi.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              {t('prices.subtitle')}
+              {t('defi.subtitle')}
             </p>
           </div>
         </div>
@@ -48,13 +49,16 @@ export default function Prices() {
         </Button>
       </div>
 
+      {/* DeFi Stats Cards */}
+      <DeFiStatsCards data={cryptoPrices || []} isLoading={isLoading} />
+
       {/* CAMLY Featured Card */}
       <CamlyFeaturedCard camlyData={camlyData} isLoading={isLoading} />
 
-      {/* Crypto Price Table */}
+      {/* DeFi Token Table */}
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-muted-foreground">
-          {t('prices.topCryptos')}
+          {t('defi.topTokens')}
         </h2>
         <CryptoPriceTable data={tableData} isLoading={isLoading} />
       </div>

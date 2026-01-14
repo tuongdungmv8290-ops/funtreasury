@@ -25,6 +25,7 @@
     "dashboard": "แดชบอร์ด",
     "transactions": "ธุรกรรม",
     "prices": "ราคา",
+    "defi": "DeFi",
     "ecosystem": "ระบบนิเวศ FUN",
     "camly": "CAMLY Community",
     "anhSang": "แสงแห่งความรัก",
@@ -143,6 +144,16 @@
     "tradeNow": "ซื้อขายตอนนี้",
     "viewChart": "ดูกราฟ",
     "topCryptos": "คริปโตยอดนิยม"
+  },
+  "defi": {
+    "title": "โทเค็น DeFi",
+    "subtitle": "โทเค็นการเงินกระจายอำนาจชั้นนำตามมูลค่าตลาด",
+    "marketCap": "มูลค่าตลาด DeFi",
+    "volume24h": "ปริมาณ 24 ชม.",
+    "topGainer": "ผู้ชนะสูงสุด",
+    "circulatingSupply": "อุปทานหมุนเวียน",
+    "trade": "ซื้อขาย",
+    "topTokens": "โทเค็น DeFi ยอดนิยม"
   },
   "anhsang": {
     "title": "แสงแห่งความรัก",

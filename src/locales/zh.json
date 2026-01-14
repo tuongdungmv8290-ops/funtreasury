@@ -25,6 +25,7 @@
     "dashboard": "仪表板",
     "transactions": "交易",
     "prices": "价格",
+    "defi": "DeFi",
     "ecosystem": "FUN 生态系统",
     "camly": "CAMLY Community",
     "anhSang": "爱之光",
@@ -143,6 +144,16 @@
     "tradeNow": "立即交易",
     "viewChart": "查看图表",
     "topCryptos": "热门加密货币"
+  },
+  "defi": {
+    "title": "DeFi 代币",
+    "subtitle": "按市值排名的顶级去中心化金融代币",
+    "marketCap": "DeFi 市值",
+    "volume24h": "24小时成交量",
+    "topGainer": "涨幅最大",
+    "circulatingSupply": "流通量",
+    "trade": "交易",
+    "topTokens": "顶级 DeFi 代币"
   },
   "anhsang": {
     "title": "爱之光",

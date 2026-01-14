@@ -25,6 +25,7 @@
     "dashboard": "Bảng Điều Khiển",
     "transactions": "Giao Dịch",
     "prices": "Giá Crypto",
+    "defi": "DeFi",
     "ecosystem": "FUN Ecosystem",
     "camly": "CAMLY Community",
     "anhSang": "Ánh Sáng",
@@ -143,6 +144,16 @@
     "tradeNow": "Giao dịch ngay",
     "viewChart": "Xem biểu đồ",
     "topCryptos": "Top Tiền Điện Tử"
+  },
+  "defi": {
+    "title": "DeFi Tokens",
+    "subtitle": "Top DeFi tokens theo vốn hóa thị trường",
+    "marketCap": "Vốn Hóa DeFi",
+    "volume24h": "Khối Lượng 24h",
+    "topGainer": "Tăng Mạnh Nhất",
+    "circulatingSupply": "Lượng Lưu Hành",
+    "trade": "Trade",
+    "topTokens": "Top DeFi Tokens"
   },
   "anhsang": {
     "title": "Ánh Sáng",
