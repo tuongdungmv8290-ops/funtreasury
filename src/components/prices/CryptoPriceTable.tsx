@@ -104,9 +104,32 @@ function getTradeUrl(symbol: string, id: string): string {
     return 'https://pancakeswap.finance/swap?outputCurrency=0x0910320181889fefde0bb1ca63962b0a8882e413';
   }
   
-  // Tất cả token khác -> CoinGecko (có đầy đủ thông tin và nhiều sàn để chọn)
-  // CoinGecko hoạt động đáng tin cậy, không bị block, user có thể chọn sàn phù hợp
-  return `https://www.coingecko.com/en/coins/${id}`;
+  // Binance trading pairs (most popular tokens)
+  const binanceSymbols = [
+    'BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'AVAX', 'DOT', 'TON', 'SUI', 'TRX',
+    'LINK', 'UNI', 'AAVE', 'MKR', 'CRV', 'COMP', 'SUSHI', 'CAKE', 'RAY', 'JUP',
+    'LDO', 'PENDLE', 'ONDO', 'GRT', 'HYPE',
+    'USDT', 'USDC', 'DAI',
+    'DOGE', 'SHIB', 'PEPE', 'WLD',
+    'XLM', 'LTC', 'BCH', 'ZEC', 'HBAR',
+    'MATIC', 'ARB', 'OP'
+  ];
+  
+  if (binanceSymbols.includes(sym)) {
+    return `https://www.binance.com/en/trade/${sym}_USDT`;
+  }
+  
+  // PancakeSwap for BSC tokens
+  const pancakeTokens: Record<string, string> = {
+    'CAKE': '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82',
+  };
+  
+  if (pancakeTokens[sym]) {
+    return `https://pancakeswap.finance/swap?outputCurrency=${pancakeTokens[sym]}`;
+  }
+  
+  // Fallback to CoinGecko markets page (opens in new tab, works reliably)
+  return `https://www.coingecko.com/en/coins/${id}#markets`;
 }
 
 function MiniSparkline({ prices, isPositive }: { prices: number[]; isPositive: boolean }) {
