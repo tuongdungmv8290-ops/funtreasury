@@ -146,14 +146,22 @@
     "topCryptos": "Top Tiền Điện Tử"
   },
   "defi": {
-    "title": "DeFi Tokens",
-    "subtitle": "Top DeFi tokens theo vốn hóa thị trường",
-    "marketCap": "Vốn Hóa DeFi",
+    "title": "Thị Trường Crypto",
+    "subtitle": "Giá tiền điện tử theo thời gian thực",
+    "marketCap": "Tổng Vốn Hóa",
     "volume24h": "Khối Lượng 24h",
     "topGainer": "Tăng Mạnh Nhất",
     "circulatingSupply": "Lượng Lưu Hành",
     "trade": "Trade",
-    "topTokens": "Top DeFi Tokens"
+    "topTokens": "Tất Cả Token",
+    "allTokens": "Tất cả",
+    "layer1": "Layer 1",
+    "layer2": "Layer 2",
+    "defiCategory": "DeFi",
+    "meme": "Meme",
+    "stablecoins": "Stablecoins",
+    "searchPlaceholder": "Tìm coin...",
+    "showingTokens": "Hiển thị {{count}} token"
   },
   "anhsang": {
     "title": "Ánh Sáng",

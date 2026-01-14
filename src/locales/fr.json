@@ -146,14 +146,22 @@
     "topCryptos": "Top Cryptomonnaies"
   },
   "defi": {
-    "title": "Tokens DeFi",
-    "subtitle": "Top tokens de finance décentralisée par capitalisation",
-    "marketCap": "Cap. Marché DeFi",
+    "title": "Marché Crypto",
+    "subtitle": "Prix des cryptomonnaies en temps réel",
+    "marketCap": "Cap. Marché Total",
     "volume24h": "Volume 24h",
     "topGainer": "Meilleur Gain",
     "circulatingSupply": "Offre en Circulation",
     "trade": "Trader",
-    "topTokens": "Top Tokens DeFi"
+    "topTokens": "Tous les Tokens",
+    "allTokens": "Tous",
+    "layer1": "Layer 1",
+    "layer2": "Layer 2",
+    "defiCategory": "DeFi",
+    "meme": "Meme",
+    "stablecoins": "Stablecoins",
+    "searchPlaceholder": "Rechercher un coin...",
+    "showingTokens": "Affichage de {{count}} tokens"
   },
   "anhsang": {
     "title": "Lumière d'Amour",

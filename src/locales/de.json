@@ -146,14 +146,22 @@
     "topCryptos": "Top Kryptowährungen"
   },
   "defi": {
-    "title": "DeFi Tokens",
-    "subtitle": "Top dezentrale Finanz-Token nach Marktkapitalisierung",
-    "marketCap": "DeFi Marktkapitalisierung",
+    "title": "Kryptomarkt",
+    "subtitle": "Echtzeit-Kryptowährungspreise",
+    "marketCap": "Gesamtmarktkapitalisierung",
     "volume24h": "Volumen 24h",
     "topGainer": "Top Gewinner",
     "circulatingSupply": "Umlaufmenge",
     "trade": "Handeln",
-    "topTokens": "Top DeFi Tokens"
+    "topTokens": "Alle Tokens",
+    "allTokens": "Alle",
+    "layer1": "Layer 1",
+    "layer2": "Layer 2",
+    "defiCategory": "DeFi",
+    "meme": "Meme",
+    "stablecoins": "Stablecoins",
+    "searchPlaceholder": "Coin suchen...",
+    "showingTokens": "{{count}} Tokens angezeigt"
   },
   "anhsang": {
     "title": "Licht der Liebe",

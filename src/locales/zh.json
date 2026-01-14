@@ -146,14 +146,22 @@
     "topCryptos": "热门加密货币"
   },
   "defi": {
-    "title": "DeFi 代币",
-    "subtitle": "按市值排名的顶级去中心化金融代币",
-    "marketCap": "DeFi 市值",
+    "title": "加密市场",
+    "subtitle": "实时加密货币价格",
+    "marketCap": "总市值",
     "volume24h": "24小时成交量",
     "topGainer": "涨幅最大",
     "circulatingSupply": "流通量",
     "trade": "交易",
-    "topTokens": "顶级 DeFi 代币"
+    "topTokens": "所有代币",
+    "allTokens": "全部",
+    "layer1": "Layer 1",
+    "layer2": "Layer 2",
+    "defiCategory": "DeFi",
+    "meme": "Meme",
+    "stablecoins": "稳定币",
+    "searchPlaceholder": "搜索币种...",
+    "showingTokens": "显示 {{count}} 个代币"
   },
   "anhsang": {
     "title": "爱之光",
