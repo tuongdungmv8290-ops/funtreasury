@@ -19,7 +19,7 @@ import { formatNumber } from "@/lib/formatNumber";
 import { useCamlyPrice } from "@/hooks/useCamlyPrice";
 import { Loader2, TrendingUp, TrendingDown, LineChart, CandlestickChart } from "lucide-react";
 
-type TimeRange = '1D' | '1W' | '1M' | '3M';
+type TimeRange = '5m' | '15m' | '1H' | '4H' | '1D' | '1W' | '1M';
 type ChartType = 'line' | 'candle';
 type IndicatorType = 'vol' | 'ma' | 'boll' | 'macd' | 'rsi';
 
@@ -47,12 +47,15 @@ interface CandleData {
   macdHist?: number;
 }
 
-// Time range configurations
+// Time range configurations - Expanded like Bitget
 const TIME_RANGE_CONFIG = {
-  '1D': { points: 24, interval: 3600000, label: '24 giờ' },
-  '1W': { points: 84, interval: 7200000, label: '7 ngày' },
-  '1M': { points: 30, interval: 86400000, label: '30 ngày' },
-  '3M': { points: 90, interval: 86400000, label: '90 ngày' },
+  '5m': { points: 60, interval: 300000, label: '5 phút' },
+  '15m': { points: 60, interval: 900000, label: '15 phút' },
+  '1H': { points: 48, interval: 3600000, label: '1 giờ' },
+  '4H': { points: 42, interval: 14400000, label: '4 giờ' },
+  '1D': { points: 30, interval: 86400000, label: '1 ngày' },
+  '1W': { points: 52, interval: 604800000, label: '1 tuần' },
+  '1M': { points: 30, interval: 2592000000, label: '1 tháng' },
 };
 
 // Generate seeded random number
@@ -71,7 +74,13 @@ function generateCandlestickData(
   const config = TIME_RANGE_CONFIG[timeRange];
   const now = Date.now();
   
-  const changeMultiplier = timeRange === '1D' ? 1 : timeRange === '1W' ? 2.5 : timeRange === '1M' ? 5 : 10;
+  const changeMultiplier = 
+    timeRange === '5m' ? 0.2 : 
+    timeRange === '15m' ? 0.5 : 
+    timeRange === '1H' ? 1 : 
+    timeRange === '4H' ? 1.5 : 
+    timeRange === '1D' ? 2 : 
+    timeRange === '1W' ? 5 : 10;
   const estimatedChange = change24h * changeMultiplier;
   const startPrice = currentPrice / (1 + estimatedChange / 100);
   
@@ -272,18 +281,22 @@ function calculateEMA(data: number[], period: number): (number | undefined)[] {
   return ema;
 }
 
-// Custom Candlestick Shape
+// Custom Candlestick Shape - Wider and more visible like Bitget
 function CandlestickShape({ x, y, width, height, payload }: any) {
   if (!payload) return null;
   
   const { open, high, low, close, isUp } = payload;
-  const color = isUp ? 'hsl(var(--inflow))' : 'hsl(var(--outflow))';
+  const upColor = '#22c55e';
+  const downColor = '#ef4444';
+  const color = isUp ? upColor : downColor;
+  const borderColor = isUp ? '#16a34a' : '#dc2626';
   
   const priceRange = Math.abs(high - low);
   if (priceRange === 0) return null;
   
-  const candleWidth = Math.max(width * 0.7, 4);
-  const wickWidth = Math.max(1, width * 0.15);
+  // Wider candles like Bitget (85% of width)
+  const candleWidth = Math.max(width * 0.85, 6);
+  const wickWidth = Math.max(2, width * 0.2);
   
   const scale = height / priceRange;
   const yHigh = y;
@@ -292,11 +305,11 @@ function CandlestickShape({ x, y, width, height, payload }: any) {
   const yClose = yHigh + (high - close) * scale;
   
   const bodyTop = Math.min(yOpen, yClose);
-  const bodyHeight = Math.max(Math.abs(yOpen - yClose), 1);
+  const bodyHeight = Math.max(Math.abs(yOpen - yClose), 2);
   
   return (
     <g>
-      {/* Wick */}
+      {/* Wick - Thicker */}
       <line
         x1={x + width / 2}
         y1={yHigh}
@@ -304,16 +317,19 @@ function CandlestickShape({ x, y, width, height, payload }: any) {
         y2={yLow}
         stroke={color}
         strokeWidth={wickWidth}
+        strokeLinecap="round"
       />
-      {/* Body */}
+      {/* Body - Rounded corners */}
       <rect
         x={x + (width - candleWidth) / 2}
         y={bodyTop}
         width={candleWidth}
         height={bodyHeight}
-        fill={isUp ? color : color}
-        stroke={color}
+        fill={color}
+        stroke={borderColor}
         strokeWidth={1}
+        rx={2}
+        ry={2}
       />
     </g>
   );
@@ -328,19 +344,19 @@ function CandleTooltip({ active, payload }: any) {
   const changePercent = data.open > 0 ? ((data.close - data.open) / data.open * 100) : 0;
   
   return (
-    <div className="bg-popover/98 backdrop-blur border-2 border-primary/40 rounded-xl p-3 shadow-2xl min-w-[180px]">
+    <div className="bg-popover/98 backdrop-blur border-2 border-primary/40 rounded-xl p-3 shadow-2xl min-w-[200px]">
       {/* Time */}
       <div className="text-xs font-medium text-primary border-b border-border pb-2 mb-2">
         📅 {format(new Date(data.time), 'HH:mm dd/MM/yyyy')}
       </div>
       
       {/* OHLC */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
-        <div className="text-muted-foreground">O: <span className="text-foreground">${formatNumber(data.open, { minDecimals: 6, maxDecimals: 8 })}</span></div>
-        <div className="text-inflow">H: ${formatNumber(data.high, { minDecimals: 6, maxDecimals: 8 })}</div>
-        <div className="text-outflow">L: ${formatNumber(data.low, { minDecimals: 6, maxDecimals: 8 })}</div>
-        <div className={data.isUp ? "text-inflow" : "text-outflow"}>
-          C: ${formatNumber(data.close, { minDecimals: 6, maxDecimals: 8 })}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs font-mono">
+        <div className="text-muted-foreground">O: <span className="text-foreground">${data.open.toFixed(8)}</span></div>
+        <div className="text-[#22c55e]">H: ${data.high.toFixed(8)}</div>
+        <div className="text-[#ef4444]">L: ${data.low.toFixed(8)}</div>
+        <div className={data.isUp ? "text-[#22c55e]" : "text-[#ef4444]"}>
+          C: ${data.close.toFixed(8)}
         </div>
       </div>
       
@@ -351,7 +367,7 @@ function CandleTooltip({ active, payload }: any) {
         </span>
         <span className={cn(
           "px-2 py-0.5 rounded text-xs font-bold",
-          data.isUp ? "bg-inflow/20 text-inflow" : "bg-outflow/20 text-outflow"
+          data.isUp ? "bg-[#22c55e]/20 text-[#22c55e]" : "bg-[#ef4444]/20 text-[#ef4444]"
         )}>
           {data.isUp ? '▲ TĂNG' : '▼ GIẢM'} {Math.abs(changePercent).toFixed(2)}%
         </span>
@@ -367,8 +383,16 @@ function CandleTooltip({ active, payload }: any) {
   );
 }
 
+// Format Y-axis price
+function formatYAxisPrice(value: number): string {
+  if (value < 0.0001) return value.toFixed(8);
+  if (value < 0.01) return value.toFixed(6);
+  if (value < 1) return value.toFixed(4);
+  return value.toFixed(2);
+}
+
 export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
-  const [timeRange, setTimeRange] = useState<TimeRange>('1W');
+  const [timeRange, setTimeRange] = useState<TimeRange>('1D');
   const [chartType, setChartType] = useState<ChartType>('candle');
   const [activeIndicators, setActiveIndicators] = useState<IndicatorType[]>(['vol', 'ma']);
   
@@ -399,7 +423,7 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
     : 0;
 
   const formatXAxis = (value: number) => {
-    if (timeRange === '1D') return format(new Date(value), 'HH:mm');
+    if (['5m', '15m', '1H', '4H'].includes(timeRange)) return format(new Date(value), 'HH:mm');
     return format(new Date(value), 'dd/MM');
   };
 
@@ -412,12 +436,12 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
     return [min - padding, max + padding];
   }, [chartData]);
 
-  const strokeColor = isPositive ? 'hsl(var(--inflow))' : 'hsl(var(--outflow))';
+  const strokeColor = isPositive ? '#22c55e' : '#ef4444';
 
   if (isLoading) {
     return (
       <div className={cn("space-y-4", className)}>
-        <div className="h-72 w-full flex items-center justify-center bg-muted/20 rounded-lg">
+        <div className="h-80 w-full flex items-center justify-center bg-muted/20 rounded-lg">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       </div>
@@ -431,6 +455,8 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
     { id: 'macd' as IndicatorType, label: 'MACD', color: '#f97316' },
     { id: 'rsi' as IndicatorType, label: 'RSI', color: '#ec4899' },
   ];
+
+  const timeRanges: TimeRange[] = ['5m', '15m', '1H', '4H', '1D', '1W', '1M'];
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -458,16 +484,16 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
           </Button>
         </div>
 
-        {/* Time Range */}
-        <div className="flex gap-1">
-          {(['1D', '1W', '1M', '3M'] as TimeRange[]).map((range) => (
+        {/* Time Range - Expanded like Bitget */}
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+          {timeRanges.map((range) => (
             <Button
               key={range}
               variant={timeRange === range ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setTimeRange(range)}
               className={cn(
-                "h-8 text-xs px-2.5",
+                "h-8 text-xs px-2.5 shrink-0",
                 timeRange === range && "bg-primary text-primary-foreground"
               )}
             >
@@ -497,18 +523,18 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
         ))}
       </div>
 
-      {/* Main Chart */}
-      <div className="h-56 w-full">
+      {/* Main Chart - Taller (h-64) */}
+      <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 10, right: 80, left: 5, bottom: 0 }}>
             <defs>
               <linearGradient id="priceGradientUp" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--inflow))" stopOpacity={0.4}/>
-                <stop offset="95%" stopColor="hsl(var(--inflow))" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.4}/>
+                <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
               </linearGradient>
               <linearGradient id="priceGradientDown" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--outflow))" stopOpacity={0.4}/>
-                <stop offset="95%" stopColor="hsl(var(--outflow))" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
+                <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
               </linearGradient>
             </defs>
             
@@ -524,9 +550,28 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
               minTickGap={40}
             />
             
-            <YAxis domain={[yMin, yMax]} hide />
+            {/* Y-Axis with price on right side like Bitget */}
+            <YAxis 
+              domain={[yMin, yMax]}
+              orientation="right"
+              tickFormatter={formatYAxisPrice}
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={9}
+              tickLine={false}
+              axisLine={false}
+              width={75}
+              tickCount={6}
+            />
             
             <Tooltip content={<CandleTooltip />} />
+            
+            {/* Current Price Line with PnL Badge */}
+            <ReferenceLine 
+              y={currentPrice} 
+              stroke={isPositive ? '#22c55e' : '#ef4444'} 
+              strokeDasharray="4 4"
+              strokeWidth={1.5}
+            />
             
             {/* Bollinger Bands */}
             {activeIndicators.includes('boll') && (
@@ -567,14 +612,38 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
         </ResponsiveContainer>
       </div>
 
-      {/* Volume Panel */}
+      {/* PnL Badge */}
+      <div className="flex items-center justify-between px-1">
+        <div className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold",
+          isPositive ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-[#ef4444]/15 text-[#ef4444]"
+        )}>
+          {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+          <span>PnL {isPositive ? '+' : ''}{priceChange.toFixed(2)}%</span>
+        </div>
+        <div className="text-xs font-mono text-muted-foreground">
+          ${currentPrice.toFixed(8)}
+        </div>
+      </div>
+
+      {/* Volume Panel - Taller with better colors */}
       {activeIndicators.includes('vol') && (
-        <div className="h-12 w-full border-t border-border/30 pt-1">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
-              <Bar dataKey="volume" isAnimationActive={false}>
+        <div className="h-16 w-full border-t border-border/30 pt-1">
+          <div className="text-[10px] text-muted-foreground ml-1 mb-0.5 flex items-center gap-2">
+            <span className="font-semibold">Vol</span>
+            <span className="text-primary font-mono">
+              {formatNumber(chartData[chartData.length - 1]?.volume ?? 0, { compact: true, maxDecimals: 2 })}
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height="80%">
+            <ComposedChart data={chartData} margin={{ top: 0, right: 80, left: 5, bottom: 0 }}>
+              <Bar dataKey="volume" isAnimationActive={false} radius={[2, 2, 0, 0]}>
                 {chartData.map((entry, i) => (
-                  <Cell key={i} fill={entry.isUp ? 'hsl(var(--inflow)/0.5)' : 'hsl(var(--outflow)/0.5)'} />
+                  <Cell 
+                    key={i} 
+                    fill={entry.isUp ? '#22c55e' : '#ef4444'} 
+                    opacity={0.7}
+                  />
                 ))}
               </Bar>
             </ComposedChart>
@@ -584,10 +653,15 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
 
       {/* RSI Panel */}
       {activeIndicators.includes('rsi') && (
-        <div className="h-14 w-full border-t border-border/30 pt-1">
-          <div className="text-[10px] text-muted-foreground ml-1 mb-0.5">RSI (14)</div>
-          <ResponsiveContainer width="100%" height="85%">
-            <ComposedChart data={chartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+        <div className="h-16 w-full border-t border-border/30 pt-1">
+          <div className="text-[10px] text-muted-foreground ml-1 mb-0.5 flex items-center gap-2">
+            <span className="font-semibold">RSI (14)</span>
+            <span className="text-primary font-mono">
+              {chartData[chartData.length - 1]?.rsi?.toFixed(1) ?? '-'}
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height="80%">
+            <ComposedChart data={chartData} margin={{ top: 0, right: 80, left: 5, bottom: 0 }}>
               <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
               <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeWidth={1} />
               <YAxis domain={[0, 100]} hide />
@@ -607,11 +681,13 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
 
       {/* MACD Panel */}
       {activeIndicators.includes('macd') && (
-        <div className="h-14 w-full border-t border-border/30 pt-1">
-          <div className="text-[10px] text-muted-foreground ml-1 mb-0.5">MACD (12,26,9)</div>
-          <ResponsiveContainer width="100%" height="85%">
-            <ComposedChart data={chartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
-              <Bar dataKey="macdHist" isAnimationActive={false}>
+        <div className="h-16 w-full border-t border-border/30 pt-1">
+          <div className="text-[10px] text-muted-foreground ml-1 mb-0.5 flex items-center gap-2">
+            <span className="font-semibold">MACD (12,26,9)</span>
+          </div>
+          <ResponsiveContainer width="100%" height="80%">
+            <ComposedChart data={chartData} margin={{ top: 0, right: 80, left: 5, bottom: 0 }}>
+              <Bar dataKey="macdHist" isAnimationActive={false} radius={[1, 1, 0, 0]}>
                 {chartData.map((entry, i) => (
                   <Cell key={i} fill={entry.macdHist !== undefined && entry.macdHist >= 0 ? '#22c55e80' : '#ef444480'} />
                 ))}
@@ -623,15 +699,11 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
         </div>
       )}
 
-      {/* Change Indicator */}
-      <div className="flex items-center justify-between px-1 pt-2 border-t border-border/30">
-        <div className={cn(
-          "flex items-center gap-1.5 text-sm font-semibold",
-          isPositive ? "text-inflow" : "text-outflow"
-        )}>
-          {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-          {isPositive ? '+' : ''}{priceChange.toFixed(2)}% trong {TIME_RANGE_CONFIG[timeRange].label}
-        </div>
+      {/* Footer - Time label */}
+      <div className="flex items-center justify-between px-1 pt-1 border-t border-border/30">
+        <span className="text-xs text-muted-foreground">
+          {TIME_RANGE_CONFIG[timeRange].label}
+        </span>
         <span className="text-xs text-muted-foreground">
           {priceData?.last_updated 
             ? format(new Date(priceData.last_updated), 'HH:mm dd/MM')
