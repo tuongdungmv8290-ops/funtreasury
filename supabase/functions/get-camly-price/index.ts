@@ -9,8 +9,8 @@ const corsHeaders = {
 const COINGECKO_COIN_ID = 'camly-coin';
 const COINGECKO_COIN_URL = `https://api.coingecko.com/api/v3/coins/${COINGECKO_COIN_ID}?localization=false&tickers=false&community_data=false&developer_data=false`;
 
-// Correct CAMLY contract on BSC (from CoinGecko)
-const CAMLY_CONTRACT = '0x0917eD3D687a59304295D967f4C0E92afFB94A08';
+// Correct CAMLY contract on BSC
+const CAMLY_CONTRACT = '0x0910320181889fefde0bb1ca63962b0a8882e413';
 const COINGECKO_CONTRACT_URL = `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${CAMLY_CONTRACT}`;
 
 // DexScreener as backup with correct contract
