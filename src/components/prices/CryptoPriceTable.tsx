@@ -8,16 +8,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpDown, ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 interface CryptoPriceTableProps {
   data: CryptoPrice[];
   isLoading?: boolean;
 }
 
-type SortKey = 'price' | 'change' | 'volume' | 'marketCap';
+type SortKey = 'price' | 'change' | 'volume' | 'marketCap' | 'supply';
 type SortOrder = 'asc' | 'desc';
 
 interface SortableHeaderProps {
@@ -80,6 +82,30 @@ function formatCompact(value: number): string {
   return `$${value.toFixed(2)}`;
 }
 
+function formatSupply(value: number, symbol: string): string {
+  if (value >= 1e9) {
+    return `${(value / 1e9).toFixed(2)}B ${symbol.toUpperCase()}`;
+  } else if (value >= 1e6) {
+    return `${(value / 1e6).toFixed(2)}M ${symbol.toUpperCase()}`;
+  } else if (value >= 1e3) {
+    return `${(value / 1e3).toFixed(2)}K ${symbol.toUpperCase()}`;
+  }
+  return `${value.toFixed(2)} ${symbol.toUpperCase()}`;
+}
+
+function getTradeUrl(symbol: string, id: string): string {
+  const bscTokens = ['CAMLY', 'CAKE'];
+  if (bscTokens.includes(symbol.toUpperCase())) {
+    return `https://pancakeswap.finance/swap?outputCurrency=${symbol}`;
+  }
+  // For Solana tokens
+  const solanaTokens = ['RAY', 'JUP'];
+  if (solanaTokens.includes(symbol.toUpperCase())) {
+    return `https://jup.ag/swap/SOL-${symbol.toUpperCase()}`;
+  }
+  return `https://app.uniswap.org/swap?outputCurrency=${id}`;
+}
+
 function MiniSparkline({ prices, isPositive }: { prices: number[]; isPositive: boolean }) {
   if (!prices || prices.length === 0) return null;
   
@@ -129,12 +155,15 @@ function TableRowSkeleton() {
       <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
       <TableCell><Skeleton className="h-4 w-20" /></TableCell>
       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
       <TableCell><Skeleton className="h-8 w-20" /></TableCell>
+      <TableCell><Skeleton className="h-8 w-16" /></TableCell>
     </TableRow>
   );
 }
 
 export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
+  const { t } = useTranslation();
   const [sortKey, setSortKey] = useState<SortKey>('marketCap');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -167,6 +196,10 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
           aVal = a.market_cap;
           bVal = b.market_cap;
           break;
+        case 'supply':
+          aVal = a.circulating_supply || 0;
+          bVal = b.circulating_supply || 0;
+          break;
       }
       return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
     });
@@ -180,15 +213,17 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
             <TableRow className="hover:bg-transparent border-border/50">
               <TableHead className="w-12 text-muted-foreground">#</TableHead>
               <TableHead className="text-muted-foreground">Coin</TableHead>
-              <TableHead className="text-right text-muted-foreground">Price</TableHead>
-              <TableHead className="text-right text-muted-foreground">24h %</TableHead>
-              <TableHead className="text-right text-muted-foreground">Volume (24h)</TableHead>
-              <TableHead className="text-right text-muted-foreground">Market Cap</TableHead>
-              <TableHead className="text-right text-muted-foreground">Last 7 Days</TableHead>
+              <TableHead className="text-right text-muted-foreground">{t('prices.price')}</TableHead>
+              <TableHead className="text-right text-muted-foreground">{t('prices.change24h')}</TableHead>
+              <TableHead className="text-right text-muted-foreground">{t('prices.volume')}</TableHead>
+              <TableHead className="text-right text-muted-foreground">{t('prices.marketCap')}</TableHead>
+              <TableHead className="text-right text-muted-foreground">{t('defi.circulatingSupply')}</TableHead>
+              <TableHead className="text-right text-muted-foreground">7d</TableHead>
+              <TableHead className="text-right text-muted-foreground">{t('defi.trade')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {[...Array(5)].map((_, i) => (
+            {[...Array(8)].map((_, i) => (
               <TableRowSkeleton key={i} />
             ))}
           </TableBody>
@@ -198,17 +233,19 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
   }
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+    <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-border/50">
             <TableHead className="w-12 text-muted-foreground font-medium">#</TableHead>
-            <TableHead className="text-muted-foreground font-medium">Coin</TableHead>
-            <SortableHeader label="Price" sortKey="price" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
-            <SortableHeader label="24h %" sortKey="change" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
-            <SortableHeader label="Volume (24h)" sortKey="volume" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
-            <SortableHeader label="Market Cap" sortKey="marketCap" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
-            <TableHead className="text-right text-muted-foreground font-medium">Last 7 Days</TableHead>
+            <TableHead className="text-muted-foreground font-medium min-w-[150px]">Coin</TableHead>
+            <SortableHeader label={t('prices.price')} sortKey="price" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+            <SortableHeader label={t('prices.change24h')} sortKey="change" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+            <SortableHeader label={t('prices.volume')} sortKey="volume" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+            <SortableHeader label={t('prices.marketCap')} sortKey="marketCap" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+            <SortableHeader label={t('defi.circulatingSupply')} sortKey="supply" currentKey={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+            <TableHead className="text-right text-muted-foreground font-medium">7d</TableHead>
+            <TableHead className="text-right text-muted-foreground font-medium">{t('defi.trade')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -274,6 +311,9 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
                 <TableCell className="text-right font-mono text-muted-foreground">
                   {formatCompact(coin.market_cap)}
                 </TableCell>
+                <TableCell className="text-right font-mono text-muted-foreground text-sm">
+                  {coin.circulating_supply ? formatSupply(coin.circulating_supply, coin.symbol) : '--'}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end">
                     <MiniSparkline 
@@ -281,6 +321,20 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
                       isPositive={isPositive}
                     />
                   </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "gap-1 text-xs",
+                      isCamly && "border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                    )}
+                    onClick={() => window.open(getTradeUrl(coin.symbol, coin.id), '_blank')}
+                  >
+                    {t('defi.trade')}
+                    <ExternalLink className="w-3 h-3" />
+                  </Button>
                 </TableCell>
               </TableRow>
             );

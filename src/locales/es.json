@@ -25,6 +25,7 @@
     "dashboard": "Panel",
     "transactions": "Transacciones",
     "prices": "Precios",
+    "defi": "DeFi",
     "ecosystem": "Ecosistema FUN",
     "camly": "CAMLY Community",
     "anhSang": "Luz de Amor",
@@ -143,6 +144,16 @@
     "tradeNow": "Operar Ahora",
     "viewChart": "Ver Gráfico",
     "topCryptos": "Top Criptomonedas"
+  },
+  "defi": {
+    "title": "Tokens DeFi",
+    "subtitle": "Top tokens de finanzas descentralizadas por capitalización",
+    "marketCap": "Cap. Mercado DeFi",
+    "volume24h": "Volumen 24h",
+    "topGainer": "Mayor Ganador",
+    "circulatingSupply": "Suministro Circulante",
+    "trade": "Operar",
+    "topTokens": "Top Tokens DeFi"
   },
   "anhsang": {
     "title": "Luz de Amor",

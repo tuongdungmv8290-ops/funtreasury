@@ -25,6 +25,7 @@
     "dashboard": "대시보드",
     "transactions": "거래",
     "prices": "가격",
+    "defi": "DeFi",
     "ecosystem": "FUN 생태계",
     "camly": "CAMLY Community",
     "anhSang": "사랑의 빛",
@@ -143,6 +144,16 @@
     "tradeNow": "지금 거래",
     "viewChart": "차트 보기",
     "topCryptos": "인기 암호화폐"
+  },
+  "defi": {
+    "title": "DeFi 토큰",
+    "subtitle": "시가총액 기준 상위 탈중앙화 금융 토큰",
+    "marketCap": "DeFi 시가총액",
+    "volume24h": "24시간 거래량",
+    "topGainer": "최고 상승",
+    "circulatingSupply": "유통량",
+    "trade": "거래",
+    "topTokens": "상위 DeFi 토큰"
   },
   "anhsang": {
     "title": "사랑의 빛",

@@ -85,7 +85,7 @@ import { SparkleOnClick } from '@/components/effects/SparkleOnClick';
 const treasuryItems: { path: string; labelKey: string; icon: LucideIcon; status: string; logo?: string }[] = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard, status: 'active' },
   { path: '/transactions', labelKey: 'nav.transactions', icon: ArrowLeftRight, status: 'active' },
-  { path: '/prices', labelKey: 'nav.prices', icon: TrendingUp, status: 'active' },
+  { path: '/prices', labelKey: 'nav.defi', icon: Coins, status: 'active' },
   { path: '/camly', labelKey: 'nav.camly', icon: Coins, status: 'active', logo: camlyCoinNewLogo },
   { path: '/anh-sang', labelKey: 'nav.anhSang', icon: Sparkles, status: 'active' },
   { path: '/settings', labelKey: 'nav.settings', icon: Settings, status: 'active' },

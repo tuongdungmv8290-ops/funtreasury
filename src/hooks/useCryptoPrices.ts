@@ -11,6 +11,7 @@ export interface CryptoPrice {
   total_volume: number;
   market_cap: number;
   market_cap_rank: number;
+  circulating_supply: number;
   sparkline_in_7d?: { price: number[] };
 }
 

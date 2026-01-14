@@ -25,6 +25,7 @@
     "dashboard": "ダッシュボード",
     "transactions": "取引",
     "prices": "価格",
+    "defi": "DeFi",
     "ecosystem": "FUNエコシステム",
     "camly": "CAMLY Community",
     "anhSang": "愛の光",
@@ -143,6 +144,16 @@
     "tradeNow": "今すぐ取引",
     "viewChart": "チャートを見る",
     "topCryptos": "トップ暗号資産"
+  },
+  "defi": {
+    "title": "DeFiトークン",
+    "subtitle": "時価総額別トップ分散型金融トークン",
+    "marketCap": "DeFi時価総額",
+    "volume24h": "24時間取引量",
+    "topGainer": "最高上昇",
+    "circulatingSupply": "流通量",
+    "trade": "取引",
+    "topTokens": "トップDeFiトークン"
   },
   "anhsang": {
     "title": "愛の光",

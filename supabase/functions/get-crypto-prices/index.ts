@@ -3,8 +3,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// CoinGecko coin IDs mapping
-const COIN_IDS = 'bitcoin,ethereum,binancecoin,solana,camly-coin,ripple,cardano,dogecoin';
+// 20 DeFi tokens matching Blockchain.com
+const COIN_IDS = 'camly-coin,lido-dao,wrapped-steth,chainlink,hyperliquid,dai,uniswap,aave,ethena,ondo-finance,the-graph,maker,pendle,compound-governance-token,curve-dao-token,pancakeswap-token,1inch,sushi,raydium,jupiter-exchange-solana';
 
 interface CryptoData {
   id: string;
@@ -16,6 +16,7 @@ interface CryptoData {
   total_volume: number;
   market_cap: number;
   market_cap_rank: number;
+  circulating_supply: number;
   sparkline_in_7d?: { price: number[] };
 }
 
@@ -75,14 +76,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('[get-crypto-prices] Fetching prices from CoinGecko...');
+    console.log('[get-crypto-prices] Fetching DeFi prices from CoinGecko...');
     
     const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${COIN_IDS}&order=market_cap_desc&sparkline=true&price_change_percentage=24h`;
     
     const response = await fetchWithRetry(url);
     const data: CryptoData[] = await response.json();
     
-    console.log(`[get-crypto-prices] Fetched ${data.length} coins successfully`);
+    console.log(`[get-crypto-prices] Fetched ${data.length} DeFi tokens successfully`);
 
     // Sort data - put CAMLY at top if exists
     const sortedData = data.sort((a, b) => {
