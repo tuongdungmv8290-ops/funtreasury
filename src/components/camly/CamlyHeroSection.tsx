@@ -4,7 +4,7 @@ import { formatNumber, formatUSD } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
 import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
-const CAMLY_PANCAKESWAP_URL = "https://pancakeswap.finance/swap?outputCurrency=0x816C6DA6B5da2d42d8a93a61b1df49df60cF5Be3";
+const CAMLY_PANCAKESWAP_URL = "https://pancakeswap.finance/swap?outputCurrency=0x0910320181889fefde0bb1ca63962b0a8882e413";
 
 export function CamlyHeroSection() {
   const { data: priceData, isLoading } = useCamlyPrice();

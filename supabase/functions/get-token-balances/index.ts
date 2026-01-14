@@ -41,7 +41,7 @@ const COINGECKO_IDS: Record<string, string> = {
 };
 
 // CAMLY contract address on BSC for price lookup
-const CAMLY_CONTRACT = '0xe8670901e86818745b28c8b30b17986958fce8cc';
+const CAMLY_CONTRACT = '0x0910320181889fefde0bb1ca63962b0a8882e413';
 
 // Cache for prices (5 minutes TTL)
 let priceCache: { prices: Record<string, number>; timestamp: number } | null = null;

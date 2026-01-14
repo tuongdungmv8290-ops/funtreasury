@@ -101,7 +101,7 @@ function getTradeUrl(symbol: string, id: string): string {
   
   // CAMLY - link trực tiếp PancakeSwap với contract cụ thể
   if (sym === 'CAMLY') {
-    return 'https://pancakeswap.finance/swap?outputCurrency=0x816C6DA6B5da2d42d8a93a61b1df49df60cF5Be3';
+    return 'https://pancakeswap.finance/swap?outputCurrency=0x0910320181889fefde0bb1ca63962b0a8882e413';
   }
   
   // Tất cả token khác -> CoinGecko (có đầy đủ thông tin và nhiều sàn để chọn)

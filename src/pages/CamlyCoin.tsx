@@ -1,4 +1,5 @@
 import { CamlyHeroSection } from "@/components/camly/CamlyHeroSection";
+import { CamlyWalletPanel } from "@/components/camly/CamlyWalletPanel";
 import { PhilosophyComparison } from "@/components/camly/PhilosophyComparison";
 import { TokenomicsSection } from "@/components/camly/TokenomicsSection";
 import { CamlyStorySection } from "@/components/camly/CamlyStorySection";
@@ -19,6 +20,11 @@ export default function CamlyCoin() {
 
       {/* Hero Section */}
       <CamlyHeroSection />
+
+      {/* Wallet Panel - MetaMask Style */}
+      <div className="my-8">
+        <CamlyWalletPanel />
+      </div>
 
       {/* Main Quote */}
       <div className="my-12">
