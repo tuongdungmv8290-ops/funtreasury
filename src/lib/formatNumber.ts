@@ -10,7 +10,12 @@ export function formatNumber(
     compact?: boolean;
   } = {}
 ): string {
-  const { minDecimals = 2, maxDecimals = 4, compact = false } = options;
+  let { minDecimals = 2, maxDecimals = 4, compact = false } = options;
+  
+  // Ensure minDecimals <= maxDecimals to avoid RangeError
+  if (minDecimals > maxDecimals) {
+    minDecimals = maxDecimals;
+  }
   
   if (isNaN(value) || !isFinite(value)) return '0.00';
   
