@@ -362,18 +362,20 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <a
+                    href={getTradeUrl(coin.symbol, coin.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={cn(
-                      "gap-1 text-xs",
+                      "inline-flex items-center justify-center gap-1 text-xs font-medium rounded-md px-3 h-8",
+                      "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+                      "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isCamly && "border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                     )}
-                    onClick={() => window.open(getTradeUrl(coin.symbol, coin.id), '_blank')}
                   >
                     {t('defi.trade')}
                     <ExternalLink className="w-3 h-3" />
-                  </Button>
+                  </a>
                 </TableCell>
               </TableRow>
             );
