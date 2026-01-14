@@ -105,10 +105,26 @@ Deno.serve(async (req) => {
     
     console.log(`[get-crypto-prices] Fetched ${data.length} DeFi tokens successfully`);
 
-    // Sort data - put CAMLY at top if exists
+    // Sort với thứ tự ưu tiên: CAMLY > BTC > USDT > BNB, sau đó token tăng mạnh
+    const priority = ['CAMLY', 'BTC', 'USDT', 'BNB'];
     const sortedData = data.sort((a, b) => {
-      if (a.symbol.toUpperCase() === 'CAMLY') return -1;
-      if (b.symbol.toUpperCase() === 'CAMLY') return 1;
+      const aSym = a.symbol.toUpperCase();
+      const bSym = b.symbol.toUpperCase();
+      
+      const aIdx = priority.indexOf(aSym);
+      const bIdx = priority.indexOf(bSym);
+      
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      
+      // Token tăng mạnh trong ngày (>5%) được ưu tiên
+      const aChange = a.price_change_percentage_24h ?? 0;
+      const bChange = b.price_change_percentage_24h ?? 0;
+      
+      if (aChange > 5 && bChange <= 5) return -1;
+      if (bChange > 5 && aChange <= 5) return 1;
+      
       return (a.market_cap_rank || 999) - (b.market_cap_rank || 999);
     });
 
