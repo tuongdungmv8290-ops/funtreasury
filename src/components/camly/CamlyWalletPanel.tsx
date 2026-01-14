@@ -13,7 +13,7 @@ import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
 import { CamlyPriceChart } from "./CamlyPriceChart";
 import { CamlyTransactionHistory } from "./CamlyTransactionHistory";
-import { CamlyQuickSwap } from "./CamlyQuickSwap";
+import { UniversalSwap } from "./UniversalSwap";
 import { CamlyBuyModal } from "./modals/CamlyBuyModal";
 import { CamlySwapModal } from "./modals/CamlySwapModal";
 import { CamlySendModal } from "./modals/CamlySendModal";
@@ -244,14 +244,12 @@ export function CamlyWalletPanel() {
                 </div>
               </div>
 
-              {/* Quick Swap */}
+              {/* Universal Swap */}
               <Separator />
-              <CamlyQuickSwap
-                camlyPrice={price}
-                bnbPrice={bnbPrice}
-                camlyBalance={wallet.camlyBalance}
-                bnbBalance={wallet.bnbBalance}
-                isConnected={wallet.isConnected}
+              <UniversalSwap
+                walletAddress={wallet.address}
+                isConnected={wallet.isConnected && wallet.isCorrectChain}
+                onSwapComplete={wallet.refreshBalances}
               />
             </>
           )}
