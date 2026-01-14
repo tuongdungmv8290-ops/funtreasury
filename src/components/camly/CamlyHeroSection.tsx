@@ -5,8 +5,7 @@ import { formatNumber, formatUSD } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
 import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
-const PANCAKESWAP_URL = "https://pancakeswap.finance/swap?outputCurrency=0x610b3b2b17603a7f6ddd9cca375b1f9ea52ada45";
-const DEXSCREENER_URL = "https://dexscreener.com/bsc/0x610b3b2b17603a7f6ddd9cca375b1f9ea52ada45";
+const PANCAKESWAP_URL = "https://pancakeswap.finance/swap?outputCurrency=0x816C6DA6B5da2d42d8a93a61b1df49df60cF5Be3";
 
 export function CamlyHeroSection() {
   const { data: priceData, isLoading } = useCamlyPrice();
@@ -111,43 +110,17 @@ export function CamlyHeroSection() {
             </div>
           </div>
 
-          {/* Trade Buttons */}
+          {/* Trade Button */}
           <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-            <Button
-              asChild
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30"
+            <a 
+              href={PANCAKESWAP_URL} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30 px-6 py-3 rounded-lg transition-colors"
             >
-              <a 
-                href={PANCAKESWAP_URL} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open(PANCAKESWAP_URL, '_blank', 'noopener,noreferrer');
-                }}
-              >
-                Trade on PancakeSwap
-                <ExternalLink className="w-4 h-4 ml-2" />
-              </a>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="border-primary/50 text-primary hover:bg-primary/10"
-            >
-              <a 
-                href={DEXSCREENER_URL} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open(DEXSCREENER_URL, '_blank', 'noopener,noreferrer');
-                }}
-              >
-                View on DexScreener
-                <ExternalLink className="w-4 h-4 ml-2" />
-              </a>
-            </Button>
+              Trade on PancakeSwap
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </div>
