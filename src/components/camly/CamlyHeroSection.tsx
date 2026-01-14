@@ -5,7 +5,7 @@ import { formatNumber, formatUSD } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
 import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
-const PANCAKESWAP_URL = "https://pancakeswap.finance/swap?outputCurrency=0x816C6DA6B5da2d42d8a93a61b1df49df60cF5Be3";
+const POOCOIN_URL = "https://poocoin.app/tokens/0x816C6DA6B5da2d42d8a93a61b1df49df60cF5Be3";
 
 export function CamlyHeroSection() {
   const { data: priceData, isLoading } = useCamlyPrice();
@@ -113,12 +113,12 @@ export function CamlyHeroSection() {
           {/* Trade Button */}
           <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
             <a 
-              href={PANCAKESWAP_URL} 
+              href={POOCOIN_URL} 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30 px-6 py-3 rounded-lg transition-colors"
             >
-              Trade on PancakeSwap
+              Trade CAMLY
               <ExternalLink className="w-4 h-4" />
             </a>
           </div>
