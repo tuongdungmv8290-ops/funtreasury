@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCamlyPrice } from "@/hooks/useCamlyPrice";
 import { useCamlyWallet } from "@/hooks/useCamlyWallet";
+import { useCryptoPrices } from "@/hooks/useCryptoPrices";
 import { formatNumber, formatUSD } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
 import { CamlyPriceChart } from "./CamlyPriceChart";
 import { CamlyTransactionHistory } from "./CamlyTransactionHistory";
+import { CamlyQuickSwap } from "./CamlyQuickSwap";
 import { CamlyBuyModal } from "./modals/CamlyBuyModal";
 import { CamlySwapModal } from "./modals/CamlySwapModal";
 import { CamlySendModal } from "./modals/CamlySendModal";
@@ -25,9 +27,11 @@ export function CamlyWalletPanel() {
   const [copied, setCopied] = useState(false);
 
   const { data: priceData, isLoading: priceLoading } = useCamlyPrice();
+  const { data: cryptoPrices } = useCryptoPrices();
   const wallet = useCamlyWallet();
 
   const price = priceData?.price_usd ?? 0;
+  const bnbPrice = cryptoPrices?.find(c => c.symbol.toLowerCase() === 'bnb')?.current_price ?? 710;
   const change24h = priceData?.change_24h ?? 0;
   const isPositive = change24h >= 0;
 
@@ -239,6 +243,16 @@ export function CamlyWalletPanel() {
                   </div>
                 </div>
               </div>
+
+              {/* Quick Swap */}
+              <Separator />
+              <CamlyQuickSwap
+                camlyPrice={price}
+                bnbPrice={bnbPrice}
+                camlyBalance={wallet.camlyBalance}
+                bnbBalance={wallet.bnbBalance}
+                isConnected={wallet.isConnected}
+              />
             </>
           )}
 
