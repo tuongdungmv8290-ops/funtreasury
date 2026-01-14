@@ -99,50 +99,14 @@ function formatSupply(value: number | null | undefined, symbol: string): string 
 function getTradeUrl(symbol: string, id: string): string {
   const sym = symbol.toUpperCase();
   
-  // Major coins -> Binance (spot trading)
-  const binanceTokens = [
-    'BTC', 'ETH', 'BNB', 'XRP', 'SOL', 'ADA', 'AVAX', 'DOT', 
-    'DOGE', 'SHIB', 'PEPE', 'LTC', 'BCH', 'LINK', 'UNI', 
-    'AAVE', 'MKR', 'CRV', 'COMP', 'SUSHI', '1INCH', 'TRX',
-    'MATIC', 'ARB', 'OP', 'SUI', 'TON', 'XLM', 'HBAR',
-    'TAO', 'WLD', 'GRT', 'ZEC', 'LDO', 'PENDLE', 'ONDO', 'ENA',
-    'FET', 'NEAR', 'APT', 'INJ', 'ATOM', 'FIL', 'VET', 'ALGO',
-    'EOS', 'FLOW', 'SAND', 'MANA', 'AXS', 'ENJ', 'CHZ', 'GMT',
-    'APE', 'BLUR', 'IMX', 'GALA', 'ROSE', 'FTM', 'EGLD', 'XTZ',
-    'THETA', 'SNX', 'ZIL', 'KAVA', 'CELO', 'ONE', 'IOTA', 'NEO'
-  ];
-  if (binanceTokens.includes(sym)) {
-    return `https://www.binance.com/en/trade/${sym}_USDT`;
-  }
-  
-  // BNB Chain tokens -> PancakeSwap
+  // CAMLY - link trực tiếp PancakeSwap với contract cụ thể
   if (sym === 'CAMLY') {
     return 'https://pancakeswap.finance/swap?outputCurrency=0x816C6DA6B5da2d42d8a93a61b1df49df60cF5Be3';
   }
-  if (sym === 'CAKE') {
-    return 'https://pancakeswap.finance/swap?outputCurrency=0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82';
-  }
   
-  // Solana tokens -> Jupiter
-  const solanaTokens = ['RAY', 'JUP', 'BONK', 'WIF', 'PYTH', 'JTO', 'RNDR'];
-  if (solanaTokens.includes(sym)) {
-    return `https://jup.ag/swap/SOL-${sym}`;
-  }
-  
-  // Stablecoins -> Binance
-  const stablecoins = ['USDT', 'USDC', 'DAI', 'USDE', 'FDUSD', 'TUSD', 'BUSD'];
-  if (stablecoins.includes(sym)) {
-    return `https://www.binance.com/en/trade/${sym}_USDT`;
-  }
-  
-  // Wrapped tokens -> Uniswap
-  const wrappedTokens = ['WBTC', 'WSTETH', 'WBETH', 'RETH', 'CBETH', 'STETH'];
-  if (wrappedTokens.includes(sym)) {
-    return `https://app.uniswap.org/swap?outputCurrency=${id}`;
-  }
-  
-  // DexScreener fallback for unknown tokens
-  return `https://dexscreener.com/search?q=${sym}`;
+  // Tất cả token khác -> CoinGecko (có đầy đủ thông tin và nhiều sàn để chọn)
+  // CoinGecko hoạt động đáng tin cậy, không bị block, user có thể chọn sàn phù hợp
+  return `https://www.coingecko.com/en/coins/${id}`;
 }
 
 function MiniSparkline({ prices, isPositive }: { prices: number[]; isPositive: boolean }) {
