@@ -1,15 +1,13 @@
-import { useState } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown, ExternalLink } from "lucide-react";
 import { useCamlyPrice } from "@/hooks/useCamlyPrice";
 import { formatNumber, formatUSD } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
 import camlyLogo from "@/assets/camly-coin-gold-logo.png";
-import { CamlyTradeModal } from "./CamlyTradeModal";
+
+const CAMLY_PANCAKESWAP_URL = "https://pancakeswap.finance/swap?outputCurrency=0x816C6DA6B5da2d42d8a93a61b1df49df60cF5Be3";
 
 export function CamlyHeroSection() {
   const { data: priceData, isLoading } = useCamlyPrice();
-  const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
 
   const price = priceData?.price_usd ?? 0;
   const change24h = priceData?.change_24h ?? 0;
@@ -114,21 +112,19 @@ export function CamlyHeroSection() {
 
             {/* Trade Button */}
             <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-              <Button
-                onClick={() => setIsTradeModalOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30 px-6 py-3 h-auto"
+              <a
+                href={CAMLY_PANCAKESWAP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30 px-6 py-3 rounded-lg transition-colors"
               >
                 Trade CAMLY
-              </Button>
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
           </div>
         </div>
       </section>
-
-      <CamlyTradeModal
-        open={isTradeModalOpen}
-        onOpenChange={setIsTradeModalOpen}
-      />
     </>
   );
 }

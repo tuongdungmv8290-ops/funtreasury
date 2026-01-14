@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useCryptoPrices } from "@/hooks/useCryptoPrices";
 import { CryptoPriceTable } from "@/components/prices/CryptoPriceTable";
-import { CamlyFeaturedCard } from "@/components/prices/CamlyFeaturedCard";
 import { DeFiStatsCards } from "@/components/defi/DeFiStatsCards";
 import { MarketTabs, MarketCategory, filterByCategory } from "@/components/defi/MarketTabs";
 import { Button } from "@/components/ui/button";
@@ -16,16 +15,9 @@ export default function Prices() {
   const [activeCategory, setActiveCategory] = useState<MarketCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Find CAMLY in the data
-  const camlyData = cryptoPrices?.find(
-    (coin) => coin.symbol.toUpperCase() === 'CAMLY'
-  );
-  
-  // Filter out CAMLY from the main table and apply category + search filters
+  // Apply category + search filters
   const tableData = useMemo(() => {
-    let data = cryptoPrices?.filter(
-      (coin) => coin.symbol.toUpperCase() !== 'CAMLY'
-    ) || [];
+    let data = cryptoPrices || [];
     
     // Apply category filter
     data = filterByCategory(data, activeCategory);
@@ -73,9 +65,6 @@ export default function Prices() {
 
       {/* DeFi Stats Cards */}
       <DeFiStatsCards data={cryptoPrices || []} isLoading={isLoading} />
-
-      {/* CAMLY Featured Card */}
-      <CamlyFeaturedCard camlyData={camlyData} isLoading={isLoading} />
 
       {/* Filters Section */}
       <div className="space-y-4">
