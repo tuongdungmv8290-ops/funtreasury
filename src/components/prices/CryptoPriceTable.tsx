@@ -57,7 +57,8 @@ function SortableHeader({ label, sortKey, currentKey, currentOrder, onSort }: So
   );
 }
 
-function formatPrice(price: number, symbol: string): string {
+function formatPrice(price: number | null | undefined, symbol: string): string {
+  if (price === null || price === undefined) return 'N/A';
   // Use more decimals for low-value coins like CAMLY
   if (price < 0.01) {
     return `$${price.toFixed(8)}`;
@@ -69,7 +70,8 @@ function formatPrice(price: number, symbol: string): string {
   return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function formatCompact(value: number): string {
+function formatCompact(value: number | null | undefined): string {
+  if (value === null || value === undefined) return 'N/A';
   if (value >= 1e12) {
     return `$${(value / 1e12).toFixed(2)}T`;
   } else if (value >= 1e9) {
@@ -82,7 +84,8 @@ function formatCompact(value: number): string {
   return `$${value.toFixed(2)}`;
 }
 
-function formatSupply(value: number, symbol: string): string {
+function formatSupply(value: number | null | undefined, symbol: string): string {
+  if (value === null || value === undefined) return 'N/A';
   if (value >= 1e9) {
     return `${(value / 1e9).toFixed(2)}B ${symbol.toUpperCase()}`;
   } else if (value >= 1e6) {
