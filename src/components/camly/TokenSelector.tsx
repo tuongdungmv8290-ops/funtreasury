@@ -18,6 +18,48 @@ import { cn } from "@/lib/utils";
 import { formatNumber } from "@/lib/formatNumber";
 import { TokenInfo, WBNB_ADDRESS } from "@/hooks/usePancakeSwap";
 import { CAMLY_CONTRACT } from "@/hooks/useCamlyWallet";
+import camlyLogo from "@/assets/camly-coin-gold-logo.png";
+
+// Real token logo URLs from CoinGecko/TrustWallet
+const TOKEN_LOGO_URLS: Record<string, string> = {
+  BNB: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+  WBNB: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+  USDT: 'https://assets.coingecko.com/coins/images/325/small/Tether.png',
+  USDC: 'https://assets.coingecko.com/coins/images/6319/small/usdc.png',
+  BUSD: 'https://assets.coingecko.com/coins/images/9576/small/BUSD.png',
+  BTCB: 'https://assets.coingecko.com/coins/images/14108/small/Binance-bitcoin.png',
+  ETH: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+  CAKE: 'https://assets.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%28200%29.png',
+  XRP: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
+  ADA: 'https://assets.coingecko.com/coins/images/975/small/cardano.png',
+  DOGE: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
+  DOT: 'https://assets.coingecko.com/coins/images/12171/small/polkadot.png',
+  LINK: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
+  UNI: 'https://assets.coingecko.com/coins/images/12504/small/uniswap-logo.png',
+  MATIC: 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',
+  SHIB: 'https://assets.coingecko.com/coins/images/11939/small/shiba.png',
+  LTC: 'https://assets.coingecko.com/coins/images/2/small/litecoin.png',
+  AVAX: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+  TRX: 'https://assets.coingecko.com/coins/images/1094/small/tron-logo.png',
+  ATOM: 'https://assets.coingecko.com/coins/images/1481/small/cosmos_hub.png',
+  FTM: 'https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png',
+  AAVE: 'https://assets.coingecko.com/coins/images/12645/small/aave-token-round.png',
+  SOL: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+  PEPE: 'https://assets.coingecko.com/coins/images/29850/small/pepe-token.jpeg',
+  FIL: 'https://assets.coingecko.com/coins/images/12817/small/filecoin.png',
+  INJ: 'https://assets.coingecko.com/coins/images/12882/small/Secondary_Symbol.png',
+  SUI: 'https://assets.coingecko.com/coins/images/26375/small/sui_asset.jpeg',
+  APT: 'https://assets.coingecko.com/coins/images/26455/small/aptos_round.png',
+  SEI: 'https://assets.coingecko.com/coins/images/28205/small/Sei_Logo_-_Transparent.png',
+  WLD: 'https://assets.coingecko.com/coins/images/31069/small/worldcoin.jpeg',
+  NEAR: 'https://assets.coingecko.com/coins/images/10365/small/near.jpg',
+  DAI: 'https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png',
+  FDUSD: 'https://assets.coingecko.com/coins/images/31079/small/firstfigital.jpeg',
+  TUSD: 'https://assets.coingecko.com/coins/images/3449/small/tusd.png',
+  FLOKI: 'https://assets.coingecko.com/coins/images/16746/small/PNG_image.png',
+  ARB: 'https://assets.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg',
+  OP: 'https://assets.coingecko.com/coins/images/25244/small/Optimism.png',
+};
 
 // Pre-defined popular tokens on BSC (38+ tokens)
 export const POPULAR_TOKENS: TokenInfo[] = [
@@ -44,7 +86,6 @@ export const POPULAR_TOKENS: TokenInfo[] = [
   { symbol: 'ATOM', name: 'Cosmos', address: '0x0Eb3a705fc54725037CC9e008bDede697f62F335', decimals: 18 },
   { symbol: 'FTM', name: 'Fantom', address: '0xAD29AbB318791D579433D831ed122aFeAf29dcfe', decimals: 18 },
   { symbol: 'AAVE', name: 'Aave', address: '0xfb6115445Bff7b52FeB98650C87f44907E58f802', decimals: 18 },
-  // New tokens added
   { symbol: 'SOL', name: 'Solana', address: '0x570A5D26f7765Ecb712C0924E4De545B89fD43dF', decimals: 18 },
   { symbol: 'PEPE', name: 'Pepe', address: '0x25d887Ce7a35172C62FeBFD67a1856F20FaEbB00', decimals: 18 },
   { symbol: 'FIL', name: 'Filecoin', address: '0x0D8Ce2A99Bb6e3B7Db580eD848240e4a0F9aE153', decimals: 18 },
@@ -62,49 +103,6 @@ export const POPULAR_TOKENS: TokenInfo[] = [
   { symbol: 'OP', name: 'Optimism', address: '0x170C84E3b1d282F9628229836086716141995200', decimals: 18 },
 ];
 
-// Token logo mapping
-const TOKEN_LOGOS: Record<string, string> = {
-  BNB: '🟡',
-  CAMLY: '🥇',
-  USDT: '💵',
-  USDC: '💲',
-  BUSD: '🟨',
-  BTCB: '🟠',
-  ETH: '💎',
-  WBNB: '🟡',
-  CAKE: '🥞',
-  XRP: '⚫',
-  ADA: '🔵',
-  DOGE: '🐕',
-  DOT: '⚪',
-  LINK: '🔗',
-  UNI: '🦄',
-  MATIC: '🟣',
-  SHIB: '🐶',
-  LTC: '⚪',
-  AVAX: '🔺',
-  TRX: '🔴',
-  ATOM: '⚛️',
-  FTM: '👻',
-  AAVE: '👁️',
-  // New tokens
-  SOL: '☀️',
-  PEPE: '🐸',
-  FIL: '📁',
-  INJ: '💉',
-  SUI: '🌊',
-  APT: '🅰️',
-  SEI: '🌸',
-  WLD: '🌍',
-  NEAR: '🎯',
-  DAI: '💛',
-  FDUSD: '🔷',
-  TUSD: '🔵',
-  FLOKI: '🐕',
-  ARB: '🔷',
-  OP: '🔴',
-};
-
 interface TokenBalance {
   [address: string]: number;
 }
@@ -115,6 +113,57 @@ interface TokenSelectorProps {
   excludeToken?: TokenInfo | null;
   tokenBalances?: TokenBalance;
   disabled?: boolean;
+}
+
+// Token Logo component with fallback
+function TokenLogo({ symbol, size = 32 }: { symbol: string; size?: number }) {
+  const [hasError, setHasError] = useState(false);
+
+  // Use local CAMLY logo
+  if (symbol === 'CAMLY') {
+    return (
+      <div 
+        className="rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
+        <img
+          src={camlyLogo}
+          alt={symbol}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  const logoUrl = TOKEN_LOGO_URLS[symbol];
+
+  if (!logoUrl || hasError) {
+    // Fallback to initial letter
+    return (
+      <div 
+        className="rounded-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
+        <span className="font-bold text-foreground" style={{ fontSize: size * 0.4 }}>
+          {symbol.charAt(0)}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="rounded-full overflow-hidden bg-muted flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
+      <img
+        src={logoUrl}
+        alt={symbol}
+        className="w-full h-full object-cover"
+        onError={() => setHasError(true)}
+      />
+    </div>
+  );
 }
 
 export function TokenSelector({
@@ -148,10 +197,6 @@ export function TokenSelector({
     return tokens;
   }, [excludeToken, search]);
 
-  const getTokenLogo = (symbol: string) => {
-    return TOKEN_LOGOS[symbol] || '🪙';
-  };
-
   const getBalance = (token: TokenInfo) => {
     return tokenBalances[token.address] ?? 0;
   };
@@ -172,7 +217,7 @@ export function TokenSelector({
         >
           {selectedToken ? (
             <div className="flex items-center gap-2">
-              <span className="text-lg">{getTokenLogo(selectedToken.symbol)}</span>
+              <TokenLogo symbol={selectedToken.symbol} size={24} />
               <span className="font-medium">{selectedToken.symbol}</span>
             </div>
           ) : (
@@ -184,7 +229,7 @@ export function TokenSelector({
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0" align="start">
+      <PopoverContent className="w-[320px] p-0" align="start">
         <Command>
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -195,10 +240,10 @@ export function TokenSelector({
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
-          <CommandList className="max-h-[300px]">
+          <CommandList className="max-h-[400px] overflow-y-auto">
             <CommandEmpty>Không tìm thấy token</CommandEmpty>
-            <CommandGroup heading="Token phổ biến">
-              {filteredTokens.slice(0, 8).map((token) => (
+            <CommandGroup heading={`${filteredTokens.length} tokens khả dụng`}>
+              {filteredTokens.map((token) => (
                 <CommandItem
                   key={token.address}
                   value={token.symbol}
@@ -210,7 +255,7 @@ export function TokenSelector({
                   className="flex items-center justify-between py-3 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">{getTokenLogo(token.symbol)}</span>
+                    <TokenLogo symbol={token.symbol} size={32} />
                     <div>
                       <p className="font-medium">{token.symbol}</p>
                       <p className="text-xs text-muted-foreground">{token.name}</p>
@@ -229,40 +274,6 @@ export function TokenSelector({
                 </CommandItem>
               ))}
             </CommandGroup>
-            {filteredTokens.length > 8 && (
-              <CommandGroup heading="Thêm token">
-                {filteredTokens.slice(8).map((token) => (
-                  <CommandItem
-                    key={token.address}
-                    value={token.symbol}
-                    onSelect={() => {
-                      onSelectToken(token);
-                      setOpen(false);
-                      setSearch('');
-                    }}
-                    className="flex items-center justify-between py-3 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{getTokenLogo(token.symbol)}</span>
-                      <div>
-                        <p className="font-medium">{token.symbol}</p>
-                        <p className="text-xs text-muted-foreground">{token.name}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {getBalance(token) > 0 && (
-                        <span className="text-sm text-muted-foreground">
-                          {formatNumber(getBalance(token), { maxDecimals: 4 })}
-                        </span>
-                      )}
-                      {selectedToken?.address === token.address && (
-                        <Check className="h-4 w-4 text-primary" />
-                      )}
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
           </CommandList>
         </Command>
       </PopoverContent>

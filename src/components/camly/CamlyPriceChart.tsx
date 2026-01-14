@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { formatNumber } from "@/lib/formatNumber";
+import { useCamlyPrice } from "@/hooks/useCamlyPrice";
+import { Loader2 } from "lucide-react";
 
 type TimeRange = '1D' | '1W' | '1M' | '3M';
 
@@ -47,27 +49,46 @@ function CustomTooltip({ active, payload, label, isPositive, basePrice }: any) {
 
 export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('1W');
+  const { data: priceData, isLoading } = useCamlyPrice();
 
-  // Generate simulated price data based on time range
+  // Use real price from API
+  const currentPrice = priceData?.price_usd ?? 0.00002187;
+  const change24h = priceData?.change_24h ?? 0;
+
+  // Generate chart data based on real price
   const chartData = useMemo(() => {
-    const basePrice = 0.000022;
     const now = Date.now();
-    const points = timeRange === '1D' ? 24 : timeRange === '1W' ? 7 * 24 : timeRange === '1M' ? 30 : 90;
+    const points = timeRange === '1D' ? 24 : timeRange === '1W' ? 168 : timeRange === '1M' ? 30 : 90;
     const interval = timeRange === '1D' ? 3600000 : timeRange === '1W' ? 3600000 : 86400000;
 
+    // Calculate start price based on change_24h (for 1D) or estimated change
+    const changeMultiplier = timeRange === '1D' ? 1 : timeRange === '1W' ? 2.5 : timeRange === '1M' ? 5 : 10;
+    const estimatedChange = change24h * changeMultiplier;
+    const startPrice = currentPrice / (1 + estimatedChange / 100);
+
+    // Seed for consistent random but varied data
+    const seed = timeRange.charCodeAt(0) + (priceData?.last_updated ? new Date(priceData.last_updated).getTime() : 0);
+    
     return Array.from({ length: points }, (_, i) => {
-      // Create more realistic price movement
-      const trendFactor = Math.sin(i * 0.1) * 0.05;
-      const volatility = (Math.random() - 0.5) * 0.03;
-      const momentum = Math.sin(i * 0.3) * 0.02;
-      const variation = trendFactor + volatility + momentum;
+      const progress = i / (points - 1);
+      
+      // Smooth interpolation from startPrice to currentPrice
+      const trendPrice = startPrice + (currentPrice - startPrice) * progress;
+      
+      // Add realistic noise based on seeded random
+      const noiseIndex = (seed + i * 17) % 1000;
+      const noiseFactor = Math.sin(noiseIndex * 0.1) * 0.015 + Math.cos(noiseIndex * 0.17) * 0.01;
+      const noise = trendPrice * noiseFactor;
+      
+      // For last point, use exact current price
+      const price = i === points - 1 ? currentPrice : trendPrice + noise;
       
       return {
         time: now - (points - 1 - i) * interval,
-        price: basePrice * (1 + variation),
+        price: Math.max(price, 0),
       };
     });
-  }, [timeRange]);
+  }, [timeRange, currentPrice, change24h, priceData?.last_updated]);
 
   const isPositive = chartData.length >= 2 && 
     chartData[chartData.length - 1].price >= chartData[0].price;
@@ -91,12 +112,22 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
     const prices = chartData.map(d => d.price);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    const padding = (max - min) * 0.1;
+    const padding = (max - min) * 0.1 || currentPrice * 0.01;
     return [min - padding, max + padding];
-  }, [chartData]);
+  }, [chartData, currentPrice]);
 
   const strokeColor = isPositive ? 'hsl(var(--inflow))' : 'hsl(var(--outflow))';
   const gradientId = isPositive ? 'colorPriceGreen' : 'colorPriceRed';
+
+  if (isLoading) {
+    return (
+      <div className={cn("space-y-4", className)}>
+        <div className="h-56 w-full flex items-center justify-center bg-muted/20 rounded-lg">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -186,7 +217,10 @@ export function CamlyPriceChart({ className }: CamlyPriceChartProps) {
           }
         </span>
         <span className="text-xs text-muted-foreground">
-          {format(new Date(), 'HH:mm dd/MM')}
+          {priceData?.last_updated 
+            ? format(new Date(priceData.last_updated), 'HH:mm dd/MM')
+            : format(new Date(), 'HH:mm dd/MM')
+          }
         </span>
       </div>
 
