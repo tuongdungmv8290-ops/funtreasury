@@ -146,14 +146,22 @@
     "topCryptos": "Top Cryptocurrencies"
   },
   "defi": {
-    "title": "DeFi Tokens",
-    "subtitle": "Top decentralized finance tokens by market cap",
-    "marketCap": "DeFi Market Cap",
+    "title": "Crypto Market",
+    "subtitle": "Real-time cryptocurrency prices",
+    "marketCap": "Total Market Cap",
     "volume24h": "Volume 24h",
     "topGainer": "Top Gainer",
     "circulatingSupply": "Circ. Supply",
     "trade": "Trade",
-    "topTokens": "Top DeFi Tokens"
+    "topTokens": "All Tokens",
+    "allTokens": "All",
+    "layer1": "Layer 1",
+    "layer2": "Layer 2",
+    "defiCategory": "DeFi",
+    "meme": "Meme",
+    "stablecoins": "Stablecoins",
+    "searchPlaceholder": "Search coin...",
+    "showingTokens": "Showing {{count}} tokens"
   },
   "anhsang": {
     "title": "Light of Love",

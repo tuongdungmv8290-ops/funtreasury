@@ -3,8 +3,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// 20 DeFi tokens matching Blockchain.com
-const COIN_IDS = 'camly-coin,lido-dao,wrapped-steth,chainlink,hyperliquid,dai,uniswap,aave,ethena,ondo-finance,the-graph,maker,pendle,compound-governance-token,curve-dao-token,pancakeswap-token,1inch,sushi,raydium,jupiter-exchange-solana';
+// 50+ tokens matching Binance/Blockchain.com market
+const COIN_IDS = [
+  // Featured
+  'camly-coin',
+  // Top Layer 1
+  'bitcoin', 'ethereum', 'binancecoin', 'solana', 'ripple', 
+  'cardano', 'avalanche-2', 'polkadot', 'the-open-network', 'sui', 'tron',
+  // Layer 2
+  'matic-network', 'arbitrum', 'optimism',
+  // DeFi
+  'chainlink', 'uniswap', 'aave', 'maker', 'curve-dao-token',
+  'compound-governance-token', 'sushi', '1inch', 'pancakeswap-token',
+  'raydium', 'jupiter-exchange-solana', 'lido-dao', 'wrapped-steth',
+  'pendle', 'ondo-finance', 'ethena', 'the-graph', 'hyperliquid',
+  // Stablecoins
+  'tether', 'usd-coin', 'dai', 'ethena-usde',
+  // Meme Coins
+  'dogecoin', 'shiba-inu', 'pepe', 'worldcoin-wld', 'official-trump',
+  // Others
+  'stellar', 'litecoin', 'bitcoin-cash', 'zcash', 'hedera-hashgraph', 
+  'bittensor', 'wrapped-bitcoin', 'wrapped-beacon-eth'
+].join(',');
 
 interface CryptoData {
   id: string;

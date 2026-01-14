@@ -146,14 +146,22 @@
     "topCryptos": "인기 암호화폐"
   },
   "defi": {
-    "title": "DeFi 토큰",
-    "subtitle": "시가총액 기준 상위 탈중앙화 금융 토큰",
-    "marketCap": "DeFi 시가총액",
+    "title": "암호화폐 시장",
+    "subtitle": "실시간 암호화폐 가격",
+    "marketCap": "총 시가총액",
     "volume24h": "24시간 거래량",
     "topGainer": "최고 상승",
     "circulatingSupply": "유통량",
     "trade": "거래",
-    "topTokens": "상위 DeFi 토큰"
+    "topTokens": "전체 토큰",
+    "allTokens": "전체",
+    "layer1": "Layer 1",
+    "layer2": "Layer 2",
+    "defiCategory": "DeFi",
+    "meme": "Meme",
+    "stablecoins": "스테이블코인",
+    "searchPlaceholder": "코인 검색...",
+    "showingTokens": "{{count}}개 토큰 표시 중"
   },
   "anhsang": {
     "title": "사랑의 빛",

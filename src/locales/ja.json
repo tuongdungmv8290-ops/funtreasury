@@ -146,14 +146,22 @@
     "topCryptos": "トップ暗号資産"
   },
   "defi": {
-    "title": "DeFiトークン",
-    "subtitle": "時価総額別トップ分散型金融トークン",
-    "marketCap": "DeFi時価総額",
+    "title": "暗号資産市場",
+    "subtitle": "リアルタイム暗号資産価格",
+    "marketCap": "総時価総額",
     "volume24h": "24時間取引量",
     "topGainer": "最高上昇",
     "circulatingSupply": "流通量",
     "trade": "取引",
-    "topTokens": "トップDeFiトークン"
+    "topTokens": "全トークン",
+    "allTokens": "すべて",
+    "layer1": "Layer 1",
+    "layer2": "Layer 2",
+    "defiCategory": "DeFi",
+    "meme": "Meme",
+    "stablecoins": "ステーブルコイン",
+    "searchPlaceholder": "コインを検索...",
+    "showingTokens": "{{count}}トークン表示中"
   },
   "anhsang": {
     "title": "愛の光",

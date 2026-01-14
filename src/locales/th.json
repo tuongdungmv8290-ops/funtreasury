@@ -146,14 +146,22 @@
     "topCryptos": "คริปโตยอดนิยม"
   },
   "defi": {
-    "title": "โทเค็น DeFi",
-    "subtitle": "โทเค็นการเงินกระจายอำนาจชั้นนำตามมูลค่าตลาด",
-    "marketCap": "มูลค่าตลาด DeFi",
+    "title": "ตลาดคริปโต",
+    "subtitle": "ราคาคริปโตแบบเรียลไทม์",
+    "marketCap": "มูลค่าตลาดรวม",
     "volume24h": "ปริมาณ 24 ชม.",
     "topGainer": "ผู้ชนะสูงสุด",
     "circulatingSupply": "อุปทานหมุนเวียน",
     "trade": "ซื้อขาย",
-    "topTokens": "โทเค็น DeFi ยอดนิยม"
+    "topTokens": "โทเค็นทั้งหมด",
+    "allTokens": "ทั้งหมด",
+    "layer1": "Layer 1",
+    "layer2": "Layer 2",
+    "defiCategory": "DeFi",
+    "meme": "Meme",
+    "stablecoins": "Stablecoins",
+    "searchPlaceholder": "ค้นหาเหรียญ...",
+    "showingTokens": "แสดง {{count}} โทเค็น"
   },
   "anhsang": {
     "title": "แสงแห่งความรัก",

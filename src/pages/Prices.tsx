@@ -1,25 +1,47 @@
+import { useState, useMemo } from "react";
 import { useCryptoPrices } from "@/hooks/useCryptoPrices";
 import { CryptoPriceTable } from "@/components/prices/CryptoPriceTable";
 import { CamlyFeaturedCard } from "@/components/prices/CamlyFeaturedCard";
 import { DeFiStatsCards } from "@/components/defi/DeFiStatsCards";
+import { MarketTabs, MarketCategory, filterByCategory } from "@/components/defi/MarketTabs";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Coins } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { RefreshCw, TrendingUp, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
 export default function Prices() {
   const { t } = useTranslation();
   const { data: cryptoPrices, isLoading, refetch, isFetching } = useCryptoPrices();
+  const [activeCategory, setActiveCategory] = useState<MarketCategory>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Find CAMLY in the data
   const camlyData = cryptoPrices?.find(
     (coin) => coin.symbol.toUpperCase() === 'CAMLY'
   );
   
-  // Filter out CAMLY from the main table (it's in featured card)
-  const tableData = cryptoPrices?.filter(
-    (coin) => coin.symbol.toUpperCase() !== 'CAMLY'
-  ) || [];
+  // Filter out CAMLY from the main table and apply category + search filters
+  const tableData = useMemo(() => {
+    let data = cryptoPrices?.filter(
+      (coin) => coin.symbol.toUpperCase() !== 'CAMLY'
+    ) || [];
+    
+    // Apply category filter
+    data = filterByCategory(data, activeCategory);
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      data = data.filter(
+        (coin) =>
+          coin.name.toLowerCase().includes(query) ||
+          coin.symbol.toLowerCase().includes(query)
+      );
+    }
+    
+    return data;
+  }, [cryptoPrices, activeCategory, searchQuery]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -27,7 +49,7 @@ export default function Prices() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-            <Coins className="w-6 h-6" />
+            <TrendingUp className="w-6 h-6" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">{t('defi.title')}</h1>
@@ -55,13 +77,35 @@ export default function Prices() {
       {/* CAMLY Featured Card */}
       <CamlyFeaturedCard camlyData={camlyData} isLoading={isLoading} />
 
-      {/* DeFi Token Table */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-muted-foreground">
-          {t('defi.topTokens')}
-        </h2>
-        <CryptoPriceTable data={tableData} isLoading={isLoading} />
+      {/* Filters Section */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          {/* Category Tabs */}
+          <MarketTabs 
+            activeCategory={activeCategory} 
+            onCategoryChange={setActiveCategory} 
+          />
+          
+          {/* Search */}
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={t('defi.searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </div>
+
+        {/* Token count */}
+        <div className="text-sm text-muted-foreground">
+          {t('defi.showingTokens', { count: tableData.length })}
+        </div>
       </div>
+
+      {/* Market Token Table */}
+      <CryptoPriceTable data={tableData} isLoading={isLoading} />
     </div>
   );
 }
