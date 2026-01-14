@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { formatNumber, formatUSD } from "@/lib/formatNumber";
-import { usePancakeSwap, TokenInfo, SwapQuote, PANCAKE_ROUTER_V2 } from "@/hooks/usePancakeSwap";
+import { usePancakeSwap, TokenInfo, SwapQuote } from "@/hooks/usePancakeSwap";
 import { useCryptoPrices } from "@/hooks/useCryptoPrices";
+import { useSwapHistory } from "@/hooks/useSwapHistory";
 import { TokenSelector, POPULAR_TOKENS } from "./TokenSelector";
 
 interface UniversalSwapProps {
@@ -43,6 +44,8 @@ export function UniversalSwap({
     isApproving,
     isSwapping,
   } = usePancakeSwap();
+
+  const { addSwap, watchTransaction } = useSwapHistory(walletAddress);
 
   // Get prices for USD conversion
   const getTokenPrice = useCallback((symbol: string): number => {
@@ -130,6 +133,19 @@ export function UniversalSwap({
     });
 
     if (txHash) {
+      // Add to swap history
+      addSwap({
+        txHash,
+        fromToken: { symbol: fromToken.symbol, amount: fromAmount },
+        toToken: { symbol: toToken.symbol, amount: quote.amountOut },
+        status: 'pending',
+        timestamp: Date.now(),
+        walletAddress,
+      });
+
+      // Watch transaction for status updates
+      watchTransaction(txHash);
+
       setFromAmount('');
       setQuote(null);
       onSwapComplete?.();
