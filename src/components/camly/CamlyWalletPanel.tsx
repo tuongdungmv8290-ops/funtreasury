@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DollarSign, ArrowLeftRight, Send, Download, Wallet, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { DollarSign, ArrowLeftRight, Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -7,6 +7,7 @@ import { useCamlyPrice } from "@/hooks/useCamlyPrice";
 import { useCamlyWallet } from "@/hooks/useCamlyWallet";
 import { formatNumber, formatUSD } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
 import { CamlyPriceChart } from "./CamlyPriceChart";
@@ -21,6 +22,7 @@ export function CamlyWalletPanel() {
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const { data: priceData, isLoading: priceLoading } = useCamlyPrice();
   const wallet = useCamlyWallet();
@@ -30,6 +32,15 @@ export function CamlyWalletPanel() {
   const isPositive = change24h >= 0;
 
   const userBalanceUSD = wallet.camlyBalance * price;
+
+  const handleCopyAddress = () => {
+    if (wallet.address) {
+      navigator.clipboard.writeText(wallet.address);
+      setCopied(true);
+      toast.success("Đã sao chép địa chỉ ví!");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <>
@@ -82,11 +93,45 @@ export function CamlyWalletPanel() {
                 Kết nối ví
               </Button>
             ) : (
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Đã kết nối</p>
-                <p className="text-sm font-mono text-primary">
-                  {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
-                </p>
+              <div className="flex items-center gap-2">
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Đã kết nối</p>
+                  <p className="text-sm font-mono text-primary">
+                    {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
+                  </p>
+                </div>
+                {/* Copy Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleCopyAddress}
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-inflow" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                  )}
+                </Button>
+                {/* BscScan Link */}
+                <a
+                  href={`https://bscscan.com/address/${wallet.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                  </Button>
+                </a>
+                {/* Disconnect Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={wallet.disconnectWallet}
+                >
+                  <LogOut className="w-4 h-4 text-muted-foreground hover:text-outflow" />
+                </Button>
               </div>
             )}
           </div>
@@ -203,7 +248,10 @@ export function CamlyWalletPanel() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium text-foreground">Lịch sử giao dịch CAMLY</h3>
             </div>
-            <CamlyTransactionHistory limit={5} />
+            <CamlyTransactionHistory 
+              limit={5} 
+              connectedAddress={wallet.isConnected ? wallet.address : null}
+            />
           </div>
         </CardContent>
       </Card>

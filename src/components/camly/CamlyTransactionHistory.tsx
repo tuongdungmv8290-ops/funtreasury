@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, ExternalLink, History } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, ExternalLink, History, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -10,15 +10,36 @@ import { vi } from "date-fns/locale";
 interface CamlyTransactionHistoryProps {
   limit?: number;
   onViewAll?: () => void;
+  connectedAddress?: string | null;
 }
 
-export function CamlyTransactionHistory({ limit = 5, onViewAll }: CamlyTransactionHistoryProps) {
+export function CamlyTransactionHistory({ 
+  limit = 5, 
+  onViewAll,
+  connectedAddress 
+}: CamlyTransactionHistoryProps) {
   const { data: transactions, isLoading } = useTransactions({
     tokenSymbol: 'CAMLY',
     days: 90,
+    // Lọc theo địa chỉ ví liên kết nếu có
+    search: connectedAddress || undefined,
   });
 
   const displayedTxs = transactions?.slice(0, limit) || [];
+
+  // Hiển thị khi chưa kết nối ví
+  if (!connectedAddress) {
+    return (
+      <div className="text-center py-8">
+        <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-muted/50 flex items-center justify-center">
+          <Wallet className="w-8 h-8 text-muted-foreground/50" />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Kết nối ví để xem lịch sử giao dịch của bạn
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -44,7 +65,10 @@ export function CamlyTransactionHistory({ limit = 5, onViewAll }: CamlyTransacti
     return (
       <div className="text-center py-8 text-muted-foreground">
         <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">Chưa có giao dịch CAMLY nào</p>
+        <p className="text-sm">Chưa có giao dịch CAMLY nào từ ví này</p>
+        <p className="text-xs mt-1 opacity-70">
+          {connectedAddress?.slice(0, 10)}...{connectedAddress?.slice(-6)}
+        </p>
       </div>
     );
   }
