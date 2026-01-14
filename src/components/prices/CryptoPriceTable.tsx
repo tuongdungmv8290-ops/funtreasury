@@ -99,9 +99,9 @@ function formatSupply(value: number | null | undefined, symbol: string): string 
 function getTradeUrl(symbol: string, id: string): string {
   const sym = symbol.toUpperCase();
   
-  // CAMLY - link trực tiếp PancakeSwap với contract cụ thể
+  // CAMLY - PancakeSwap V3 với chain=bsc để đảm bảo hoạt động mượt mà
   if (sym === 'CAMLY') {
-    return 'https://pancakeswap.finance/swap?outputCurrency=0x0910320181889fefde0bb1ca63962b0a8882e413';
+    return 'https://pancakeswap.finance/swap?chain=bsc&outputCurrency=0x0910320181889fefde0bb1ca63962b0a8882e413&inputCurrency=BNB';
   }
   
   // Binance trading pairs (most popular tokens)
@@ -125,10 +125,10 @@ function getTradeUrl(symbol: string, id: string): string {
   };
   
   if (pancakeTokens[sym]) {
-    return `https://pancakeswap.finance/swap?outputCurrency=${pancakeTokens[sym]}`;
+    return `https://pancakeswap.finance/swap?chain=bsc&outputCurrency=${pancakeTokens[sym]}`;
   }
   
-  // Fallback to CoinGecko markets page (opens in new tab, works reliably)
+  // Fallback to CoinGecko markets page
   return `https://www.coingecko.com/en/coins/${id}#markets`;
 }
 
@@ -203,7 +203,31 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
   };
 
   const sortedData = useMemo(() => {
+    // Thứ tự ưu tiên cố định: CAMLY > BTC > USDT > BNB
+    const PRIORITY_ORDER = ['CAMLY', 'BTC', 'USDT', 'BNB'];
+    
     return [...data].sort((a, b) => {
+      const aSym = a.symbol.toUpperCase();
+      const bSym = b.symbol.toUpperCase();
+      
+      // Priority tokens luôn đứng đầu theo thứ tự cố định
+      const aPriority = PRIORITY_ORDER.indexOf(aSym);
+      const bPriority = PRIORITY_ORDER.indexOf(bSym);
+      
+      if (aPriority !== -1 && bPriority !== -1) {
+        return aPriority - bPriority;
+      }
+      if (aPriority !== -1) return -1;
+      if (bPriority !== -1) return 1;
+      
+      // Còn lại: Ưu tiên token tăng mạnh trong ngày (>5%)
+      const aChange = a.price_change_percentage_24h ?? 0;
+      const bChange = b.price_change_percentage_24h ?? 0;
+      
+      if (aChange > 5 && bChange <= 5) return -1;
+      if (bChange > 5 && aChange <= 5) return 1;
+      
+      // Cả hai đều hot hoặc không -> sort theo user choice
       let aVal: number, bVal: number;
       switch (sortKey) {
         case 'price':
@@ -211,8 +235,8 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
           bVal = b.current_price ?? 0;
           break;
         case 'change':
-          aVal = a.price_change_percentage_24h ?? 0;
-          bVal = b.price_change_percentage_24h ?? 0;
+          aVal = aChange;
+          bVal = bChange;
           break;
         case 'volume':
           aVal = a.total_volume ?? 0;
@@ -226,6 +250,9 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
           aVal = a.circulating_supply ?? 0;
           bVal = b.circulating_supply ?? 0;
           break;
+        default:
+          aVal = a.market_cap ?? 0;
+          bVal = b.market_cap ?? 0;
       }
       return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
     });
