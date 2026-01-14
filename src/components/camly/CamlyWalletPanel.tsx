@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ArrowLeftRight, Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut } from "lucide-react";
+import { ArrowLeftRight, Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut, LineChart, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCamlyPrice } from "@/hooks/useCamlyPrice";
 import { useCamlyWallet } from "@/hooks/useCamlyWallet";
 import { useCryptoPrices } from "@/hooks/useCryptoPrices";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
 import { CamlyPriceChart } from "./CamlyPriceChart";
+import { CamlyDetailSection } from "./CamlyDetailSection";
 import { CamlyTransactionHistory } from "./CamlyTransactionHistory";
 import { UniversalSwap } from "./UniversalSwap";
 import { SwapHistory } from "./SwapHistory";
@@ -177,8 +179,27 @@ export function CamlyWalletPanel() {
 
         <CardContent className="space-y-6 pt-0">
 
-          {/* Price Chart */}
-          <CamlyPriceChart />
+          {/* Tabs: Chart | Detail */}
+          <Tabs defaultValue="chart" className="w-full">
+            <TabsList className="grid grid-cols-2 w-full max-w-xs mx-auto mb-4">
+              <TabsTrigger value="chart" className="gap-2">
+                <LineChart className="w-4 h-4" />
+                Báo giá
+              </TabsTrigger>
+              <TabsTrigger value="detail" className="gap-2">
+                <Info className="w-4 h-4" />
+                Chi tiết
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="chart" className="mt-0">
+              <CamlyPriceChart />
+            </TabsContent>
+            
+            <TabsContent value="detail" className="mt-0">
+              <CamlyDetailSection />
+            </TabsContent>
+          </Tabs>
 
           {/* Action Buttons - 3 buttons with larger text */}
           <div className="grid grid-cols-3 gap-4">
