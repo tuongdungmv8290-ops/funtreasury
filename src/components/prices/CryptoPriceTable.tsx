@@ -98,9 +98,9 @@ function formatSupply(value: number | null | undefined, symbol: string): string 
 function getTradeUrl(symbol: string, id: string): string {
   const sym = symbol.toUpperCase();
   
-  // CAMLY - PancakeSwap V3 với chain=bsc để đảm bảo hoạt động mượt mà
+  // CAMLY - DexScreener với chart real-time và link trade trực tiếp
   if (sym === 'CAMLY') {
-    return 'https://pancakeswap.finance/swap?chain=bsc&outputCurrency=0x0910320181889fefde0bb1ca63962b0a8882e413&inputCurrency=BNB';
+    return 'https://dexscreener.com/bsc/0x0910320181889fefde0bb1ca63962b0a8882e413';
   }
   
   // Binance trading pairs (most popular tokens)
