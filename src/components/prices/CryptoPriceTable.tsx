@@ -8,19 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown, ArrowUpDown, ChevronUp, ChevronDown, ExternalLink, Copy, Check } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpDown, ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
-import { toast } from "@/hooks/use-toast";
 
 interface CryptoPriceTableProps {
   data: CryptoPrice[];
@@ -200,12 +191,6 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
   const { t } = useTranslation();
   const [sortKey, setSortKey] = useState<SortKey>('marketCap');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [tradeModal, setTradeModal] = useState<{ open: boolean; url: string; symbol: string }>({
-    open: false,
-    url: '',
-    symbol: ''
-  });
-  const [copied, setCopied] = useState(false);
 
   const handleSort = (key: SortKey) => {
     if (key === sortKey) {
@@ -213,34 +198,6 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
     } else {
       setSortKey(key);
       setSortOrder('desc');
-    }
-  };
-
-  const handleTradeClick = (symbol: string, id: string) => {
-    const url = getTradeUrl(symbol, id);
-    // Try to open directly first
-    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-    // If blocked (popup blocked or sandbox restriction), show modal
-    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-      setTradeModal({ open: true, url, symbol: symbol.toUpperCase() });
-    }
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(tradeModal.url);
-      setCopied(true);
-      toast({
-        title: "Đã copy!",
-        description: "Link đã được copy vào clipboard",
-      });
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast({
-        title: "Lỗi",
-        description: "Không thể copy link",
-        variant: "destructive",
-      });
     }
   };
 
@@ -418,12 +375,10 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleTradeClick(coin.symbol, coin.id);
-                    }}
+                  <a
+                    href={getTradeUrl(coin.symbol, coin.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={cn(
                       "inline-flex items-center justify-center gap-1 text-xs font-medium rounded-md px-3 h-8",
                       "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
@@ -433,65 +388,13 @@ export function CryptoPriceTable({ data, isLoading }: CryptoPriceTableProps) {
                   >
                     {t('defi.trade')}
                     <ExternalLink className="w-3 h-3" />
-                  </button>
+                  </a>
                 </TableCell>
               </TableRow>
             );
           })}
         </TableBody>
       </Table>
-
-      {/* Trade Link Modal - Fallback khi bị block trong preview */}
-      <Dialog open={tradeModal.open} onOpenChange={(open) => setTradeModal({ ...tradeModal, open })}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ExternalLink className="w-5 h-5 text-primary" />
-              Trade {tradeModal.symbol}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Link bị chặn trong môi trường preview. Hãy copy và mở trong tab mới:
-            </p>
-            <div className="flex gap-2">
-              <Input 
-                value={tradeModal.url} 
-                readOnly 
-                className="text-xs font-mono"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleCopyLink}
-                className="shrink-0"
-              >
-                {copied ? <Check className="w-4 h-4 text-inflow" /> : <Copy className="w-4 h-4" />}
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleCopyLink}
-                className="flex-1"
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Copy Link
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => window.open(tradeModal.url, '_blank', 'noopener,noreferrer')}
-                className="flex-1"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Thử Mở Lại
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground text-center">
-              💡 Sau khi <strong>Publish</strong> app lên production, link sẽ hoạt động bình thường!
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
