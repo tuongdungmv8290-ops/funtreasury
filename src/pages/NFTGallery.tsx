@@ -1,21 +1,28 @@
 import { useState } from 'react';
-import { Image, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Image, Sparkles, Grid3X3, List } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNFTCollection, NFTCategory, NFTRarity, SortOption } from '@/hooks/useNFTCollection';
 import { NFTStatsCards } from '@/components/nft/NFTStatsCards';
 import { NFTFilters } from '@/components/nft/NFTFilters';
 import { NFTCard } from '@/components/nft/NFTCard';
+import { NFTListCard } from '@/components/nft/NFTListCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { ViewOnlyWatermark } from '@/components/ViewOnlyWatermark';
 import { useViewMode } from '@/contexts/ViewModeContext';
 
 export default function NFTGallery() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { isViewOnly } = useViewMode();
   
   // Filter states
   const [category, setCategory] = useState<NFTCategory>('all');
   const [rarity, setRarity] = useState<NFTRarity>('all');
+  const [sort, setSort] = useState<SortOption>('newest');
+  const [search, setSearch] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sort, setSort] = useState<SortOption>('newest');
   const [search, setSearch] = useState('');
 
@@ -64,18 +71,40 @@ export default function NFTGallery() {
         />
       </div>
 
-      {/* Filters */}
-      <div className="mb-8">
-        <NFTFilters
-          category={category}
-          rarity={rarity}
-          sort={sort}
-          search={search}
-          onCategoryChange={setCategory}
-          onRarityChange={setRarity}
-          onSortChange={setSort}
-          onSearchChange={setSearch}
-        />
+      {/* Filters with View Toggle */}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="flex-1">
+          <NFTFilters
+            category={category}
+            rarity={rarity}
+            sort={sort}
+            search={search}
+            onCategoryChange={setCategory}
+            onRarityChange={setRarity}
+            onSortChange={setSort}
+            onSearchChange={setSearch}
+          />
+        </div>
+        
+        {/* View Toggle */}
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setViewMode('grid')}
+          >
+            <Grid3X3 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setViewMode('list')}
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Results Count */}
@@ -105,10 +134,16 @@ export default function NFTGallery() {
             {t('nft.noNftsDesc')}
           </p>
         </div>
-      ) : (
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {assets.map((asset) => (
             <NFTCard key={asset.id} asset={asset} />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {assets.map((asset) => (
+            <NFTListCard key={asset.id} asset={asset} />
           ))}
         </div>
       )}
@@ -124,7 +159,8 @@ export default function NFTGallery() {
             {collections.slice(0, 3).map((collection) => (
               <div
                 key={collection.id}
-                className="group relative overflow-hidden rounded-xl bg-card/50 border border-border/50 hover:border-primary/50 transition-all duration-300"
+                onClick={() => navigate(`/nft/collection/${collection.id}`)}
+                className="group relative overflow-hidden rounded-xl bg-card/50 border border-border/50 hover:border-primary/50 transition-all duration-300 cursor-pointer"
               >
                 {/* Banner */}
                 <div className="h-32 bg-gradient-to-br from-primary/30 to-primary/10">

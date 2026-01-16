@@ -5,18 +5,19 @@ import { useTranslation } from 'react-i18next';
 import { NFTCategory, NFTRarity, SortOption } from '@/hooks/useNFTCollection';
 
 interface NFTFiltersProps {
-  category: NFTCategory;
+  category?: NFTCategory;
   rarity: NFTRarity;
   sort: SortOption;
   search: string;
-  onCategoryChange: (value: NFTCategory) => void;
+  onCategoryChange?: (value: NFTCategory) => void;
   onRarityChange: (value: NFTRarity) => void;
   onSortChange: (value: SortOption) => void;
   onSearchChange: (value: string) => void;
+  hideCategory?: boolean;
 }
 
 export function NFTFilters({
-  category,
+  category = 'all',
   rarity,
   sort,
   search,
@@ -24,6 +25,7 @@ export function NFTFilters({
   onRarityChange,
   onSortChange,
   onSearchChange,
+  hideCategory = false,
 }: NFTFiltersProps) {
   const { t } = useTranslation();
 
@@ -66,18 +68,20 @@ export function NFTFilters({
       </div>
 
       {/* Category Filter */}
-      <Select value={category} onValueChange={(v) => onCategoryChange(v as NFTCategory)}>
-        <SelectTrigger className="w-full md:w-40 bg-background/50 border-border/50">
-          <SelectValue placeholder={t('nft.category')} />
-        </SelectTrigger>
-        <SelectContent>
-          {categories.map((cat) => (
-            <SelectItem key={cat.value} value={cat.value}>
-              {cat.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {!hideCategory && onCategoryChange && (
+        <Select value={category} onValueChange={(v) => onCategoryChange(v as NFTCategory)}>
+          <SelectTrigger className="w-full md:w-40 bg-background/50 border-border/50">
+            <SelectValue placeholder={t('nft.category')} />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((cat) => (
+              <SelectItem key={cat.value} value={cat.value}>
+                {cat.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {/* Rarity Filter */}
       <Select value={rarity} onValueChange={(v) => onRarityChange(v as NFTRarity)}>
