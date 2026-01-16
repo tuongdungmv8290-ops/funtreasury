@@ -18,6 +18,7 @@ import Prices from "./pages/Prices";
 import CamlyCoin from "./pages/CamlyCoin";
 import AnhSang from "./pages/AnhSang";
 import FunEcosystem from "./pages/FunEcosystem";
+import NFTGallery from "./pages/NFTGallery";
 
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
                   <Route path="/ecosystem" element={<FunEcosystem />} />
                   <Route path="/camly" element={<CamlyCoin />} />
                   <Route path="/anh-sang" element={<AnhSang />} />
+                  <Route path="/nft" element={<NFTGallery />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

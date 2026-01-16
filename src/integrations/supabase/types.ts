@@ -38,6 +38,119 @@ export type Database = {
         }
         Relationships: []
       }
+      nft_assets: {
+        Row: {
+          collection_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_for_sale: boolean
+          is_minted: boolean
+          metadata_url: string | null
+          mint_type: string
+          name: string
+          owner_address: string | null
+          price_bnb: number
+          price_camly: number
+          rarity: string
+          token_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          collection_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_for_sale?: boolean
+          is_minted?: boolean
+          metadata_url?: string | null
+          mint_type?: string
+          name: string
+          owner_address?: string | null
+          price_bnb?: number
+          price_camly?: number
+          rarity?: string
+          token_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_for_sale?: boolean
+          is_minted?: boolean
+          metadata_url?: string | null
+          mint_type?: string
+          name?: string
+          owner_address?: string | null
+          price_bnb?: number
+          price_camly?: number
+          rarity?: string
+          token_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nft_assets_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "nft_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nft_collections: {
+        Row: {
+          banner_url: string | null
+          category: string
+          chain: string
+          contract_address: string | null
+          created_at: string
+          description: string | null
+          floor_price: number
+          id: string
+          image_url: string | null
+          name: string
+          symbol: string | null
+          total_supply: number
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          category?: string
+          chain?: string
+          contract_address?: string | null
+          created_at?: string
+          description?: string | null
+          floor_price?: number
+          id?: string
+          image_url?: string | null
+          name: string
+          symbol?: string | null
+          total_supply?: number
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          category?: string
+          chain?: string
+          contract_address?: string | null
+          created_at?: string
+          description?: string | null
+          floor_price?: number
+          id?: string
+          image_url?: string | null
+          name?: string
+          symbol?: string | null
+          total_supply?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
