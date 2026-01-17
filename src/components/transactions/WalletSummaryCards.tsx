@@ -157,20 +157,37 @@ export function WalletSummaryCards() {
 
   // Format token amount with compact notation
   const formatCompactAmount = (amount: number, symbol: string): string => {
-    // USDT - 2 decimals
-    if (symbol === 'USDT') {
-      return formatNumber(amount, { minDecimals: 2, maxDecimals: 2 });
-    }
-    
-    // BTCB - show more decimals for small amounts (like 0.228757)
+    // BTCB/BTC - handle zero and small numbers
     if (symbol === 'BTCB' || symbol === 'BTC') {
-      if (amount < 1 && amount > 0) {
+      if (amount === 0) {
+        return '0.0000';  // Hiển thị rõ ràng là 0
+      }
+      if (amount < 1) {
         return formatNumber(amount, { minDecimals: 4, maxDecimals: 6 });
       }
       return formatNumber(amount, { minDecimals: 2, maxDecimals: 4 });
     }
     
-    // CAMLY - use B/M notation
+    // CAMLY - handle zero
+    if (symbol === 'CAMLY') {
+      if (amount === 0) {
+        return '0';  // Hiển thị rõ ràng là 0
+      }
+      if (amount >= 1_000_000_000) {
+        return (amount / 1_000_000_000).toFixed(2) + 'B';
+      }
+      if (amount >= 1_000_000) {
+        return (amount / 1_000_000).toFixed(2) + 'M';
+      }
+      return formatNumber(amount, { minDecimals: 0, maxDecimals: 0 });
+    }
+    
+    // USDT - 2 decimals
+    if (symbol === 'USDT') {
+      return formatNumber(amount, { minDecimals: 2, maxDecimals: 2 });
+    }
+    
+    // Default - use B/M notation
     if (amount >= 1_000_000_000) {
       return (amount / 1_000_000_000).toFixed(2) + 'B';
     }
@@ -302,10 +319,20 @@ export function WalletSummaryCards() {
                             <ArrowDownLeft className="w-4 h-4" />
                             <span className="font-body text-sm font-semibold uppercase tracking-widest">INFLOW</span>
                           </div>
-                          <div className="font-mono font-bold text-base text-emerald-700 dark:text-emerald-300">
+                          <div className={cn(
+                            "font-mono font-bold text-base",
+                            token.inflow_amount === 0 
+                              ? "text-muted-foreground/60" 
+                              : "text-emerald-700 dark:text-emerald-300"
+                          )}>
                             {formatCompactAmount(token.inflow_amount ?? 0, token.token_symbol)}
                           </div>
-                          <div className="font-mono text-sm font-medium text-emerald-600/80 dark:text-emerald-400/80">
+                          <div className={cn(
+                            "font-mono text-sm font-medium",
+                            token.inflow_amount === 0 
+                              ? "text-muted-foreground/50" 
+                              : "text-emerald-600/80 dark:text-emerald-400/80"
+                          )}>
                             {formatUSD(token.inflow_usd ?? 0)}
                           </div>
                         </div>
@@ -316,10 +343,20 @@ export function WalletSummaryCards() {
                             <ArrowUpRight className="w-4 h-4" />
                             <span className="font-body text-sm font-semibold uppercase tracking-widest">OUTFLOW</span>
                           </div>
-                          <div className="font-mono font-bold text-base text-red-700 dark:text-red-300">
+                          <div className={cn(
+                            "font-mono font-bold text-base",
+                            token.outflow_amount === 0 
+                              ? "text-muted-foreground/60" 
+                              : "text-red-700 dark:text-red-300"
+                          )}>
                             {formatCompactAmount(token.outflow_amount ?? 0, token.token_symbol)}
                           </div>
-                          <div className="font-mono text-sm font-medium text-red-600/80 dark:text-red-400/80">
+                          <div className={cn(
+                            "font-mono text-sm font-medium",
+                            token.outflow_amount === 0 
+                              ? "text-muted-foreground/50" 
+                              : "text-red-600/80 dark:text-red-400/80"
+                          )}>
                             {formatUSD(token.outflow_usd ?? 0)}
                           </div>
                         </div>
