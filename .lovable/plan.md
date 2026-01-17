@@ -1,118 +1,129 @@
-# Ke Hoach Cap Nhat Hien Thi BTCB va CAMLY - Xin Xo
+# Ke Hoach Cap Nhat Du Lieu BTCB va CAMLY - CHINH XAC 100%
 
-## VAN DE
+## VAN DE DA XAC DINH
 
-1. **BTCB trong FUN TREASURY**: Hien thi IN/OUT/BALANCE ro rang (hien tai IN=0, OUT=0, BALANCE=0.228757)
-2. **CAMLY trong FUN TREASURY - BNB 2**: Hien thi INFLOW=0 ro rang (khong co transaction IN)
+### 1. BTCB trong FUN TREASURY
+- **Balance:** 0.228757 (co trong tokens table)
+- **Transactions:** KHONG CO (0 records)
+- **Nguyen nhan:** Edge function `sync-transactions` chi sync CAMLY va USDT (dong 479-483)
 
-## DU LIEU DATABASE (DA XAC MINH)
+### 2. CAMLY trong FUN TREASURY - BNB 2  
+- **Balance:** 7,999,999,999 CAMLY
+- **Outflow:** 1,000,100,000 (co 2 giao dich OUT)
+- **Inflow:** 0 (KHONG co giao dich IN)
+- **Nguyen nhan:** Giao dich nhan CAMLY co the la internal transfer chua duoc backfill
 
-| Wallet | Token | Balance | Inflow TX | Outflow TX |
-|--------|-------|---------|-----------|------------|
-| FUN TREASURY | BTCB | 0.228757 | Khong co | Khong co |
-| FUN TREASURY - BNB 2 | CAMLY | 7,999,999,999 | 0 | 1,000,100,000 |
+---
 
 ## GIAI PHAP - 2 BUOC
 
-### Buoc 1: Cap nhat formatCompactAmount cho BTCB hien thi ro hon
-**File:** `src/components/transactions/WalletSummaryCards.tsx`
+### Buoc 1: Cap nhat sync-transactions de ho tro BTCB
+**File:** `supabase/functions/sync-transactions/index.ts`
 
-Hien tai:
-- BTCB voi balance = 0.228757 hien thi dung nhung IN/OUT = 0 co the hien thi khong ro
-
-Thay doi ham `formatCompactAmount` de xu ly truong hop IN/OUT = 0 cho BTCB:
-
+**Thay doi 1:** Them BTCB contract address (dong 326-328)
 ```typescript
-const formatCompactAmount = (amount: number, symbol: string): string => {
-  // BTCB/BTC - xu ly truong hop = 0 va so nho
-  if (symbol === 'BTCB' || symbol === 'BTC') {
-    if (amount === 0) {
-      return '0.0000';  // Hien thi ro rang la 0
-    }
-    if (amount < 1) {
-      return formatNumber(amount, { minDecimals: 4, maxDecimals: 6 });
-    }
-    return formatNumber(amount, { minDecimals: 2, maxDecimals: 4 });
-  }
-  
-  // CAMLY - xu ly truong hop = 0
-  if (symbol === 'CAMLY') {
-    if (amount === 0) {
-      return '0';  // Hien thi ro rang la 0
-    }
-    if (amount >= 1_000_000_000) {
-      return (amount / 1_000_000_000).toFixed(2) + 'B';
-    }
-    if (amount >= 1_000_000) {
-      return (amount / 1_000_000).toFixed(2) + 'M';
-    }
-    return formatNumber(amount, { minDecimals: 0, maxDecimals: 0 });
-  }
-  
-  // USDT - 2 decimals
-  if (symbol === 'USDT') {
-    return formatNumber(amount, { minDecimals: 2, maxDecimals: 2 });
-  }
-  
-  // Default - CAMLY style
-  if (amount >= 1_000_000_000) {
-    return (amount / 1_000_000_000).toFixed(2) + 'B';
-  }
-  if (amount >= 1_000_000) {
-    return (amount / 1_000_000).toFixed(2) + 'M';
-  }
-  return formatNumber(amount, { minDecimals: 0, maxDecimals: 0 });
+const CAMLY_CONTRACT = '0x0910320181889fefde0bb1ca63962b0a8882e413';
+const USDT_CONTRACT = '0x55d398326f99059ff775485246999027b3197955';
+const BTCB_CONTRACT = '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c'; // THEM MOI
+```
+
+**Thay doi 2:** Cap nhat filter logic (dong 469-483)
+```typescript
+// Determine token symbol
+let tokenSymbol = tx.token_symbol || 'UNKNOWN';
+const contractLower = tx.token_address?.toLowerCase();
+
+if (contractLower === CAMLY_CONTRACT.toLowerCase()) {
+  tokenSymbol = 'CAMLY';
+} else if (contractLower === USDT_CONTRACT.toLowerCase()) {
+  tokenSymbol = 'USDT';
+} else if (contractLower === BTCB_CONTRACT.toLowerCase()) {
+  tokenSymbol = 'BTCB';  // THEM MOI
+}
+
+// Filter: process CAMLY, USDT, va BTCB
+const symbolUpper = tokenSymbol.toUpperCase();
+if (symbolUpper !== 'CAMLY' && symbolUpper !== 'USDT' && symbolUpper !== 'BTCB') {
+  continue;  // SUA LAI DE HO TRO BTCB
+}
+```
+
+**Thay doi 3:** Them BTCB vao token prices (dong 346-353)
+```typescript
+const tokenPrices: Record<string, number> = {
+  'CAMLY': camlyPrice,
+  'BNB': 710,
+  'USDT': 1,
+  'USDC': 1,
+  'BTCB': 97000,  // THEM MOI - gia BTC hien tai
 };
 ```
 
-### Buoc 2: Dam bao USD value hien thi $0.00 khi amount = 0
-**File:** `src/components/transactions/WalletSummaryCards.tsx`
-
-Hien tai code da xu ly dung bang `formatUSD(token.inflow_usd ?? 0)`.
-Nhung can dam bao gia tri 0 hien thi ro rang hon trong UI.
-
-Them CSS highlight cho cac gia tri = 0 de user de nhan biet:
-
+**Thay doi 4:** Cap nhat Etherscan filter (dong 436-446)
 ```typescript
-// Trong phan render Inflow
-<div className={cn(
-  "font-mono font-bold text-base",
-  token.inflow_amount === 0 
-    ? "text-muted-foreground/60" // Lam nhat khi = 0
-    : "text-emerald-700 dark:text-emerald-300"
-)}>
-  {formatCompactAmount(token.inflow_amount ?? 0, token.token_symbol)}
-</div>
+// Filter only CAMLY, USDT, and BTCB tokens
+erc20Transfers = etherscanTransfers
+  .filter(tx => {
+    const contractLower = tx.contractAddress?.toLowerCase();
+    const symbolUpper = tx.tokenSymbol?.toUpperCase();
+    
+    const isCAMLY = contractLower === CAMLY_CONTRACT.toLowerCase() || symbolUpper === 'CAMLY';
+    const isUSDT = contractLower === USDT_CONTRACT.toLowerCase() || symbolUpper === 'USDT';
+    const isBTCB = contractLower === BTCB_CONTRACT.toLowerCase() || symbolUpper === 'BTCB';  // THEM MOI
+    
+    return isCAMLY || isUSDT || isBTCB;
+  })
+  .map(convertBSCScanToERC20);
 ```
 
-Tuong tu cho Outflow:
-```typescript
-<div className={cn(
-  "font-mono font-bold text-base",
-  token.outflow_amount === 0 
-    ? "text-muted-foreground/60"
-    : "text-red-700 dark:text-red-300"
-)}>
-  {formatCompactAmount(token.outflow_amount ?? 0, token.token_symbol)}
-</div>
+### Buoc 2: Chay Full Resync de lay du lieu BTCB
+Sau khi deploy edge function moi, can chay **Full Resync** cho wallet FUN TREASURY de lay lich su giao dich BTCB tu blockchain.
+
+Trong Settings page hoac goi API:
+```javascript
+// Tu frontend hoac API call
+await supabase.functions.invoke('sync-transactions', {
+  body: { 
+    wallet_id: '22222222-2222-2222-2222-222222222222',  // FUN TREASURY
+    force_full_sync: true 
+  }
+});
 ```
+
+---
 
 ## KET QUA MONG DOI
+
+Sau khi hoan thanh:
 
 ### FUN TREASURY:
 | Token | INFLOW | OUTFLOW | BALANCE |
 |-------|--------|---------|---------|
-| CAMLY | 2.83B ($62,336) | 2.59B ($57,075) | 239.14M ($5,261) |
-| BTCB | 0.0000 ($0.00) | 0.0000 ($0.00) | 0.2288 ($22,189) |
+| CAMLY | 2.83B | 2.59B | 239.14M |
+| BTCB | X.XXXX | X.XXXX | 0.2288 |
 | USDT | 106,882.89 | 78,818.00 | 2,117.78 |
+
+*X.XXXX = gia tri thuc tu blockchain sau khi sync*
 
 ### FUN TREASURY - BNB 2:
 | Token | INFLOW | OUTFLOW | BALANCE |
 |-------|--------|---------|---------|
-| CAMLY | 0 ($0.00) | 1.00B ($22,000) | 8.00B ($176,000) |
+| CAMLY | X.XXB | 1.00B | 8.00B |
+
+*X.XXB = gia tri INFLOW thuc te sau khi backfill internal transfers*
+
+---
 
 ## FILES CAN CAP NHAT
 
 | File | Thay doi |
 |------|----------|
-| `src/components/transactions/WalletSummaryCards.tsx` | Cap nhat formatCompactAmount + conditional styling cho gia tri 0 |
+| `supabase/functions/sync-transactions/index.ts` | Them BTCB contract, cap nhat filter logic, them BTCB price |
+
+---
+
+## LUU Y QUAN TRONG
+
+1. **BTCB transactions se duoc sync** sau khi deploy edge function moi
+2. **CAMLY INFLOW cho BNB 2** can kiem tra xem co phai internal transfer tu wallet khac trong he thong khong - neu co thi can chay Backfill trong Full Resync
+3. **Full Resync** co the mat vai phut de hoan thanh
