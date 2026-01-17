@@ -96,6 +96,14 @@ export function useWalletSummary() {
         balanceMap.get(t.wallet_id)!.set(t.symbol, Number(t.balance) || 0);
       });
 
+      // DEBUG: Log balance map to verify BTCB is present
+      console.log('[WalletSummary] Balance Map:', 
+        Array.from(balanceMap.entries()).map(([walletId, tokenMap]) => ({
+          wallet_id: walletId,
+          tokens: Array.from(tokenMap.entries()).filter(([sym]) => CORE_TOKENS.includes(sym))
+        }))
+      );
+
       // Group transactions by wallet_id, token_symbol, direction
       const summaryMap = new Map<string, Map<string, { in: { amount: number; count: number }; out: { amount: number; count: number } }>>();
 
@@ -181,10 +189,25 @@ export function useWalletSummary() {
             return orderA - orderB;
           });
           
+          // DEBUG: Log what we're working with for this wallet
+          console.log(`[WalletSummary] Wallet "${wallet.name}":`, {
+            allSymbols: Array.from(allSymbols),
+            sortedSymbols,
+            walletBalancesKeys: walletBalances ? Array.from(walletBalances.keys()) : 'none',
+            walletMapKeys: walletMap ? Array.from(walletMap.keys()) : 'none',
+          });
+          
           // Build tokens array with data from BOTH sources
           sortedSymbols.forEach(symbol => {
             const txData = walletMap?.get(symbol);
             const balance = walletBalances?.get(symbol) || 0;
+            
+            // DEBUG: Log each token being added
+            console.log(`[WalletSummary] Adding token "${symbol}" to "${wallet.name}":`, {
+              inflow: txData?.in.amount || 0,
+              outflow: txData?.out.amount || 0,
+              balance,
+            });
             
             tokens.push({
               token_symbol: symbol,

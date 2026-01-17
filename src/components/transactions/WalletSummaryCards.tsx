@@ -137,6 +137,24 @@ export function WalletSummaryCards() {
     return null;
   }
 
+  // Sort wallets in fixed order
+  const WALLET_ORDER = [
+    'FUN TREASURY',
+    'FUN TREASURY. TRUST',
+    'FUN TREASURY. TRUST - Bitcoin',
+    'FUN TREASURY - Bitcoin 2',
+    'FUN TREASURY - BNB 2',
+  ];
+  
+  const sortedSummaries = [...summaries].sort((a, b) => {
+    const orderA = WALLET_ORDER.indexOf(a.wallet_name);
+    const orderB = WALLET_ORDER.indexOf(b.wallet_name);
+    if (orderA === -1 && orderB === -1) return 0;
+    if (orderA === -1) return 1;
+    if (orderB === -1) return -1;
+    return orderA - orderB;
+  });
+
   // Format token amount with compact notation
   const formatCompactAmount = (amount: number, symbol: string): string => {
     // USDT - 2 decimals
@@ -170,9 +188,10 @@ export function WalletSummaryCards() {
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {summaries.map((wallet) => (
+        {sortedSummaries.map((wallet) => (
           <div
             key={wallet.wallet_id}
+
             className="bg-gradient-to-br from-amber-50/80 to-yellow-50/80 dark:from-amber-950/20 dark:to-yellow-950/20 border border-treasury-gold/20 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"
           >
             {/* Wallet Header */}
