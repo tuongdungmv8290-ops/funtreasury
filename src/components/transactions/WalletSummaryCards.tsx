@@ -100,16 +100,35 @@ export function WalletSummaryCards() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {[1, 2].map((i) => (
-          <div key={i} className="bg-card border border-border rounded-xl p-5 animate-pulse">
-            <div className="h-6 bg-muted rounded w-1/2 mb-4" />
-            <div className="space-y-3">
-              <div className="h-4 bg-muted rounded w-3/4" />
-              <div className="h-4 bg-muted rounded w-2/3" />
+      <div className="mb-6">
+        <h2 className="font-heading text-xl font-semibold tracking-wide text-foreground mb-3 flex items-center gap-2">
+          <Wallet className="w-5 h-5 text-treasury-gold" />
+          <span className="gold-text">Wallet Summary</span>
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="bg-gradient-to-br from-amber-50/80 to-yellow-50/80 dark:from-amber-950/20 dark:to-yellow-950/20 border border-treasury-gold/20 rounded-xl p-5 animate-pulse">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-treasury-gold/20">
+                <div className="w-8 h-8 rounded-lg bg-treasury-gold/20" />
+                <div className="h-5 bg-treasury-gold/30 rounded w-1/2" />
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-treasury-gold/20" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-treasury-gold/30 rounded w-16 mb-1" />
+                    <div className="h-3 bg-muted rounded w-20" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-emerald-100/50 dark:bg-emerald-950/20 rounded-lg p-3 h-20" />
+                  <div className="bg-red-100/50 dark:bg-red-950/20 rounded-lg p-3 h-20" />
+                  <div className="bg-purple-100/50 dark:bg-purple-950/20 rounded-lg p-3 h-20" />
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   }
@@ -234,10 +253,10 @@ export function WalletSummaryCards() {
                             <span className="font-body text-xs font-medium">Current Balance</span>
                           </div>
                           <div className="font-mono font-bold text-lg text-orange-700 dark:text-orange-300">
-                            {formatNumber(token.current_balance, { minDecimals: 4, maxDecimals: 6 })} BTC
+                            {formatNumber(token.current_balance ?? 0, { minDecimals: 4, maxDecimals: 6 })} BTC
                           </div>
                           <div className="font-mono text-sm text-orange-600/80 dark:text-orange-400/80">
-                            {formatUSD(token.current_balance_usd)}
+                            {formatUSD(token.current_balance_usd ?? 0)}
                           </div>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
@@ -255,10 +274,10 @@ export function WalletSummaryCards() {
                             <span className="font-body text-sm font-semibold uppercase tracking-widest">INFLOW</span>
                           </div>
                           <div className="font-mono font-bold text-base text-emerald-700 dark:text-emerald-300">
-                            {formatCompactAmount(token.inflow_amount, token.token_symbol)}
+                            {formatCompactAmount(token.inflow_amount ?? 0, token.token_symbol)}
                           </div>
                           <div className="font-mono text-sm font-medium text-emerald-600/80 dark:text-emerald-400/80">
-                            {formatUSD(token.inflow_usd)}
+                            {formatUSD(token.inflow_usd ?? 0)}
                           </div>
                         </div>
 
@@ -269,10 +288,10 @@ export function WalletSummaryCards() {
                             <span className="font-body text-sm font-semibold uppercase tracking-widest">OUTFLOW</span>
                           </div>
                           <div className="font-mono font-bold text-base text-red-700 dark:text-red-300">
-                            {formatCompactAmount(token.outflow_amount, token.token_symbol)}
+                            {formatCompactAmount(token.outflow_amount ?? 0, token.token_symbol)}
                           </div>
                           <div className="font-mono text-sm font-medium text-red-600/80 dark:text-red-400/80">
-                            {formatUSD(token.outflow_usd)}
+                            {formatUSD(token.outflow_usd ?? 0)}
                           </div>
                         </div>
 
@@ -283,10 +302,10 @@ export function WalletSummaryCards() {
                             <span className="font-body text-sm font-semibold uppercase tracking-widest">BALANCE</span>
                           </div>
                           <div className="font-mono font-bold text-base text-purple-700 dark:text-purple-300">
-                            {formatCompactAmount(token.current_balance, token.token_symbol)}
+                            {formatCompactAmount(token.current_balance ?? 0, token.token_symbol)}
                           </div>
                           <div className="font-mono text-sm font-medium text-purple-600/80 dark:text-purple-400/80">
-                            {formatUSD(token.current_balance_usd)}
+                            {formatUSD(token.current_balance_usd ?? 0)}
                           </div>
                         </div>
                       </div>
