@@ -139,9 +139,19 @@ export function WalletSummaryCards() {
 
   // Format token amount with compact notation
   const formatCompactAmount = (amount: number, symbol: string): string => {
+    // USDT - 2 decimals
     if (symbol === 'USDT') {
       return formatNumber(amount, { minDecimals: 2, maxDecimals: 2 });
     }
+    
+    // BTCB - show more decimals for small amounts (like 0.228757)
+    if (symbol === 'BTCB' || symbol === 'BTC') {
+      if (amount < 1 && amount > 0) {
+        return formatNumber(amount, { minDecimals: 4, maxDecimals: 6 });
+      }
+      return formatNumber(amount, { minDecimals: 2, maxDecimals: 4 });
+    }
+    
     // CAMLY - use B/M notation
     if (amount >= 1_000_000_000) {
       return (amount / 1_000_000_000).toFixed(2) + 'B';
