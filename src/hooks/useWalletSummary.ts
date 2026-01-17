@@ -97,11 +97,16 @@ export function useWalletSummary() {
       });
 
       // DEBUG: Log balance map to verify BTCB is present
-      console.log('[WalletSummary] Balance Map:', 
-        Array.from(balanceMap.entries()).map(([walletId, tokenMap]) => ({
-          wallet_id: walletId,
-          tokens: Array.from(tokenMap.entries()).filter(([sym]) => CORE_TOKENS.includes(sym))
-        }))
+      console.log('[WalletSummary] Balance Map (raw):', 
+        Array.from(balanceMap.entries()).map(([walletId, tokenMap]) => {
+          const wallet = wallets?.find(w => w.id === walletId);
+          return {
+            wallet_name: wallet?.name || walletId,
+            tokens: Array.from(tokenMap.entries())
+              .filter(([sym]) => CORE_TOKENS.includes(sym))
+              .map(([sym, bal]) => ({ symbol: sym, balance: bal }))
+          };
+        })
       );
 
       // Group transactions by wallet_id, token_symbol, direction
@@ -170,9 +175,12 @@ export function useWalletSummary() {
           }
           
           // Add symbols from token balances (with balance > 0)
+          // FIX: Use explicit check for non-zero to handle very small decimals like 0.228757
           if (walletBalances) {
             walletBalances.forEach((balance, symbol) => {
-              if (balance > 0 && CORE_TOKENS.includes(symbol)) {
+              const hasBalance = balance !== null && balance !== undefined && Number(balance) !== 0;
+              if (hasBalance && CORE_TOKENS.includes(symbol)) {
+                console.log(`[WalletSummary] Adding ${symbol} from balances for "${wallet.name}" (balance: ${balance})`);
                 allSymbols.add(symbol);
               }
             });
@@ -189,35 +197,35 @@ export function useWalletSummary() {
             return orderA - orderB;
           });
           
-          // DEBUG: Log what we're working with for this wallet
-          console.log(`[WalletSummary] Wallet "${wallet.name}":`, {
-            allSymbols: Array.from(allSymbols),
-            sortedSymbols,
-            walletBalancesKeys: walletBalances ? Array.from(walletBalances.keys()) : 'none',
-            walletMapKeys: walletMap ? Array.from(walletMap.keys()) : 'none',
+          // DEBUG: Log final symbols for this wallet
+          console.log(`[WalletSummary] FINAL for "${wallet.name}":`, {
+            tokensToDisplay: sortedSymbols,
+            balancesAvailable: walletBalances ? Array.from(walletBalances.entries()).map(([s, b]) => `${s}:${b}`) : 'none',
+            transactionsAvailable: walletMap ? Array.from(walletMap.keys()) : 'none',
           });
           
           // Build tokens array with data from BOTH sources
           sortedSymbols.forEach(symbol => {
             const txData = walletMap?.get(symbol);
-            const balance = walletBalances?.get(symbol) || 0;
-            
-            // DEBUG: Log each token being added
-            console.log(`[WalletSummary] Adding token "${symbol}" to "${wallet.name}":`, {
-              inflow: txData?.in.amount || 0,
-              outflow: txData?.out.amount || 0,
-              balance,
-            });
+            const balance = walletBalances?.get(symbol) ?? 0;
             
             tokens.push({
               token_symbol: symbol,
-              inflow_amount: txData?.in.amount || 0,
-              inflow_count: txData?.in.count || 0,
-              outflow_amount: txData?.out.amount || 0,
-              outflow_count: txData?.out.count || 0,
+              inflow_amount: txData?.in.amount ?? 0,
+              inflow_count: txData?.in.count ?? 0,
+              outflow_amount: txData?.out.amount ?? 0,
+              outflow_count: txData?.out.count ?? 0,
               current_balance: balance,
             });
           });
+          
+          // FINAL DEBUG: Log tokens array for this wallet
+          console.log(`[WalletSummary] TOKENS for "${wallet.name}":`, tokens.map(t => ({
+            symbol: t.token_symbol,
+            in: t.inflow_amount,
+            out: t.outflow_amount,
+            bal: t.current_balance
+          })));
         }
 
         return {
