@@ -44,9 +44,9 @@ export function useWallets() {
   const { data: camlyPriceData } = useCamlyPrice();
   const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
   
-  // Realtime subscription for tokens table - auto-update UI when balances change
+  // Realtime subscription for tokens table - DEBOUNCED to prevent flicker
   useEffect(() => {
-    console.log('🔔 Setting up realtime subscription for tokens table...');
+    let debounceTimer: ReturnType<typeof setTimeout>;
     
     const channel = supabase
       .channel('tokens-realtime-updates')
@@ -59,17 +59,18 @@ export function useWallets() {
         },
         (payload) => {
           console.log('💰 Token balance changed:', payload);
-          // Invalidate queries to refresh UI with new balances
-          queryClient.invalidateQueries({ queryKey: ['wallets-raw'] });
-          queryClient.invalidateQueries({ queryKey: ['token-balances-db-raw'] });
+          // Debounce invalidation to prevent cascade re-renders
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ['wallets-raw'] });
+            queryClient.invalidateQueries({ queryKey: ['token-balances-db-raw'] });
+          }, 2000);
         }
       )
-      .subscribe((status) => {
-        console.log('📡 Tokens realtime subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('🔕 Cleaning up tokens realtime subscription...');
+      clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
@@ -109,8 +110,9 @@ export function useWallets() {
         };
       });
     },
-    staleTime: 15 * 1000,
-    refetchInterval: 30 * 1000,
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+    placeholderData: (previousData) => previousData, // Keep old data during refetch
   });
 
   // Calculate USD values with current CAMLY price (memoized)
