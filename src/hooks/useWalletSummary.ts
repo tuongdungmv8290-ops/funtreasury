@@ -170,11 +170,15 @@ export function useWalletSummary() {
             });
           }
           
-          // Sort: CAMLY first, then alphabetically
+          // Sort with fixed priority order: CAMLY -> BTCB -> USDT -> others
+          const TOKEN_ORDER = ['CAMLY', 'BTCB', 'BTC', 'USDT'];
           const sortedSymbols = Array.from(allSymbols).sort((a, b) => {
-            if (a === 'CAMLY') return -1;
-            if (b === 'CAMLY') return 1;
-            return a.localeCompare(b);
+            const orderA = TOKEN_ORDER.indexOf(a);
+            const orderB = TOKEN_ORDER.indexOf(b);
+            if (orderA === -1 && orderB === -1) return a.localeCompare(b);
+            if (orderA === -1) return 1;
+            if (orderB === -1) return -1;
+            return orderA - orderB;
           });
           
           // Build tokens array with data from BOTH sources
