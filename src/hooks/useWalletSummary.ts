@@ -96,19 +96,6 @@ export function useWalletSummary() {
         balanceMap.get(t.wallet_id)!.set(t.symbol, Number(t.balance) || 0);
       });
 
-      // DEBUG: Log balance map to verify BTCB is present
-      console.log('[WalletSummary] Balance Map (raw):', 
-        Array.from(balanceMap.entries()).map(([walletId, tokenMap]) => {
-          const wallet = wallets?.find(w => w.id === walletId);
-          return {
-            wallet_name: wallet?.name || walletId,
-            tokens: Array.from(tokenMap.entries())
-              .filter(([sym]) => CORE_TOKENS.includes(sym))
-              .map(([sym, bal]) => ({ symbol: sym, balance: bal }))
-          };
-        })
-      );
-
       // Group transactions by wallet_id, token_symbol, direction
       const summaryMap = new Map<string, Map<string, { in: { amount: number; count: number }; out: { amount: number; count: number } }>>();
 
@@ -175,12 +162,10 @@ export function useWalletSummary() {
           }
           
           // Add symbols from token balances (with balance > 0)
-          // FIX: Use explicit check for non-zero to handle very small decimals like 0.228757
           if (walletBalances) {
             walletBalances.forEach((balance, symbol) => {
               const hasBalance = balance !== null && balance !== undefined && Number(balance) !== 0;
               if (hasBalance && CORE_TOKENS.includes(symbol)) {
-                console.log(`[WalletSummary] Adding ${symbol} from balances for "${wallet.name}" (balance: ${balance})`);
                 allSymbols.add(symbol);
               }
             });
@@ -195,13 +180,6 @@ export function useWalletSummary() {
             if (orderA === -1) return 1;
             if (orderB === -1) return -1;
             return orderA - orderB;
-          });
-          
-          // DEBUG: Log final symbols for this wallet
-          console.log(`[WalletSummary] FINAL for "${wallet.name}":`, {
-            tokensToDisplay: sortedSymbols,
-            balancesAvailable: walletBalances ? Array.from(walletBalances.entries()).map(([s, b]) => `${s}:${b}`) : 'none',
-            transactionsAvailable: walletMap ? Array.from(walletMap.keys()) : 'none',
           });
           
           // Build tokens array with data from BOTH sources
@@ -219,13 +197,6 @@ export function useWalletSummary() {
             });
           });
           
-          // FINAL DEBUG: Log tokens array for this wallet
-          console.log(`[WalletSummary] TOKENS for "${wallet.name}":`, tokens.map(t => ({
-            symbol: t.token_symbol,
-            in: t.inflow_amount,
-            out: t.outflow_amount,
-            bal: t.current_balance
-          })));
         }
 
         return {
