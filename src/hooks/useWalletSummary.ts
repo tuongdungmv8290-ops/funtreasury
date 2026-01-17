@@ -39,7 +39,7 @@ const FALLBACK_PRICES: Record<string, number> = {
 };
 
 // Core tokens to display (filter out spam/airdrop tokens)
-const CORE_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB', 'USDC', 'ETH'];
+const CORE_TOKENS = ['CAMLY', 'USDT', 'BTC', 'BTCB'];
 
 // Raw data interface (amounts only, no USD)
 interface RawTokenData {
