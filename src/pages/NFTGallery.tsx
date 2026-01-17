@@ -23,8 +23,6 @@ export default function NFTGallery() {
   const [sort, setSort] = useState<SortOption>('newest');
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sort, setSort] = useState<SortOption>('newest');
-  const [search, setSearch] = useState('');
 
   const { assets, collections, isLoading, stats } = useNFTCollection({
     category,
