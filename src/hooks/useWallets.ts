@@ -59,12 +59,12 @@ export function useWallets() {
         },
         (payload) => {
           console.log('💰 Token balance changed:', payload);
-          // Debounce invalidation to prevent cascade re-renders
+          // Debounce invalidation to prevent cascade re-renders (3 seconds)
           clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
             queryClient.invalidateQueries({ queryKey: ['wallets-raw'] });
             queryClient.invalidateQueries({ queryKey: ['token-balances-db-raw'] });
-          }, 2000);
+          }, 3000);
         }
       )
       .subscribe();

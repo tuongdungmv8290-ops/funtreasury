@@ -24,6 +24,7 @@ const TOKEN_LOGOS: Record<string, string> = {
   'CAMLY': camlyLogo,
   'BNB': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
   'USDT': 'https://cryptologos.cc/logos/tether-usdt-logo.png',
+  'USDC': 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
   'BTC': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
   'BTCB': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
   'ETH': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
@@ -32,6 +33,7 @@ const TOKEN_LOGOS: Record<string, string> = {
 const TOKEN_NAMES: Record<string, string> = {
   'CAMLY': 'CAMLY COIN',
   'USDT': 'Tether USD',
+  'USDC': 'USD Coin',
   'BTC': 'Bitcoin',
   'BTCB': 'Bitcoin BEP20',
   'BNB': 'BNB Chain',

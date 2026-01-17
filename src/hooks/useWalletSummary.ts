@@ -255,11 +255,19 @@ export function useWalletSummary() {
     });
   }, [rawQuery.data, camlyPrice]);
 
-  // STEP 3: Realtime updates with debounce
+  // STEP 3: Realtime updates with debounce (listen to BOTH transactions AND tokens)
   useEffect(() => {
     let debounceTimer: NodeJS.Timeout;
 
-    const channel = supabase
+    const invalidateWithDebounce = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['wallet-summary-raw'] });
+      }, 3000); // 3 seconds debounce
+    };
+
+    // Listen to transactions table
+    const txChannel = supabase
       .channel('wallet-summary-transactions')
       .on(
         'postgres_changes',
@@ -268,19 +276,28 @@ export function useWalletSummary() {
           schema: 'public',
           table: 'transactions',
         },
-        () => {
-          // Debounce invalidation to prevent cascade re-renders
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey: ['wallet-summary-raw'] });
-          }, 2000);
-        }
+        invalidateWithDebounce
+      )
+      .subscribe();
+
+    // Listen to tokens table for balance updates
+    const tokensChannel = supabase
+      .channel('wallet-summary-tokens')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tokens',
+        },
+        invalidateWithDebounce
       )
       .subscribe();
 
     return () => {
       clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
+      supabase.removeChannel(txChannel);
+      supabase.removeChannel(tokensChannel);
     };
   }, [queryClient]);
 
