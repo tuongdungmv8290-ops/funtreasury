@@ -38,6 +38,9 @@ const FALLBACK_PRICES: Record<string, number> = {
   'USDC': 1,
 };
 
+// Core tokens to display (filter out spam/airdrop tokens)
+const CORE_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB', 'USDC', 'ETH'];
+
 // Raw data interface (amounts only, no USD)
 interface RawTokenData {
   token_symbol: string;
@@ -142,24 +145,49 @@ export function useWalletSummary() {
               current_balance: btcBalance,
             });
           }
-        }
-
-        if (walletMap) {
-          // Sort tokens: CAMLY first, then USDT
-          const sortedTokens = Array.from(walletMap.entries()).sort((a, b) => {
-            if (a[0] === 'CAMLY') return -1;
-            if (b[0] === 'CAMLY') return 1;
-            return a[0].localeCompare(b[0]);
+        } else {
+          // FIX: Merge tokens from BOTH transactions AND balances
+          // This ensures tokens with balance but no/few transactions (like CAMLY in BNB2) are displayed
+          
+          // Collect all token symbols from both sources
+          const allSymbols = new Set<string>();
+          
+          // Add symbols from transactions
+          if (walletMap) {
+            walletMap.forEach((_, symbol) => {
+              if (CORE_TOKENS.includes(symbol)) {
+                allSymbols.add(symbol);
+              }
+            });
+          }
+          
+          // Add symbols from token balances (with balance > 0)
+          if (walletBalances) {
+            walletBalances.forEach((balance, symbol) => {
+              if (balance > 0 && CORE_TOKENS.includes(symbol)) {
+                allSymbols.add(symbol);
+              }
+            });
+          }
+          
+          // Sort: CAMLY first, then alphabetically
+          const sortedSymbols = Array.from(allSymbols).sort((a, b) => {
+            if (a === 'CAMLY') return -1;
+            if (b === 'CAMLY') return 1;
+            return a.localeCompare(b);
           });
-
-          sortedTokens.forEach(([symbol, data]) => {
+          
+          // Build tokens array with data from BOTH sources
+          sortedSymbols.forEach(symbol => {
+            const txData = walletMap?.get(symbol);
             const balance = walletBalances?.get(symbol) || 0;
+            
             tokens.push({
               token_symbol: symbol,
-              inflow_amount: data.in.amount,
-              inflow_count: data.in.count,
-              outflow_amount: data.out.amount,
-              outflow_count: data.out.count,
+              inflow_amount: txData?.in.amount || 0,
+              inflow_count: txData?.in.count || 0,
+              outflow_amount: txData?.out.amount || 0,
+              outflow_count: txData?.out.count || 0,
               current_balance: balance,
             });
           });
@@ -176,11 +204,11 @@ export function useWalletSummary() {
       return result;
     },
     enabled: walletIds.length > 0,
-    staleTime: 30 * 1000,
-    placeholderData: (previousData) => previousData, // Keep old data during refetch to prevent flicker
+    staleTime: 30 * 1000, // 30 seconds
+    placeholderData: (previousData) => previousData, // Keep old data while refetching
   });
 
-  // STEP 2: Calculate USD values in useMemo (only re-calculate, no re-fetch)
+  // STEP 2: Calculate USD values in useMemo (separate from queryKey!)
   const data = useMemo((): WalletSummary[] | undefined => {
     if (!rawQuery.data) return undefined;
 
@@ -190,48 +218,46 @@ export function useWalletSummary() {
     };
 
     return rawQuery.data.map(wallet => {
-      let total_inflow_usd = 0;
-      let total_outflow_usd = 0;
-
-      const tokensWithUsd: WalletTokenSummary[] = wallet.tokens.map(t => {
+      const tokens: WalletTokenSummary[] = wallet.tokens.map(t => {
         const price = realtimePrices[t.token_symbol] || 0;
-        const inflow_usd = t.inflow_amount * price;
-        const outflow_usd = t.outflow_amount * price;
-        const current_balance_usd = t.current_balance * price;
-
-        total_inflow_usd += inflow_usd;
-        total_outflow_usd += outflow_usd;
+        const inflowUsd = t.inflow_amount * price;
+        const outflowUsd = t.outflow_amount * price;
+        const netAmount = t.inflow_amount - t.outflow_amount;
+        const balanceUsd = t.current_balance * price;
 
         return {
           token_symbol: t.token_symbol,
           inflow_amount: t.inflow_amount,
-          inflow_usd,
+          inflow_usd: inflowUsd,
           inflow_count: t.inflow_count,
           outflow_amount: t.outflow_amount,
-          outflow_usd,
+          outflow_usd: outflowUsd,
           outflow_count: t.outflow_count,
-          net_amount: t.inflow_amount - t.outflow_amount,
-          net_usd: inflow_usd - outflow_usd,
+          net_amount: netAmount,
+          net_usd: inflowUsd - outflowUsd,
           current_balance: t.current_balance,
-          current_balance_usd,
+          current_balance_usd: balanceUsd,
         };
       });
+
+      const totalInflowUsd = tokens.reduce((sum, t) => sum + t.inflow_usd, 0);
+      const totalOutflowUsd = tokens.reduce((sum, t) => sum + t.outflow_usd, 0);
 
       return {
         wallet_id: wallet.wallet_id,
         wallet_name: wallet.wallet_name,
         wallet_chain: wallet.wallet_chain,
-        tokens: tokensWithUsd,
-        total_inflow_usd,
-        total_outflow_usd,
-        total_net_usd: total_inflow_usd - total_outflow_usd,
+        tokens,
+        total_inflow_usd: totalInflowUsd,
+        total_outflow_usd: totalOutflowUsd,
+        total_net_usd: totalInflowUsd - totalOutflowUsd,
       };
     });
   }, [rawQuery.data, camlyPrice]);
 
-  // STEP 3: Debounced realtime subscription for transactions table
+  // STEP 3: Realtime updates with debounce
   useEffect(() => {
-    let debounceTimer: ReturnType<typeof setTimeout>;
+    let debounceTimer: NodeJS.Timeout;
 
     const channel = supabase
       .channel('wallet-summary-transactions')
@@ -240,7 +266,7 @@ export function useWalletSummary() {
         {
           event: '*',
           schema: 'public',
-          table: 'transactions'
+          table: 'transactions',
         },
         () => {
           // Debounce invalidation to prevent cascade re-renders
