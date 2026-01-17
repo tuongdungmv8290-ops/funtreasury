@@ -326,6 +326,8 @@ serve(async (req) => {
     const CAMLY_CONTRACT = '0x0910320181889fefde0bb1ca63962b0a8882e413';
     // USDT contract on BSC
     const USDT_CONTRACT = '0x55d398326f99059ff775485246999027b3197955';
+    // BTCB contract on BSC (Bitcoin BEP2)
+    const BTCB_CONTRACT = '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c';
     
     // Fetch realtime CAMLY price from get-camly-price function
     let camlyPrice = 0.000022; // fallback
@@ -350,6 +352,7 @@ serve(async (req) => {
       'BNB': 710,
       'USDT': 1,
       'USDC': 1,
+      'BTCB': 97000,  // BTC price in USD
     };
 
     // 3. Sync each wallet
@@ -432,21 +435,22 @@ serve(async (req) => {
           
           const etherscanTransfers = await fetchFromEtherscanV2(wallet.address, etherscanApiKey, chainId);
           
-          // Filter only CAMLY and USDT tokens, then convert to ERC20Transfer format
+          // Filter only CAMLY, USDT, and BTCB tokens, then convert to ERC20Transfer format
           erc20Transfers = etherscanTransfers
             .filter(tx => {
               const contractLower = tx.contractAddress?.toLowerCase();
               const symbolUpper = tx.tokenSymbol?.toUpperCase();
               
-              // Only keep CAMLY (by contract or symbol) and USDT
+              // Only keep CAMLY (by contract or symbol), USDT, and BTCB
               const isCAMLY = contractLower === CAMLY_CONTRACT.toLowerCase() || symbolUpper === 'CAMLY';
               const isUSDT = contractLower === USDT_CONTRACT.toLowerCase() || symbolUpper === 'USDT';
+              const isBTCB = contractLower === BTCB_CONTRACT.toLowerCase() || symbolUpper === 'BTCB';
               
-              return isCAMLY || isUSDT;
+              return isCAMLY || isUSDT || isBTCB;
             })
             .map(convertBSCScanToERC20);
           
-          console.log(`Etherscan V2 filtered to ${erc20Transfers.length} CAMLY/USDT transactions`);
+          console.log(`Etherscan V2 filtered to ${erc20Transfers.length} CAMLY/USDT/BTCB transactions`);
         }
 
         console.log(`Total ERC20 transfers for ${wallet.name}: ${erc20Transfers.length} (source: ${usedSource})`);
@@ -474,11 +478,13 @@ serve(async (req) => {
             tokenSymbol = 'CAMLY';
           } else if (contractLower === USDT_CONTRACT.toLowerCase()) {
             tokenSymbol = 'USDT';
+          } else if (contractLower === BTCB_CONTRACT.toLowerCase()) {
+            tokenSymbol = 'BTCB';
           }
 
-          // Filter: only process CAMLY and USDT
+          // Filter: only process CAMLY, USDT, and BTCB
           const symbolUpper = tokenSymbol.toUpperCase();
-          if (symbolUpper !== 'CAMLY' && symbolUpper !== 'USDT') {
+          if (symbolUpper !== 'CAMLY' && symbolUpper !== 'USDT' && symbolUpper !== 'BTCB') {
             continue;
           }
 
@@ -754,11 +760,11 @@ serve(async (req) => {
       console.log('Deleted dust USDT transactions (< 1 USDT)');
     }
     
-    // Delete non-CAMLY/USDT tokens
+    // Delete non-CAMLY/USDT/BTCB tokens
     const { error: spamError } = await supabase
       .from('transactions')
       .delete()
-      .not('token_symbol', 'in', '("CAMLY","USDT")');
+      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB")');
     
     if (!spamError) {
       console.log('Deleted spam token transactions');
