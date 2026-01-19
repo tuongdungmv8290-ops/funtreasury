@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Eye, EyeOff, Lock, Mail, Sparkles } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -121,10 +121,14 @@ const Login = () => {
       {/* Logo & Title */}
       <div className="relative z-10 flex flex-col items-center mb-8 animate-fade-in">
         <div className="relative mb-4">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-amber-600 flex items-center justify-center shadow-lg">
-            <Sparkles className="h-10 w-10 text-primary-foreground" />
+          <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-primary/30">
+            <img 
+              src="/apple-touch-icon.png" 
+              alt="FUN Treasury Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
-          <div className="absolute -inset-2 bg-primary/20 rounded-3xl blur-xl -z-10 animate-pulse-slow" />
+          <div className="absolute -inset-3 bg-primary/20 rounded-3xl blur-xl -z-10 animate-pulse-slow" />
         </div>
         <h1 className="text-3xl font-bold gold-text mb-2">FUN Treasury</h1>
         <p className="text-muted-foreground text-center">
