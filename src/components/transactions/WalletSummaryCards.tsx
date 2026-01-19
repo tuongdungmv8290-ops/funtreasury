@@ -312,9 +312,9 @@ export function WalletSummaryCards() {
                       </div>
                     ) : (
                       /* EVM wallets - show 3 columns: Inflow, Outflow, Balance */
-                      <div className="grid grid-cols-3 gap-3 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-sm">
                         {/* Inflow */}
-                        <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3">
+                        <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-2 sm:p-3">
                           <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 mb-2">
                             <ArrowDownLeft className="w-4 h-4" />
                             <span className="font-body text-sm font-semibold uppercase tracking-widest">INFLOW</span>
@@ -338,7 +338,7 @@ export function WalletSummaryCards() {
                         </div>
 
                         {/* Outflow */}
-                        <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-3">
+                        <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-2 sm:p-3">
                           <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400 mb-2">
                             <ArrowUpRight className="w-4 h-4" />
                             <span className="font-body text-sm font-semibold uppercase tracking-widest">OUTFLOW</span>
@@ -362,7 +362,7 @@ export function WalletSummaryCards() {
                         </div>
 
                         {/* Current Balance */}
-                        <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-3">
+                        <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-2 sm:p-3">
                           <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 mb-2">
                             <Wallet className="w-4 h-4" />
                             <span className="font-body text-sm font-semibold uppercase tracking-widest">BALANCE</span>

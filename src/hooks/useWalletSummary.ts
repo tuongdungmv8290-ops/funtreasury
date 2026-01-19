@@ -39,7 +39,7 @@ const FALLBACK_PRICES: Record<string, number> = {
 };
 
 // Core tokens to display (filter out spam/airdrop tokens)
-const CORE_TOKENS = ['CAMLY', 'USDT', 'BTC', 'BTCB'];
+const CORE_TOKENS = ['CAMLY', 'USDT', 'BTC'];
 
 // Raw data interface (amounts only, no USD)
 interface RawTokenData {
@@ -172,7 +172,7 @@ export function useWalletSummary() {
           }
           
           // Sort with fixed priority order: CAMLY -> BTCB -> USDT -> others
-          const TOKEN_ORDER = ['CAMLY', 'BTCB', 'BTC', 'USDT'];
+          const TOKEN_ORDER = ['CAMLY', 'BTC', 'USDT'];
           const sortedSymbols = Array.from(allSymbols).sort((a, b) => {
             const orderA = TOKEN_ORDER.indexOf(a);
             const orderB = TOKEN_ORDER.indexOf(b);
