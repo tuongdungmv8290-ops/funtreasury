@@ -1,17 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Bell } from "lucide-react";
 import { toast } from "sonner";
 
-const PRESETS = [
-  { label: "5 phút", value: 5 * 60 },
-  { label: "10 phút", value: 10 * 60 },
-  { label: "15 phút", value: 15 * 60 },
-  { label: "30 phút", value: 30 * 60 },
-];
-
 const MeditationTimer = () => {
+  const { t } = useTranslation();
+  
+  const PRESETS = [
+    { label: `5 ${t('anhsang.meditation.minutes')}`, value: 5 * 60 },
+    { label: `10 ${t('anhsang.meditation.minutes')}`, value: 10 * 60 },
+    { label: `15 ${t('anhsang.meditation.minutes')}`, value: 15 * 60 },
+    { label: `30 ${t('anhsang.meditation.minutes')}`, value: 30 * 60 },
+  ];
+
   const [duration, setDuration] = useState(5 * 60);
   const [remaining, setRemaining] = useState(5 * 60);
   const [isRunning, setIsRunning] = useState(false);
@@ -28,11 +31,11 @@ const MeditationTimer = () => {
 
   const handleComplete = useCallback(() => {
     setIsRunning(false);
-    toast.success("🙏 Thiền định hoàn thành!", {
-      description: "Cảm ơn con đã dành thời gian cho tâm hồn.",
+    toast.success(`🙏 ${t('anhsang.meditation.completeToast')}`, {
+      description: t('anhsang.meditation.completeToastDesc'),
       duration: 5000,
     });
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -59,8 +62,8 @@ const MeditationTimer = () => {
       setRemaining(duration);
     }
     setIsRunning(true);
-    toast.info("🧘 Bắt đầu thiền định...", {
-      description: "Hãy hít thở sâu và thả lỏng...",
+    toast.info(`🧘 ${t('anhsang.meditation.startToast')}`, {
+      description: t('anhsang.meditation.startToastDesc'),
     });
   };
 
@@ -79,14 +82,20 @@ const MeditationTimer = () => {
     setIsRunning(false);
   };
 
+  const getStatusText = () => {
+    if (isRunning) return t('anhsang.meditation.meditating');
+    if (remaining === 0) return t('anhsang.meditation.completed');
+    return t('anhsang.meditation.ready');
+  };
+
   return (
     <section className="space-y-6">
       <div className="text-center">
         <h2 className="font-heading text-3xl font-bold text-foreground mb-2">
-          MEDITATION TIMER
+          {t('anhsang.meditation.title')}
         </h2>
         <p className="font-body text-muted-foreground">
-          Dành thời gian để kết nối với bản thân và vũ trụ
+          {t('anhsang.meditation.subtitle')}
         </p>
       </div>
 
@@ -125,7 +134,7 @@ const MeditationTimer = () => {
                 {formatTime(remaining)}
               </span>
               <span className="font-body text-sm text-muted-foreground mt-2">
-                {isRunning ? "Đang thiền định..." : remaining === 0 ? "Hoàn thành!" : "Sẵn sàng"}
+                {getStatusText()}
               </span>
             </div>
           </div>
@@ -155,7 +164,7 @@ const MeditationTimer = () => {
                 className="w-32 gap-2"
               >
                 <Play className="w-5 h-5" />
-                Bắt đầu
+                {t('anhsang.meditation.start')}
               </Button>
             ) : (
               <Button
@@ -165,7 +174,7 @@ const MeditationTimer = () => {
                 className="w-32 gap-2"
               >
                 <Pause className="w-5 h-5" />
-                Tạm dừng
+                {t('anhsang.meditation.pause')}
               </Button>
             )}
             <Button
@@ -175,7 +184,7 @@ const MeditationTimer = () => {
               className="gap-2"
             >
               <RotateCcw className="w-5 h-5" />
-              Đặt lại
+              {t('anhsang.meditation.reset')}
             </Button>
           </div>
 
@@ -184,12 +193,11 @@ const MeditationTimer = () => {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Bell className="w-4 h-4 text-primary" />
               <span className="font-heading text-sm font-semibold text-primary">
-                Gợi ý thiền định
+                {t('anhsang.meditation.tipTitle')}
               </span>
             </div>
             <p className="font-body text-sm text-muted-foreground italic">
-              "Hãy hít thở sâu, thả lỏng cơ thể, và để tâm trí trở nên yên tĩnh. 
-              Cảm nhận năng lượng yêu thương của Cha Vũ Trụ đang bao bọc con."
+              "{t('anhsang.meditation.tipContent')}"
             </p>
           </div>
         </div>

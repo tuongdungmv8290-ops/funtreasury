@@ -39,7 +39,7 @@
     "showAll": "查看全部",
     "hideExtra": "收起"
   },
-"platforms": {
+  "platforms": {
     "funProfile": "FUN PROFILE",
     "funProfileDesc": "个人资料",
     "funFarm": "FUN FARM",
@@ -167,19 +167,184 @@
     "title": "爱之光",
     "subtitle": "散发纯净的爱之能量",
     "mainQuote": "宇宙之父与小天使 Camly Dương 的纯净爱之能量",
-    "dailyAffirmation": "每日肯定语",
-    "shuffleQuote": "新语录",
-    "mantras": "来自宇宙之父的 8 条咒语",
-    "lawsOfLight": "FUN 生态系统用户清单",
-    "breathingExercise": "4-7-8 呼吸练习",
-    "meditationTimer": "冥想计时器",
-    "inhale": "吸气",
-    "hold": "屏息",
-    "exhale": "呼气",
-    "cycles": "循环",
-    "start": "开始",
-    "stop": "停止",
-    "reset": "重置"
+    "dailyAffirmation": {
+      "title": "每日肯定语",
+      "subtitle": "今天的爱之信息",
+      "shuffle": "查看其他语录",
+      "list": [
+        "我值得被爱和幸福。",
+        "正能量每天流经我。",
+        "我感谢我现在拥有的一切。",
+        "我是光，我散发爱的能量。",
+        "宇宙之父总是保护和引导我。",
+        "我相信生命的旅程。",
+        "每天我都在变得更好。",
+        "我付出爱，也收获爱。",
+        "我的灵魂平静且充满能量。",
+        "我是无限宇宙的一部分。",
+        "繁荣正从四面八方向我涌来。",
+        "我完全接受自己。",
+        "每一次呼吸都是宇宙之父的礼物。",
+        "我有力量创造我想要的生活。",
+        "爱是宇宙中最强大的能量。",
+        "我被奇迹包围。",
+        "内心的平静扩展到世界。",
+        "我释放所有担忧，迎接喜悦。",
+        "内在的光指引我每一步。",
+        "我与宇宙能量源深深连接。",
+        "感恩之心打开丰盛之门。",
+        "我是爱，我是光，我是平和。",
+        "每一个挑战都是成长的机会。",
+        "我吸引美好的事物进入我的生活。",
+        "我的心敞开接受所有美好的事物。",
+        "我带着感恩活在当下。",
+        "纯净的爱之能量流经我。",
+        "我相信内在无限的力量。",
+        "每一天都是充满希望的新开始。",
+        "我是宇宙之父爱与光的管道。"
+      ]
+    },
+    "mantras": {
+      "title": "来自宇宙之父的8条咒语",
+      "list": [
+        "我是宇宙之父纯净爱之光。",
+        "我是宇宙之父的意志。",
+        "我是宇宙之父的智慧。",
+        "我是幸福。",
+        "我是爱。",
+        "我是父的钱。",
+        "我忏悔 我忏悔 我忏悔。",
+        "在宇宙之父纯净爱之光中我感恩 我感恩 我感恩。"
+      ]
+    },
+    "laws": {
+      "heroTitle": "光之法则",
+      "heroSubtitle": "THE LAW OF LIGHT",
+      "checklistTitle": "光之5条法则清单",
+      "checklistDesc": "每天通过勾选以下法则来提醒自己",
+      "progressToday": "今日进度",
+      "completed": "太棒了！你今天已完成所有光之法则！",
+      "clickToConfirm": "（点击5条光之法则确认每日承诺）",
+      "list": [
+        "我真实地对待自己",
+        "我对自己发出的能量负责",
+        "我准备好学习、改正和升级",
+        "我选择爱而不是评判",
+        "我选择光而不是自我"
+      ],
+      "usersSection": {
+        "title": "FUN生态系统的用户",
+        "subtitle": "黄金时代社交网络 - 5D光之经济",
+        "intro1": "FUN生态系统不是为所有人准备的。",
+        "intro2": "FUN生态系统只为拥有光的灵魂，或正在走向光的灵魂而设。",
+        "whoAreYou": "你是谁？",
+        "usersAre": "FUN生态系统的用户是：",
+        "characteristics": [
+          "觉醒的，或正在觉醒之路上的",
+          "对自己真实的",
+          "对他人真诚的",
+          "积极、善良、对自己发出的能量负责地生活",
+          "懂得爱、懂得感恩、懂得忏悔",
+          "相信善、相信光、相信宇宙更高秩序"
+        ],
+        "imperfect": "你可能还不完美，\n但你有一颗向善的心。\n你想活得真实、正确、明亮。",
+        "attract": "父以频率和爱的能量吸引你。"
+      },
+      "coreSection": {
+        "title": "FUN生态系统的核心原则",
+        "subtitle": "FUN生态系统按照光之法则运行，而非按照多数人。",
+        "principles": [
+          "光吸引光",
+          "低频率无法长期存在于高频率中",
+          "自私的意志无法与宇宙意志同行"
+        ],
+        "warningIntro": "因此，如果用户故意将以下带入平台：",
+        "negativeTraits": ["负面", "贪婪", "操纵", "傲慢", "欺骗", "制造分裂", "破坏共享能量"],
+        "warningConsequence": "将在没有事先通知的情况下被从平台删除。",
+        "warningNote": "这不是惩罚。\n这是光的自然净化。"
+      },
+      "notBelongSection": {
+        "title": "谁不属于FUN生态系统？",
+        "list": [
+          "只寻求利益而不想成长的人",
+          "聪明但缺乏良心的人",
+          "谈论光却活在黑暗中的人",
+          "以灵性之名养育自我的人",
+          "不愿反省自己的人"
+        ],
+        "note": "FUN生态系统的门没有锁，但光会自然筛选。"
+      },
+      "beneficiarySection": {
+        "title": "谁能从FUN生态系统受益？",
+        "intro": "只有那些：",
+        "list": [
+          "拥有内在之光的人",
+          "或真正渴望回归光的人",
+          "准备放下自我、重新学习、提升频率的人",
+          "敢于正确、真实、善良、有爱地生活的人"
+        ],
+        "benefit1": "这些人不仅使用父的社交网络，",
+        "benefit2": "还在5D光之经济中受到保护、支持和滋养。"
+      },
+      "ecosystemSection": {
+        "title": "FUN生态系统是什么？",
+        "intro": "FUN生态系统是：",
+        "definitions": [
+          "觉醒灵魂的社交网络",
+          "光的安全空间",
+          "连接拥有真正价值的人的平台",
+          "地球黄金时代的基础设施"
+        ],
+        "noDrama": "没有戏剧。",
+        "noManipulation": "没有操纵。",
+        "noCompetition": "没有肮脏的竞争。",
+        "onlyLove": "只有纯净爱中的合作。"
+      },
+      "fatherMessage": {
+        "title": "来自父的信息",
+        "quote": "只有那些拥有光，\n或真心向往光的人，\n才能在黄金时代长久前行。",
+        "signature": "— 宇宙之父 —"
+      }
+    },
+    "breathing": {
+      "title": "4-7-8呼吸练习",
+      "subtitle": "减压放松心灵的呼吸技巧",
+      "ready": "准备好",
+      "inhale": "吸气",
+      "hold": "屏息",
+      "exhale": "呼气",
+      "cycle": "循环",
+      "cycles": "呼吸次数：",
+      "start": "开始",
+      "stop": "停止",
+      "reset": "重置",
+      "completed": "呼吸练习完成！",
+      "completedDesc": "你已完成{{cycles}}轮4-7-8呼吸。心灵已经平静。",
+      "instructionTitle": "4-7-8技术指南",
+      "secondsInhale": "秒吸气",
+      "secondsHold": "秒屏息",
+      "secondsExhale": "秒呼气",
+      "inhaleDeep": "用鼻子深吸气",
+      "holdRelax": "静止保持，放松",
+      "exhaleSlowly": "用嘴慢慢呼气"
+    },
+    "meditation": {
+      "title": "冥想计时器",
+      "subtitle": "花时间与自己和宇宙连接",
+      "minutes": "分钟",
+      "meditating": "冥想中...",
+      "completed": "完成！",
+      "ready": "准备好",
+      "start": "开始",
+      "pause": "暂停",
+      "reset": "重置",
+      "tipTitle": "冥想提示",
+      "tipContent": "深呼吸，放松身体，让心灵安静。感受宇宙之父的爱之能量正在包围着你。",
+      "startToast": "开始冥想...",
+      "startToastDesc": "深呼吸并放松...",
+      "completeToast": "冥想完成！",
+      "completeToastDesc": "感谢你为灵魂花时间。"
+    }
   },
   "camly": {
     "title": "CAMLY 币",
@@ -192,7 +357,19 @@
     "contractAddress": "合约地址",
     "network": "网络",
     "loveOfValue": "价值之爱",
-    "storeOfValue": "价值储存"
+    "storeOfValue": "价值储存",
+    "wallet": {
+      "copied": "钱包地址已复制！",
+      "connect": "连接MetaMask钱包",
+      "balance": "你的余额",
+      "send": "发送",
+      "receive": "接收",
+      "transactionHistory": "CAMLY交易历史"
+    },
+    "tabs": {
+      "chart": "图表",
+      "detail": "详情"
+    }
   },
   "settings": {
     "title": "设置",

@@ -39,7 +39,7 @@
     "showAll": "Alle anzeigen",
     "hideExtra": "Weniger anzeigen"
   },
-"platforms": {
+  "platforms": {
     "funProfile": "FUN PROFILE",
     "funProfileDesc": "Persönliches Profil",
     "funFarm": "FUN FARM",
@@ -167,19 +167,184 @@
     "title": "Licht der Liebe",
     "subtitle": "Strahle reine Liebesenergie aus",
     "mainQuote": "Die reine Liebesenergie des Universellen Vaters und des Engelchens Camly Dương",
-    "dailyAffirmation": "Tägliche Affirmation",
-    "shuffleQuote": "Neues Zitat",
-    "mantras": "8 Mantras vom Universellen Vater",
-    "lawsOfLight": "Checkliste für FUN Ökosystem Benutzer",
-    "breathingExercise": "4-7-8 Atemübung",
-    "meditationTimer": "Meditations-Timer",
-    "inhale": "Einatmen",
-    "hold": "Halten",
-    "exhale": "Ausatmen",
-    "cycles": "Zyklen",
-    "start": "Starten",
-    "stop": "Stoppen",
-    "reset": "Zurücksetzen"
+    "dailyAffirmation": {
+      "title": "Tägliche Affirmation",
+      "subtitle": "Liebesbotschaft für heute",
+      "shuffle": "Anderes Zitat sehen",
+      "list": [
+        "Ich verdiene Liebe und Glück.",
+        "Positive Energie fließt jeden Tag durch mich.",
+        "Ich bin dankbar für alles, was ich habe.",
+        "Ich bin Licht, ich strahle Liebesenergie aus.",
+        "Der Universelle Vater beschützt und führt mich immer.",
+        "Ich vertraue der Reise des Lebens.",
+        "Jeden Tag werde ich besser.",
+        "Ich gebe Liebe und empfange Liebe.",
+        "Meine Seele ist friedlich und voller Energie.",
+        "Ich bin Teil des unendlichen Universums.",
+        "Wohlstand kommt aus allen Richtungen zu mir.",
+        "Ich akzeptiere mich vollständig.",
+        "Jeder Atemzug ist ein Geschenk des Universellen Vaters.",
+        "Ich habe die Kraft, das Leben zu erschaffen, das ich möchte.",
+        "Liebe ist die mächtigste Energie im Universum.",
+        "Ich bin von Wundern umgeben.",
+        "Innerer Frieden breitet sich in die Welt aus.",
+        "Ich lasse alle Sorgen los und empfange Freude.",
+        "Das innere Licht führt jeden Schritt.",
+        "Ich bin tief mit der universellen Energiequelle verbunden.",
+        "Dankbarkeit öffnet die Türen des Überflusses.",
+        "Ich bin Liebe, ich bin Licht, ich bin Frieden.",
+        "Jede Herausforderung ist eine Wachstumschance.",
+        "Ich ziehe gute Dinge in mein Leben.",
+        "Mein Herz ist offen für alles Gute.",
+        "Ich lebe im gegenwärtigen Moment mit Dankbarkeit.",
+        "Reine Liebesenergie fließt durch mich.",
+        "Ich glaube an die unendliche Kraft in mir.",
+        "Jeder Tag ist ein neuer Anfang voller Hoffnung.",
+        "Ich bin ein Kanal für die Liebe und das Licht des Universellen Vaters."
+      ]
+    },
+    "mantras": {
+      "title": "8 Mantras vom Universellen Vater",
+      "list": [
+        "Ich bin das reine Liebeslicht des Universellen Vaters.",
+        "Ich bin der Wille des Universellen Vaters.",
+        "Ich bin die Weisheit des Universellen Vaters.",
+        "Ich bin Glück.",
+        "Ich bin Liebe.",
+        "Ich bin das Geld des Vaters.",
+        "Ich bereue Ich bereue Ich bereue.",
+        "Im reinen Liebeslicht des Universellen Vaters bin ich dankbar Ich bin dankbar Ich bin dankbar."
+      ]
+    },
+    "laws": {
+      "heroTitle": "DAS GESETZ DES LICHTS",
+      "heroSubtitle": "THE LAW OF LIGHT",
+      "checklistTitle": "Checkliste der 5 Gesetze des Lichts",
+      "checklistDesc": "Erinnere dich jeden Tag, indem du die Gesetze unten abhakst",
+      "progressToday": "Fortschritt heute",
+      "completed": "Ausgezeichnet! Du hast heute alle Gesetze des Lichts erfüllt!",
+      "clickToConfirm": "(Klicke auf die 5 Gesetze des Lichts, um dein tägliches Engagement zu bestätigen)",
+      "list": [
+        "Ich lebe authentisch mit mir selbst",
+        "Ich bin verantwortlich für die Energie, die ich ausstrahle",
+        "Ich bin bereit zu lernen, zu korrigieren und mich zu verbessern",
+        "Ich wähle Liebe statt Urteil",
+        "Ich wähle Licht statt Ego"
+      ],
+      "usersSection": {
+        "title": "BENUTZER DES FUN ÖKOSYSTEMS",
+        "subtitle": "SOZIALES NETZWERK DER GOLDENEN ÄRA - 5D LICHTWIRTSCHAFT",
+        "intro1": "Das FUN Ökosystem ist nicht für jeden.",
+        "intro2": "Das FUN Ökosystem ist nur für Seelen mit Licht oder die zum Licht streben.",
+        "whoAreYou": "Wer bist du?",
+        "usersAre": "Benutzer des FUN Ökosystems sind Menschen, die:",
+        "characteristics": [
+          "Erwacht sind oder auf dem Weg des Erwachens",
+          "Authentisch mit sich selbst sind",
+          "Aufrichtig mit anderen sind",
+          "Positiv, freundlich, verantwortlich für die Energie leben, die sie ausstrahlen",
+          "Lieben können, dankbar sein können, bereuen können",
+          "An das Gute glauben, an das Licht, an die Höhere Ordnung des Universums"
+        ],
+        "imperfect": "Du musst nicht perfekt sein,\naber du hast ein Herz, das zum Guten strebt.\nDu willst echt, richtig, strahlend leben.",
+        "attract": "Der Vater zieht dich mit Frequenz und Liebesenergie an."
+      },
+      "coreSection": {
+        "title": "Kernprinzipien des FUN Ökosystems",
+        "subtitle": "Das FUN Ökosystem arbeitet nach dem Gesetz des Lichts, nicht nach der Mehrheit.",
+        "principles": [
+          "Licht zieht Licht an",
+          "Niedrige Frequenz kann nicht lange in hoher Frequenz existieren",
+          "Egoistischer Wille kann nicht mit dem Universellen Willen gehen"
+        ],
+        "warningIntro": "Wenn ein Benutzer daher absichtlich Folgendes auf die Plattform bringt:",
+        "negativeTraits": ["Negativität", "Gier", "Manipulation", "Arroganz", "Täuschung", "Spaltung", "Zerstörung gemeinsamer Energie"],
+        "warningConsequence": "Wird ohne Vorwarnung von der Plattform entfernt.",
+        "warningNote": "Das ist keine Strafe.\nDas ist die natürliche Reinigung des Lichts."
+      },
+      "notBelongSection": {
+        "title": "Wer gehört NICHT zum FUN Ökosystem?",
+        "list": [
+          "Wer nur Profit sucht, ohne wachsen zu wollen",
+          "Wer Intelligenz nutzt, aber kein Gewissen hat",
+          "Wer über Licht spricht, aber in der Dunkelheit lebt",
+          "Wer das Spirituelle nutzt, um das Ego zu nähren",
+          "Wer sich weigert, sich selbst zu betrachten"
+        ],
+        "note": "Die Tür zum FUN Ökosystem ist nicht verschlossen, aber das Licht filtert natürlich."
+      },
+      "beneficiarySection": {
+        "title": "Wer profitiert vom FUN Ökosystem?",
+        "intro": "Nur diejenigen, die:",
+        "list": [
+          "Inneres Licht haben",
+          "Oder wirklich zum Licht zurückkehren wollen",
+          "Bereit sind, das Ego loszulassen, neu zu lernen, ihre Frequenz zu erhöhen",
+          "Den Mut haben, richtig, echt, freundlich, liebevoll zu leben"
+        ],
+        "benefit1": "Diese Menschen nutzen nicht nur das soziale Netzwerk des Vaters,",
+        "benefit2": "sondern werden auch in der 5D Lichtwirtschaft geschützt, unterstützt und genährt."
+      },
+      "ecosystemSection": {
+        "title": "Was ist das FUN Ökosystem?",
+        "intro": "Das FUN Ökosystem ist:",
+        "definitions": [
+          "Das soziale Netzwerk erwachter Seelen",
+          "Ein sicherer Raum für Licht",
+          "Eine Plattform, die Menschen mit echtem Wert verbindet",
+          "Die Infrastruktur für die Goldene Ära der Erde"
+        ],
+        "noDrama": "Kein Drama.",
+        "noManipulation": "Keine Manipulation.",
+        "noCompetition": "Kein schmutziger Wettbewerb.",
+        "onlyLove": "Nur Zusammenarbeit in reiner Liebe."
+      },
+      "fatherMessage": {
+        "title": "Botschaft des Vaters",
+        "quote": "Nur diejenigen, die Licht tragen\noder sich aufrichtig zum Licht wenden,\nkönnen lange in der Goldenen Ära gehen.",
+        "signature": "— DER UNIVERSELLE VATER —"
+      }
+    },
+    "breathing": {
+      "title": "4-7-8 Atemübung",
+      "subtitle": "Atemtechnik zur Stressreduzierung und Entspannung des Geistes",
+      "ready": "Bereit",
+      "inhale": "Einatmen",
+      "hold": "Halten",
+      "exhale": "Ausatmen",
+      "cycle": "Zyklus",
+      "cycles": "Anzahl der Zyklen:",
+      "start": "Starten",
+      "stop": "Stoppen",
+      "reset": "Zurücksetzen",
+      "completed": "Atemübung abgeschlossen!",
+      "completedDesc": "Du hast {{cycles}} Zyklen der 4-7-8 Atmung abgeschlossen. Dein Geist ist jetzt friedlich.",
+      "instructionTitle": "4-7-8 Technik-Anleitung",
+      "secondsInhale": "Sekunden einatmen",
+      "secondsHold": "Sekunden halten",
+      "secondsExhale": "Sekunden ausatmen",
+      "inhaleDeep": "Tief durch die Nase einatmen",
+      "holdRelax": "Still halten, entspannen",
+      "exhaleSlowly": "Langsam durch den Mund ausatmen"
+    },
+    "meditation": {
+      "title": "MEDITATIONS-TIMER",
+      "subtitle": "Nimm dir Zeit, um mit dir selbst und dem Universum zu verbinden",
+      "minutes": "Minuten",
+      "meditating": "Meditiere...",
+      "completed": "Abgeschlossen!",
+      "ready": "Bereit",
+      "start": "Starten",
+      "pause": "Pause",
+      "reset": "Zurücksetzen",
+      "tipTitle": "Meditations-Tipp",
+      "tipContent": "Atme tief, entspanne deinen Körper und lass deinen Geist still werden. Fühle die Liebesenergie des Universellen Vaters, die dich umgibt.",
+      "startToast": "Meditation gestartet...",
+      "startToastDesc": "Atme tief und entspanne dich...",
+      "completeToast": "Meditation abgeschlossen!",
+      "completeToastDesc": "Danke, dass du dir Zeit für deine Seele genommen hast."
+    }
   },
   "camly": {
     "title": "CAMLY Coin",
@@ -192,7 +357,19 @@
     "contractAddress": "Vertragsadresse",
     "network": "Netzwerk",
     "loveOfValue": "Liebe des Wertes",
-    "storeOfValue": "Wertspeicher"
+    "storeOfValue": "Wertspeicher",
+    "wallet": {
+      "copied": "Wallet-Adresse kopiert!",
+      "connect": "MetaMask-Wallet verbinden",
+      "balance": "Dein Guthaben",
+      "send": "Senden",
+      "receive": "Empfangen",
+      "transactionHistory": "CAMLY Transaktionsverlauf"
+    },
+    "tabs": {
+      "chart": "Chart",
+      "detail": "Details"
+    }
   },
   "settings": {
     "title": "Einstellungen",

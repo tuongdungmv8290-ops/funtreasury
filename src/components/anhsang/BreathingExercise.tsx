@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wind, Play, Square, RotateCcw } from "lucide-react";
@@ -10,14 +11,16 @@ const INHALE_DURATION = 4;
 const HOLD_DURATION = 7;
 const EXHALE_DURATION = 8;
 
-const phaseConfig = {
-  idle: { label: "Sẵn sàng", color: "text-muted-foreground", duration: 0 },
-  inhale: { label: "Hít vào", color: "text-blue-400", duration: INHALE_DURATION },
-  hold: { label: "Giữ hơi", color: "text-primary", duration: HOLD_DURATION },
-  exhale: { label: "Thở ra", color: "text-purple-400", duration: EXHALE_DURATION },
-};
-
 const BreathingExercise = () => {
+  const { t } = useTranslation();
+  
+  const phaseConfig = {
+    idle: { label: t('anhsang.breathing.ready'), color: "text-muted-foreground", duration: 0 },
+    inhale: { label: t('anhsang.breathing.inhale'), color: "text-blue-400", duration: INHALE_DURATION },
+    hold: { label: t('anhsang.breathing.hold'), color: "text-primary", duration: HOLD_DURATION },
+    exhale: { label: t('anhsang.breathing.exhale'), color: "text-purple-400", duration: EXHALE_DURATION },
+  };
+
   const [phase, setPhase] = useState<Phase>('idle');
   const [countdown, setCountdown] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -60,8 +63,8 @@ const BreathingExercise = () => {
             setCycles(newCycles);
             
             if (newCycles >= targetCycles) {
-              toast.success("🌬️ Bài tập thở hoàn thành!", {
-                description: `Con đã hoàn thành ${targetCycles} vòng thở 4-7-8. Tâm con giờ đã bình an.`,
+              toast.success(`🌬️ ${t('anhsang.breathing.completed')}`, {
+                description: t('anhsang.breathing.completedDesc', { cycles: targetCycles }),
                 duration: 5000,
               });
               resetExercise();
@@ -77,7 +80,7 @@ const BreathingExercise = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isRunning, phase, cycles, targetCycles, resetExercise]);
+  }, [isRunning, phase, cycles, targetCycles, resetExercise, t]);
 
   const getCircleScale = () => {
     if (phase === 'inhale') return 'scale-150';
@@ -100,12 +103,12 @@ const BreathingExercise = () => {
           <div className="flex items-center justify-center gap-3 mb-2">
             <Wind className="h-6 w-6 text-primary" />
             <CardTitle className="text-2xl md:text-3xl font-serif text-primary">
-              Bài Tập Thở 4-7-8
+              {t('anhsang.breathing.title')}
             </CardTitle>
             <Wind className="h-6 w-6 text-primary" />
           </div>
           <p className="text-muted-foreground">
-            Kỹ thuật thở giúp giảm stress và thư giãn tâm trí
+            {t('anhsang.breathing.subtitle')}
           </p>
         </CardHeader>
 
@@ -145,7 +148,7 @@ const BreathingExercise = () => {
           {isRunning && (
             <div className="text-center">
               <span className="text-lg text-muted-foreground">
-                Vòng: <span className="text-primary font-semibold">{cycles + 1}</span> / {targetCycles}
+                {t('anhsang.breathing.cycle')}: <span className="text-primary font-semibold">{cycles + 1}</span> / {targetCycles}
               </span>
             </div>
           )}
@@ -153,7 +156,7 @@ const BreathingExercise = () => {
           {/* Target cycles selector */}
           {!isRunning && (
             <div className="flex flex-col items-center gap-3">
-              <span className="text-sm text-muted-foreground">Số vòng thở:</span>
+              <span className="text-sm text-muted-foreground">{t('anhsang.breathing.cycles')}</span>
               <div className="flex gap-2">
                 {[2, 4, 6, 8].map((num) => (
                   <Button
@@ -178,7 +181,7 @@ const BreathingExercise = () => {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
               >
                 <Play className="h-4 w-4 mr-2" />
-                Bắt đầu
+                {t('anhsang.breathing.start')}
               </Button>
             ) : (
               <>
@@ -188,7 +191,7 @@ const BreathingExercise = () => {
                   className="px-6"
                 >
                   <Square className="h-4 w-4 mr-2" />
-                  Dừng
+                  {t('anhsang.breathing.stop')}
                 </Button>
                 <Button 
                   onClick={resetExercise}
@@ -196,7 +199,7 @@ const BreathingExercise = () => {
                   className="px-6"
                 >
                   <RotateCcw className="h-4 w-4 mr-2" />
-                  Reset
+                  {t('anhsang.breathing.reset')}
                 </Button>
               </>
             )}
@@ -204,22 +207,22 @@ const BreathingExercise = () => {
 
           {/* Instructions */}
           <div className="bg-primary/5 rounded-xl p-4 md:p-6 border border-primary/10">
-            <h4 className="font-serif text-lg text-primary mb-3 text-center">Hướng dẫn kỹ thuật 4-7-8</h4>
+            <h4 className="font-serif text-lg text-primary mb-3 text-center">{t('anhsang.breathing.instructionTitle')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
                 <div className="text-3xl font-mono font-bold text-blue-400">4</div>
-                <div className="text-sm text-muted-foreground">giây hít vào</div>
-                <div className="text-xs text-muted-foreground/70">Hít sâu qua mũi</div>
+                <div className="text-sm text-muted-foreground">{t('anhsang.breathing.secondsInhale')}</div>
+                <div className="text-xs text-muted-foreground/70">{t('anhsang.breathing.inhaleDeep')}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-3xl font-mono font-bold text-primary">7</div>
-                <div className="text-sm text-muted-foreground">giây giữ hơi</div>
-                <div className="text-xs text-muted-foreground/70">Giữ yên, thư giãn</div>
+                <div className="text-sm text-muted-foreground">{t('anhsang.breathing.secondsHold')}</div>
+                <div className="text-xs text-muted-foreground/70">{t('anhsang.breathing.holdRelax')}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-3xl font-mono font-bold text-purple-400">8</div>
-                <div className="text-sm text-muted-foreground">giây thở ra</div>
-                <div className="text-xs text-muted-foreground/70">Thở ra chậm qua miệng</div>
+                <div className="text-sm text-muted-foreground">{t('anhsang.breathing.secondsExhale')}</div>
+                <div className="text-xs text-muted-foreground/70">{t('anhsang.breathing.exhaleSlowly')}</div>
               </div>
             </div>
           </div>

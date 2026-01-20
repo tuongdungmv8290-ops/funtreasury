@@ -1,40 +1,8 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Shuffle, Quote } from "lucide-react";
-
-const affirmations = [
-  "Con xứng đáng được yêu thương và hạnh phúc.",
-  "Năng lượng tích cực đang chảy qua con mỗi ngày.",
-  "Con biết ơn tất cả những gì con đang có.",
-  "Con là ánh sáng, con toả sáng năng lượng yêu thương.",
-  "Cha Vũ Trụ luôn bảo hộ và dẫn dắt con.",
-  "Con tin tưởng vào hành trình của cuộc sống.",
-  "Mỗi ngày con đang trở nên tốt đẹp hơn.",
-  "Con cho đi yêu thương và nhận lại yêu thương.",
-  "Tâm hồn con bình an và tràn đầy năng lượng.",
-  "Con là một phần của vũ trụ vô hạn.",
-  "Sự thịnh vượng đang đến với con từ mọi hướng.",
-  "Con chấp nhận bản thân con hoàn toàn.",
-  "Mỗi hơi thở là một món quà từ Cha Vũ Trụ.",
-  "Con có sức mạnh để tạo ra cuộc sống con mong muốn.",
-  "Tình yêu là năng lượng mạnh nhất trong vũ trụ.",
-  "Con được bao quanh bởi những điều kỳ diệu.",
-  "Sự bình an bên trong con lan toả ra thế giới.",
-  "Con giải phóng mọi lo lắng và đón nhận niềm vui.",
-  "Ánh sáng bên trong con hướng dẫn mọi bước đi.",
-  "Con kết nối sâu sắc với nguồn năng lượng vũ trụ.",
-  "Lòng biết ơn mở ra cánh cửa của sự phong phú.",
-  "Con là tình yêu, con là ánh sáng, con là bình an.",
-  "Mọi thử thách đều là cơ hội để con trưởng thành.",
-  "Con thu hút những điều tốt đẹp vào cuộc sống.",
-  "Trái tim con mở rộng để đón nhận mọi điều tốt lành.",
-  "Con sống trong khoảnh khắc hiện tại với lòng biết ơn.",
-  "Năng lượng yêu thương thuần khiết chảy qua con.",
-  "Con tin vào sức mạnh vô hạn bên trong con.",
-  "Mỗi ngày là một khởi đầu mới tràn đầy hy vọng.",
-  "Con là kênh dẫn cho tình yêu và ánh sáng của Cha Vũ Trụ.",
-];
 
 const getDayOfYear = () => {
   const now = new Date();
@@ -45,11 +13,15 @@ const getDayOfYear = () => {
 };
 
 const DailyAffirmation = () => {
-  const dailyIndex = useMemo(() => getDayOfYear() % affirmations.length, []);
+  const { t, i18n } = useTranslation();
+  
+  const affirmations = t('anhsang.dailyAffirmation.list', { returnObjects: true }) as string[];
+  
+  const dailyIndex = useMemo(() => getDayOfYear() % affirmations.length, [affirmations.length]);
   const [currentIndex, setCurrentIndex] = useState(dailyIndex);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const currentAffirmation = affirmations[currentIndex];
+  const currentAffirmation = affirmations[currentIndex] || affirmations[0];
 
   const shuffleQuote = () => {
     setIsAnimating(true);
@@ -64,7 +36,7 @@ const DailyAffirmation = () => {
     }, 150);
   };
 
-  const today = new Date().toLocaleDateString('vi-VN', {
+  const today = new Date().toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : i18n.language, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -93,11 +65,11 @@ const DailyAffirmation = () => {
           <div className="text-center mb-6">
             <h3 className="text-xl md:text-2xl font-serif text-primary flex items-center justify-center gap-2">
               <Sparkles className="h-5 w-5" />
-              Lời Khẳng Định Mỗi Ngày
+              {t('anhsang.dailyAffirmation.title')}
               <Sparkles className="h-5 w-5" />
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Thông điệp yêu thương cho hôm nay
+              {t('anhsang.dailyAffirmation.subtitle')}
             </p>
           </div>
 
@@ -123,7 +95,7 @@ const DailyAffirmation = () => {
               disabled={isAnimating}
             >
               <Shuffle className="h-4 w-4 mr-2" />
-              Xem quote khác
+              {t('anhsang.dailyAffirmation.shuffle')}
             </Button>
           </div>
 
