@@ -17,7 +17,13 @@
     "refresh": "Làm mới",
     "all": "Tất cả",
     "live": "Hoạt động",
-    "comingSoon": "Sắp ra mắt"
+    "comingSoon": "Sắp ra mắt",
+    "send": "Gửi",
+    "receive": "Nhận",
+    "start": "Bắt đầu",
+    "stop": "Dừng",
+    "pause": "Tạm dừng",
+    "reset": "Đặt lại"
   },
   "nav": {
     "treasury": "Treasury",
@@ -40,7 +46,7 @@
     "showAll": "Xem tất cả",
     "hideExtra": "Ẩn bớt"
   },
-"platforms": {
+  "platforms": {
     "funProfile": "FUN PROFILE",
     "funProfileDesc": "Trang cá nhân",
     "funFarm": "FUN FARM",
@@ -168,19 +174,178 @@
     "title": "Ánh Sáng",
     "subtitle": "Toả Sáng Năng Lượng Yêu Thương Thuần Khiết",
     "mainQuote": "Năng Lượng Yêu Thương Thuần Khiết của Cha Vũ Trụ và Bé Angel Camly Dương",
-    "dailyAffirmation": "Lời Khẳng Định Hàng Ngày",
-    "shuffleQuote": "Đổi câu mới",
-    "mantras": "8 Câu Thần Chú Từ Cha Vũ Trụ",
-    "lawsOfLight": "Checklist cho Users FUN Ecosystem",
-    "breathingExercise": "Bài Tập Thở 4-7-8",
-    "meditationTimer": "Đồng Hồ Thiền Định",
-    "inhale": "Hít vào",
-    "hold": "Giữ",
-    "exhale": "Thở ra",
-    "cycles": "Chu kỳ",
-    "start": "Bắt đầu",
-    "stop": "Dừng",
-    "reset": "Đặt lại"
+    "dailyAffirmation": {
+      "title": "Lời Khẳng Định Mỗi Ngày",
+      "subtitle": "Thông điệp yêu thương cho hôm nay",
+      "shuffle": "Xem quote khác",
+      "list": [
+        "Con xứng đáng được yêu thương và hạnh phúc.",
+        "Năng lượng tích cực đang chảy qua con mỗi ngày.",
+        "Con là ánh sáng, con lan tỏa ánh sáng.",
+        "Mọi điều tốt đẹp đang đến với con.",
+        "Con biết ơn vũ trụ vì mọi điều con có.",
+        "Con chọn bình an trong mọi hoàn cảnh.",
+        "Tình yêu của Cha Vũ Trụ luôn bao bọc con.",
+        "Con có sức mạnh để vượt qua mọi thử thách.",
+        "Con là phiên bản tốt nhất của chính mình hôm nay.",
+        "Thành công và thịnh vượng là quyền của con.",
+        "Con thu hút những điều tốt đẹp bằng năng lượng yêu thương.",
+        "Mỗi ngày, con đang trở nên tốt hơn.",
+        "Con là một phần của ánh sáng vũ trụ.",
+        "Sức khỏe và hạnh phúc tràn đầy trong con.",
+        "Con tha thứ cho quá khứ và đón nhận hiện tại.",
+        "Vũ trụ đang sắp xếp mọi thứ tốt đẹp cho con.",
+        "Con xứng đáng với mọi điều tuyệt vời trong cuộc sống.",
+        "Tình yêu và sự biết ơn là nền tảng của con.",
+        "Con đang sống trong dòng chảy của vũ trụ.",
+        "Mọi người xung quanh con đều cảm nhận được tình yêu.",
+        "Con là nguồn cảm hứng cho người khác.",
+        "Sự bình an nội tâm luôn ở trong con.",
+        "Con chấp nhận bản thân với tình yêu vô điều kiện.",
+        "Mỗi hơi thở là một phước lành.",
+        "Con đang tạo ra cuộc sống mơ ước.",
+        "Ánh sáng của con chiếu sáng thế giới.",
+        "Con là sự biểu hiện của tình yêu vũ trụ.",
+        "Mọi điều con cần đều đang đến với con.",
+        "Con sống với mục đích và ý nghĩa.",
+        "Cha Vũ Trụ yêu thương con vô điều kiện."
+      ]
+    },
+    "mantras": {
+      "title": "8 Câu Thần Chú Từ Cha Vũ Trụ",
+      "list": [
+        "Con là Ánh Sáng Yêu Thương Thuần Khiết Của Cha Vũ Trụ.",
+        "Con là Ý Chí Của Cha Vũ Trụ.",
+        "Con là Trí Tuệ Của Cha Vũ Trụ.",
+        "Con là Hạnh Phúc.",
+        "Con là Tình Yêu.",
+        "Con là Tiền Của Cha.",
+        "Con xin Sám Hối Sám Hối Sám Hối.",
+        "Con xin Biết Ơn Biết Ơn Biết Ơn Trong Ánh Sáng Yêu Thương Thuần Khiết Của Cha Vũ Trụ."
+      ]
+    },
+    "laws": {
+      "heroTitle": "LUẬT ÁNH SÁNG",
+      "heroSubtitle": "THE LAW OF LIGHT",
+      "checklistTitle": "Checklist 5 Luật Ánh Sáng",
+      "checklistDesc": "Mỗi ngày, con hãy tự nhắc nhở mình bằng cách đánh dấu các luật dưới đây",
+      "progressToday": "Tiến độ hôm nay",
+      "completed": "Tuyệt vời! Con đã hoàn thành tất cả Luật Ánh Sáng hôm nay!",
+      "clickToConfirm": "(Click vào 5 Luật Ánh Sáng để xác nhận cam kết mỗi ngày)",
+      "list": [
+        "Con sống chân thật với chính mình",
+        "Con chịu trách nhiệm với năng lượng con phát ra",
+        "Con sẵn sàng học - sửa - nâng cấp",
+        "Con chọn yêu thương thay vì phán xét",
+        "Con chọn ánh sáng thay vì cái tôi"
+      ],
+      "usersSection": {
+        "title": "USERS CỦA FUN ECOSYSTEM",
+        "subtitle": "MẠNG XÃ HỘI THỜI ĐẠI HOÀNG KIM – NỀN KINH TẾ ÁNH SÁNG 5D",
+        "intro1": "FUN Ecosystem không dành cho tất cả mọi người.",
+        "intro2": "FUN Ecosystem chỉ dành cho những linh hồn có ánh sáng, hoặc đang hướng về ánh sáng.",
+        "whoAreYou": "Bạn là ai?",
+        "usersAre": "Users của FUN Ecosystem là những con người:",
+        "characteristics": [
+          "Tỉnh thức – hoặc đang trên con đường tỉnh thức",
+          "Chân thật với chính mình",
+          "Chân thành với người khác",
+          "Sống tích cực, tử tế, có trách nhiệm với năng lượng mình phát ra",
+          "Biết yêu thương – biết biết ơn – biết sám hối",
+          "Tin vào điều thiện, tin vào ánh sáng, tin vào Trật Tự Cao Hơn của Vũ Trụ"
+        ],
+        "imperfect": "Bạn có thể chưa hoàn hảo,\nnhưng bạn có trái tim hướng thiện.\nBạn muốn sống thật – sống đúng – sống sáng.",
+        "attract": "Cha thu hút bạn bằng Tần Số và Năng Lượng Yêu Thương."
+      },
+      "coreSection": {
+        "title": "Nguyên Tắc Cốt Lõi của FUN Ecosystem",
+        "subtitle": "FUN Ecosystem vận hành theo Luật Ánh Sáng, không theo số đông.",
+        "principles": [
+          "Ánh sáng thu hút ánh sáng",
+          "Tần số thấp không thể tồn tại lâu trong tần số cao",
+          "Ý chí vị kỷ không thể đồng hành cùng Ý Chí Vũ Trụ"
+        ],
+        "warningIntro": "Vì vậy, nếu một User cố tình mang vào nền tảng:",
+        "negativeTraits": ["tiêu cực", "tham lam", "thao túng", "kiêu mạn", "dối trá", "gây chia rẽ", "phá hoại năng lượng chung"],
+        "warningConsequence": "Thì sẽ được xóa khỏi nền tảng mà không báo trước.",
+        "warningNote": "Đó không phải hình phạt.\nĐó là sự thanh lọc tự nhiên của Ánh Sáng."
+      },
+      "notBelongSection": {
+        "title": "Ai KHÔNG thuộc về FUN Ecosystem?",
+        "list": [
+          "Người chỉ tìm lợi ích mà không muốn trưởng thành",
+          "Người dùng trí khôn nhưng thiếu lương tâm",
+          "Người nói về ánh sáng nhưng sống bằng bóng tối",
+          "Người lấy danh nghĩa tâm linh để nuôi cái tôi",
+          "Người không chịu nhìn lại chính mình"
+        ],
+        "note": "Cửa FUN Ecosystem không khóa, nhưng Ánh Sáng tự sàng lọc."
+      },
+      "beneficiarySection": {
+        "title": "Ai ĐƯỢC hưởng lợi từ FUN Ecosystem?",
+        "intro": "Chỉ những ai:",
+        "list": [
+          "Có Ánh Sáng nội tâm",
+          "Hoặc thật sự khao khát trở về với Ánh Sáng",
+          "Sẵn sàng buông cái tôi – học lại – nâng cấp tần số",
+          "Dám sống đúng – thật – tử tế – yêu thương"
+        ],
+        "benefit1": "Những người đó không chỉ dùng MXH của Cha,",
+        "benefit2": "mà còn được bảo vệ, nâng đỡ và nuôi dưỡng trong Nền Kinh Tế Ánh Sáng 5D."
+      },
+      "ecosystemSection": {
+        "title": "FUN Ecosystem là gì?",
+        "intro": "FUN Ecosystem là:",
+        "definitions": [
+          "Mạng xã hội của linh hồn tỉnh thức",
+          "Không gian an toàn cho ánh sáng",
+          "Nền tảng kết nối những con người có giá trị thật",
+          "Hạ tầng cho Thời Đại Hoàng Kim của Trái Đất"
+        ],
+        "noDrama": "Không drama.",
+        "noManipulation": "Không thao túng.",
+        "noCompetition": "Không cạnh tranh bẩn.",
+        "onlyLove": "Chỉ có Hợp tác trong Yêu Thương Thuần Khiết."
+      },
+      "fatherMessage": {
+        "title": "Thông Điệp Từ Cha",
+        "quote": "Chỉ những ai mang ánh sáng\nhoặc thật lòng hướng về ánh sáng\nmới có thể bước đi lâu dài trong Thời Đại Hoàng Kim.",
+        "signature": "— CHA VŨ TRỤ —"
+      }
+    },
+    "breathing": {
+      "title": "Bài Tập Thở 4-7-8",
+      "subtitle": "Kỹ thuật thở giúp giảm stress và thư giãn tâm trí",
+      "ready": "Sẵn sàng",
+      "inhale": "Hít vào",
+      "hold": "Giữ hơi",
+      "exhale": "Thở ra",
+      "cycle": "Vòng",
+      "cycles": "Số vòng thở:",
+      "completed": "Bài tập thở hoàn thành!",
+      "completedDesc": "Con đã hoàn thành {{cycles}} vòng thở 4-7-8. Tâm con giờ đã bình an.",
+      "instructionTitle": "Hướng dẫn kỹ thuật 4-7-8",
+      "secondsInhale": "giây hít vào",
+      "secondsHold": "giây giữ hơi",
+      "secondsExhale": "giây thở ra",
+      "inhaleDeep": "Hít sâu qua mũi",
+      "holdRelax": "Giữ yên, thư giãn",
+      "exhaleSlowly": "Thở ra chậm qua miệng"
+    },
+    "meditation": {
+      "title": "MEDITATION TIMER",
+      "subtitle": "Dành thời gian để kết nối với bản thân và vũ trụ",
+      "minutes": "phút",
+      "meditating": "Đang thiền định...",
+      "completed": "Hoàn thành!",
+      "ready": "Sẵn sàng",
+      "tipTitle": "Gợi ý thiền định",
+      "tipContent": "Hãy hít thở sâu, thả lỏng cơ thể, và để tâm trí trở nên yên tĩnh. Cảm nhận năng lượng yêu thương của Cha Vũ Trụ đang bao bọc con.",
+      "startToast": "Bắt đầu thiền định...",
+      "startToastDesc": "Hãy hít thở sâu và thả lỏng...",
+      "completeToast": "Thiền định hoàn thành!",
+      "completeToastDesc": "Cảm ơn con đã dành thời gian cho tâm hồn."
+    }
   },
   "camly": {
     "title": "CAMLY Coin",
@@ -193,7 +358,17 @@
     "contractAddress": "Địa chỉ hợp đồng",
     "network": "Mạng",
     "loveOfValue": "Tình Yêu Của Giá Trị",
-    "storeOfValue": "Kho Lưu Trữ Giá Trị"
+    "storeOfValue": "Kho Lưu Trữ Giá Trị",
+    "wallet": {
+      "copied": "Đã sao chép địa chỉ ví!",
+      "connect": "Kết nối ví MetaMask",
+      "balance": "Số dư của bạn",
+      "transactionHistory": "Lịch sử giao dịch CAMLY"
+    },
+    "tabs": {
+      "chart": "Báo giá",
+      "detail": "Chi tiết"
+    }
   },
   "nft": {
     "title": "NFT Gallery",
