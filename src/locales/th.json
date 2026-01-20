@@ -413,5 +413,72 @@
   "footer": {
     "poweredBy": "ขับเคลื่อนโดย",
     "pureEnergy": "พลังงานความรักบริสุทธิ์"
+  },
+  "docs": {
+    "title": "เอกสารโครงการ",
+    "subtitle": "ภาพรวมที่ครอบคลุมของ FUN Treasury สำหรับสมาชิกทีมใหม่",
+    "languages": "ภาษา",
+    "vision": "วิสัยทัศน์",
+    "visionText": "FUN Treasury เป็นแดชบอร์ดจัดการการเงินสำหรับกระเป๋า Treasury ด้วยอินเทอร์เฟซที่เป็นมืออาชีพและโปร่งใส ติดตามกระแสเงินสด (เข้า/ออก) และยอดคงเหลือจริงของ CAMLY และ USDT ได้อย่างแม่นยำ",
+    "philosophy": "พลังงานรักบริสุทธิ์ - ความโปร่งใสสมบูรณ์ - ความเจริญรุ่งเรืองอิสระ",
+    "techStackTitle": "เทคโนโลยีที่ใช้",
+    "featuresTitle": "ฟีเจอร์ที่ใช้งานได้",
+    "databaseTitle": "โครงสร้างฐานข้อมูล",
+    "edgeFunctionsTitle": "Edge Functions",
+    "securityTitle": "ความปลอดภัย",
+    "i18nTitle": "หลายภาษา",
+    "roadmapTitle": "แผนพัฒนา",
+    "active": "ใช้งานได้",
+    "tech": {
+      "react": "ไลบรารี UI แบบ component",
+      "vite": "เครื่องมือ build เร็วมาก",
+      "typescript": "JavaScript พร้อมชนิดข้อมูล",
+      "tailwind": "เฟรมเวิร์ก CSS utility-first",
+      "shadcn": "คอมโพเนนต์สวยและปรับแต่งได้",
+      "tanstack": "จัดการ state และ cache",
+      "supabase": "Backend-as-a-Service",
+      "ethers": "เชื่อมต่อกับ blockchain",
+      "i18next": "เฟรมเวิร์กหลายภาษา",
+      "recharts": "ไลบรารีกราฟ React"
+    },
+    "features": {
+      "dashboard": "ภาพรวมพอร์ตโฟลิโอ, สรุปกระเป๋าเงิน, กราฟธุรกรรม, ซิงค์แบบเรียลไทม์",
+      "transactions": "ประวัติธุรกรรมพร้อมตัวกรอง, Manual Sheet, แจ้งเตือนธุรกรรม",
+      "camly": "เชื่อมต่อ MetaMask, UniversalSwap, กราฟราคา, Tokenomics",
+      "anhsang": "5 กฎแห่งแสงสว่าง, 30 คำยืนยัน, 8 มนตร์, บทฝึกหายใจ, ตัวจับเวลาสมาธิ",
+      "nft": "2 คอลเลกชัน: Energy Art & FUN Brands, มุมมอง Grid/List, Lightbox",
+      "prices": "คริปโตยอดนิยม 50 อันดับ, อัปเดตเรียลไทม์, ค้นหาและเรียงลำดับ",
+      "settings": "จัดการ Admin, การตั้งค่ากระเป๋าเงิน, สัญญาโทเค็น, 2FA"
+    },
+    "db": {
+      "wallets": "รายการกระเป๋า treasury",
+      "tokens": "ยอดคงเหลือโทเค็นต่อกระเป๋า",
+      "transactions": "ประวัติธุรกรรม",
+      "txMetadata": "ข้อมูลเมตาธุรกรรมเพิ่มเติม",
+      "nftCollections": "คอลเลกชัน NFT",
+      "nftAssets": "NFT ในคอลเลกชัน",
+      "userRoles": "สิทธิ์ผู้ใช้",
+      "apiSettings": "การตั้งค่า API key",
+      "notifications": "การแจ้งเตือนระบบ"
+    },
+    "edge": {
+      "getCamlyPrice": "ดึงราคา CAMLY จาก PancakeSwap",
+      "getCamlyTrades": "ดึงประวัติการเทรด CAMLY",
+      "getCryptoPrices": "ดึงราคาคริปโตยอดนิยม 50 อันดับ",
+      "getTokenBalances": "ดึงยอดคงเหลือโทเค็นจาก Moralis",
+      "getNftData": "ดึงข้อมูลเมตา NFT",
+      "syncTransactions": "ซิงค์ธุรกรรมจาก blockchain"
+    },
+    "security": {
+      "auth": "การยืนยันตัวตน",
+      "access": "การควบคุมการเข้าถึง"
+    },
+    "i18nNote": "เนื้อหาทั้งหมดแปลเป็น 9 ภาษา ไฟล์ locale: src/locales/*.json",
+    "priority": {
+      "high": "ความสำคัญสูง",
+      "medium": "ความสำคัญปานกลาง",
+      "future": "อนาคต"
+    },
+    "footer": "เอกสารนี้สร้างโดยอัตโนมัติจาก codebase อัปเดตเมื่อมีการเปลี่ยนแปลง"
   }
 }
