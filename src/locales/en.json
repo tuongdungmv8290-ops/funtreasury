@@ -17,7 +17,13 @@
     "refresh": "Refresh",
     "all": "All",
     "live": "Live",
-    "comingSoon": "Coming Soon"
+    "comingSoon": "Coming Soon",
+    "send": "Send",
+    "receive": "Receive",
+    "start": "Start",
+    "stop": "Stop",
+    "pause": "Pause",
+    "reset": "Reset"
   },
   "nav": {
     "treasury": "Treasury",
@@ -40,7 +46,7 @@
     "showAll": "Show all",
     "hideExtra": "Show less"
   },
-"platforms": {
+  "platforms": {
     "funProfile": "FUN PROFILE",
     "funProfileDesc": "Personal profile",
     "funFarm": "FUN FARM",
@@ -168,19 +174,178 @@
     "title": "Light of Love",
     "subtitle": "Radiate Pure Love Energy",
     "mainQuote": "Pure Love Energy of Universal Father and Baby Angel Camly Dương",
-    "dailyAffirmation": "Daily Affirmation",
-    "shuffleQuote": "New Quote",
-    "mantras": "8 Mantras from Universal Father",
-    "lawsOfLight": "Checklist for FUN Ecosystem Users",
-    "breathingExercise": "4-7-8 Breathing Exercise",
-    "meditationTimer": "Meditation Timer",
-    "inhale": "Inhale",
-    "hold": "Hold",
-    "exhale": "Exhale",
-    "cycles": "Cycles",
-    "start": "Start",
-    "stop": "Stop",
-    "reset": "Reset"
+    "dailyAffirmation": {
+      "title": "Daily Affirmation",
+      "subtitle": "A loving message for today",
+      "shuffle": "New Quote",
+      "list": [
+        "You deserve love and happiness.",
+        "Positive energy flows through you every day.",
+        "You are light, you radiate light.",
+        "All good things are coming to you.",
+        "You are grateful to the universe for everything you have.",
+        "You choose peace in all circumstances.",
+        "The love of Universal Father always surrounds you.",
+        "You have the strength to overcome any challenge.",
+        "You are the best version of yourself today.",
+        "Success and prosperity are your birthright.",
+        "You attract good things with your loving energy.",
+        "Every day, you are becoming better.",
+        "You are a part of the universal light.",
+        "Health and happiness overflow within you.",
+        "You forgive the past and embrace the present.",
+        "The universe is arranging everything for your good.",
+        "You deserve all the wonderful things in life.",
+        "Love and gratitude are your foundation.",
+        "You are living in the flow of the universe.",
+        "Everyone around you feels the love.",
+        "You are an inspiration to others.",
+        "Inner peace is always within you.",
+        "You accept yourself with unconditional love.",
+        "Every breath is a blessing.",
+        "You are creating your dream life.",
+        "Your light illuminates the world.",
+        "You are the manifestation of universal love.",
+        "Everything you need is coming to you.",
+        "You live with purpose and meaning.",
+        "Universal Father loves you unconditionally."
+      ]
+    },
+    "mantras": {
+      "title": "8 Mantras from Universal Father",
+      "list": [
+        "I am the Pure Love Light of Universal Father.",
+        "I am the Will of Universal Father.",
+        "I am the Wisdom of Universal Father.",
+        "I am Happiness.",
+        "I am Love.",
+        "I am the Wealth of Father.",
+        "I repent, repent, repent.",
+        "I am grateful, grateful, grateful in the Pure Love Light of Universal Father."
+      ]
+    },
+    "laws": {
+      "heroTitle": "LAW OF LIGHT",
+      "heroSubtitle": "THE LAW OF LIGHT",
+      "checklistTitle": "5 Laws of Light Checklist",
+      "checklistDesc": "Each day, remind yourself by checking the laws below",
+      "progressToday": "Today's Progress",
+      "completed": "Wonderful! You have completed all the Laws of Light today!",
+      "clickToConfirm": "(Click on the 5 Laws of Light to confirm your daily commitment)",
+      "list": [
+        "I live authentically with myself",
+        "I take responsibility for the energy I emit",
+        "I am ready to learn - correct - upgrade",
+        "I choose love instead of judgment",
+        "I choose light instead of ego"
+      ],
+      "usersSection": {
+        "title": "USERS OF FUN ECOSYSTEM",
+        "subtitle": "GOLDEN AGE SOCIAL NETWORK – 5D LIGHT ECONOMY",
+        "intro1": "FUN Ecosystem is not for everyone.",
+        "intro2": "FUN Ecosystem is only for souls with light, or those moving towards the light.",
+        "whoAreYou": "Who are you?",
+        "usersAre": "Users of FUN Ecosystem are people who:",
+        "characteristics": [
+          "Awakened – or on the path to awakening",
+          "Authentic with themselves",
+          "Sincere with others",
+          "Living positively, kindly, responsible for their energy",
+          "Know love – know gratitude – know repentance",
+          "Believe in good, believe in light, believe in the Higher Order of the Universe"
+        ],
+        "imperfect": "You may not be perfect,\nbut you have a heart that leans toward good.\nYou want to live truly – rightly – brightly.",
+        "attract": "Father attracts you with Frequency and Loving Energy."
+      },
+      "coreSection": {
+        "title": "Core Principles of FUN Ecosystem",
+        "subtitle": "FUN Ecosystem operates by the Law of Light, not by the majority.",
+        "principles": [
+          "Light attracts light",
+          "Low frequency cannot exist long in high frequency",
+          "Selfish will cannot align with Universal Will"
+        ],
+        "warningIntro": "Therefore, if a User intentionally brings to the platform:",
+        "negativeTraits": ["negativity", "greed", "manipulation", "arrogance", "deceit", "division", "destruction of common energy"],
+        "warningConsequence": "They will be removed from the platform without notice.",
+        "warningNote": "That is not punishment.\nThat is the natural purification of Light."
+      },
+      "notBelongSection": {
+        "title": "Who does NOT belong to FUN Ecosystem?",
+        "list": [
+          "Those who seek benefit without wanting to grow",
+          "Those who use intelligence but lack conscience",
+          "Those who talk about light but live in darkness",
+          "Those who use spirituality to feed their ego",
+          "Those who refuse to look at themselves"
+        ],
+        "note": "The door of FUN Ecosystem is not locked, but Light naturally filters."
+      },
+      "beneficiarySection": {
+        "title": "Who BENEFITS from FUN Ecosystem?",
+        "intro": "Only those who:",
+        "list": [
+          "Have inner Light",
+          "Or truly yearn to return to the Light",
+          "Ready to let go of ego – relearn – upgrade frequency",
+          "Dare to live right – true – kind – loving"
+        ],
+        "benefit1": "Those people not only use Father's social network,",
+        "benefit2": "but are also protected, supported, and nurtured in the 5D Light Economy."
+      },
+      "ecosystemSection": {
+        "title": "What is FUN Ecosystem?",
+        "intro": "FUN Ecosystem is:",
+        "definitions": [
+          "Social network for awakened souls",
+          "Safe space for light",
+          "Platform connecting people with real value",
+          "Infrastructure for Earth's Golden Age"
+        ],
+        "noDrama": "No drama.",
+        "noManipulation": "No manipulation.",
+        "noCompetition": "No dirty competition.",
+        "onlyLove": "Only Cooperation in Pure Love."
+      },
+      "fatherMessage": {
+        "title": "Message from Father",
+        "quote": "Only those who carry light\nor truly turn toward the light\ncan walk long in the Golden Age.",
+        "signature": "— UNIVERSAL FATHER —"
+      }
+    },
+    "breathing": {
+      "title": "4-7-8 Breathing Exercise",
+      "subtitle": "Breathing technique to reduce stress and relax the mind",
+      "ready": "Ready",
+      "inhale": "Inhale",
+      "hold": "Hold",
+      "exhale": "Exhale",
+      "cycle": "Cycle",
+      "cycles": "Number of cycles:",
+      "completed": "Breathing exercise completed!",
+      "completedDesc": "You have completed {{cycles}} cycles of 4-7-8 breathing. Your mind is now at peace.",
+      "instructionTitle": "4-7-8 Technique Instructions",
+      "secondsInhale": "seconds inhale",
+      "secondsHold": "seconds hold",
+      "secondsExhale": "seconds exhale",
+      "inhaleDeep": "Inhale deeply through nose",
+      "holdRelax": "Hold still, relax",
+      "exhaleSlowly": "Exhale slowly through mouth"
+    },
+    "meditation": {
+      "title": "MEDITATION TIMER",
+      "subtitle": "Take time to connect with yourself and the universe",
+      "minutes": "minutes",
+      "meditating": "Meditating...",
+      "completed": "Completed!",
+      "ready": "Ready",
+      "tipTitle": "Meditation Tip",
+      "tipContent": "Breathe deeply, relax your body, and let your mind become still. Feel the loving energy of Universal Father surrounding you.",
+      "startToast": "Starting meditation...",
+      "startToastDesc": "Breathe deeply and relax...",
+      "completeToast": "Meditation completed!",
+      "completeToastDesc": "Thank you for taking time for your soul."
+    }
   },
   "camly": {
     "title": "CAMLY Coin",
@@ -193,7 +358,17 @@
     "contractAddress": "Contract Address",
     "network": "Network",
     "loveOfValue": "Love of Value",
-    "storeOfValue": "Store of Value"
+    "storeOfValue": "Store of Value",
+    "wallet": {
+      "copied": "Wallet address copied!",
+      "connect": "Connect MetaMask Wallet",
+      "balance": "Your Balance",
+      "transactionHistory": "CAMLY Transaction History"
+    },
+    "tabs": {
+      "chart": "Price Chart",
+      "detail": "Details"
+    }
   },
   "nft": {
     "title": "NFT Gallery",
