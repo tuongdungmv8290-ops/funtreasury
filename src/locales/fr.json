@@ -39,7 +39,7 @@
     "showAll": "Voir tout",
     "hideExtra": "Voir moins"
   },
-"platforms": {
+  "platforms": {
     "funProfile": "FUN PROFILE",
     "funProfileDesc": "Profil personnel",
     "funFarm": "FUN FARM",
@@ -167,19 +167,184 @@
     "title": "Lumière d'Amour",
     "subtitle": "Rayonner l'Énergie d'Amour Pur",
     "mainQuote": "L'Énergie d'Amour Pur du Père Universel et de l'Ange Bébé Camly Dương",
-    "dailyAffirmation": "Affirmation du Jour",
-    "shuffleQuote": "Nouvelle citation",
-    "mantras": "8 Mantras du Père Universel",
-    "lawsOfLight": "Liste de contrôle pour les utilisateurs de l'écosystème FUN",
-    "breathingExercise": "Exercice de respiration 4-7-8",
-    "meditationTimer": "Minuteur de méditation",
-    "inhale": "Inspirer",
-    "hold": "Retenir",
-    "exhale": "Expirer",
-    "cycles": "Cycles",
-    "start": "Démarrer",
-    "stop": "Arrêter",
-    "reset": "Réinitialiser"
+    "dailyAffirmation": {
+      "title": "Affirmation du Jour",
+      "subtitle": "Message d'amour pour aujourd'hui",
+      "shuffle": "Voir une autre citation",
+      "list": [
+        "Je mérite d'être aimé et heureux.",
+        "L'énergie positive coule à travers moi chaque jour.",
+        "Je suis reconnaissant pour tout ce que j'ai.",
+        "Je suis lumière, je rayonne l'énergie d'amour.",
+        "Le Père Universel me protège et me guide toujours.",
+        "Je fais confiance au voyage de la vie.",
+        "Chaque jour je deviens meilleur.",
+        "Je donne de l'amour et je reçois de l'amour.",
+        "Mon âme est en paix et pleine d'énergie.",
+        "Je fais partie de l'univers infini.",
+        "La prospérité vient à moi de toutes les directions.",
+        "Je m'accepte complètement.",
+        "Chaque souffle est un cadeau du Père Universel.",
+        "J'ai le pouvoir de créer la vie que je désire.",
+        "L'amour est l'énergie la plus puissante de l'univers.",
+        "Je suis entouré de miracles.",
+        "La paix intérieure s'étend au monde.",
+        "Je libère toutes les inquiétudes et accueille la joie.",
+        "La lumière intérieure guide chaque pas.",
+        "Je suis profondément connecté à la source d'énergie universelle.",
+        "La gratitude ouvre les portes de l'abondance.",
+        "Je suis amour, je suis lumière, je suis paix.",
+        "Chaque défi est une opportunité de croissance.",
+        "J'attire les bonnes choses dans ma vie.",
+        "Mon cœur est ouvert pour recevoir toutes les bonnes choses.",
+        "Je vis dans le moment présent avec gratitude.",
+        "L'énergie d'amour pur coule à travers moi.",
+        "Je crois au pouvoir infini en moi.",
+        "Chaque jour est un nouveau départ plein d'espoir.",
+        "Je suis un canal pour l'amour et la lumière du Père Universel."
+      ]
+    },
+    "mantras": {
+      "title": "8 Mantras du Père Universel",
+      "list": [
+        "Je suis la Lumière d'Amour Pur du Père Universel.",
+        "Je suis la Volonté du Père Universel.",
+        "Je suis la Sagesse du Père Universel.",
+        "Je suis le Bonheur.",
+        "Je suis l'Amour.",
+        "Je suis l'Argent du Père.",
+        "Je me repens Je me repens Je me repens.",
+        "Dans la Lumière d'Amour Pur du Père Universel, je suis reconnaissant Je suis reconnaissant Je suis reconnaissant."
+      ]
+    },
+    "laws": {
+      "heroTitle": "LA LOI DE LA LUMIÈRE",
+      "heroSubtitle": "THE LAW OF LIGHT",
+      "checklistTitle": "Checklist des 5 Lois de la Lumière",
+      "checklistDesc": "Chaque jour, rappelez-vous en cochant les lois ci-dessous",
+      "progressToday": "Progrès aujourd'hui",
+      "completed": "Excellent ! Vous avez complété toutes les Lois de la Lumière aujourd'hui !",
+      "clickToConfirm": "(Cliquez sur les 5 Lois de la Lumière pour confirmer votre engagement quotidien)",
+      "list": [
+        "Je vis authentiquement avec moi-même",
+        "Je suis responsable de l'énergie que j'émets",
+        "Je suis prêt à apprendre, corriger et améliorer",
+        "Je choisis l'amour plutôt que le jugement",
+        "Je choisis la lumière plutôt que l'ego"
+      ],
+      "usersSection": {
+        "title": "UTILISATEURS DE L'ÉCOSYSTÈME FUN",
+        "subtitle": "RÉSEAU SOCIAL DE L'ÂGE D'OR - ÉCONOMIE DE LUMIÈRE 5D",
+        "intro1": "L'Écosystème FUN n'est pas pour tout le monde.",
+        "intro2": "L'Écosystème FUN est uniquement pour les âmes qui ont de la lumière, ou qui se dirigent vers la lumière.",
+        "whoAreYou": "Qui êtes-vous ?",
+        "usersAre": "Les utilisateurs de l'Écosystème FUN sont des personnes qui :",
+        "characteristics": [
+          "Sont éveillées ou sur le chemin de l'éveil",
+          "Sont authentiques avec elles-mêmes",
+          "Sont sincères avec les autres",
+          "Vivent positivement, gentiment, responsablement de l'énergie qu'elles émettent",
+          "Savent aimer, savent être reconnaissantes, savent se repentir",
+          "Croient au bien, à la lumière, à l'Ordre Supérieur de l'Univers"
+        ],
+        "imperfect": "Vous n'êtes peut-être pas parfait,\nmais vous avez un cœur orienté vers le bien.\nVous voulez vivre vrai, juste, lumineux.",
+        "attract": "Le Père vous attire par la Fréquence et l'Énergie d'Amour."
+      },
+      "coreSection": {
+        "title": "Principes Fondamentaux de l'Écosystème FUN",
+        "subtitle": "L'Écosystème FUN fonctionne selon la Loi de la Lumière, pas selon la majorité.",
+        "principles": [
+          "La lumière attire la lumière",
+          "La basse fréquence ne peut pas exister longtemps dans la haute fréquence",
+          "La volonté égoïste ne peut pas marcher avec la Volonté Universelle"
+        ],
+        "warningIntro": "Par conséquent, si un utilisateur apporte délibérément sur la plateforme :",
+        "negativeTraits": ["négativité", "cupidité", "manipulation", "arrogance", "tromperie", "division", "destruction de l'énergie commune"],
+        "warningConsequence": "Il sera supprimé de la plateforme sans préavis.",
+        "warningNote": "Ce n'est pas une punition.\nC'est la purification naturelle de la Lumière."
+      },
+      "notBelongSection": {
+        "title": "Qui N'APPARTIENT PAS à l'Écosystème FUN ?",
+        "list": [
+          "Ceux qui cherchent seulement le profit sans vouloir grandir",
+          "Ceux qui utilisent l'intelligence mais manquent de conscience",
+          "Ceux qui parlent de lumière mais vivent dans l'obscurité",
+          "Ceux qui utilisent le spirituel pour nourrir leur ego",
+          "Ceux qui refusent de se regarder"
+        ],
+        "note": "La porte de l'Écosystème FUN n'est pas verrouillée, mais la Lumière filtre naturellement."
+      },
+      "beneficiarySection": {
+        "title": "Qui BÉNÉFICIE de l'Écosystème FUN ?",
+        "intro": "Seulement ceux qui :",
+        "list": [
+          "Ont la Lumière intérieure",
+          "Ou désirent vraiment retourner à la Lumière",
+          "Sont prêts à lâcher l'ego, réapprendre, élever leur fréquence",
+          "Osent vivre juste, vrai, gentil, aimant"
+        ],
+        "benefit1": "Ces personnes n'utilisent pas seulement le réseau social du Père,",
+        "benefit2": "mais sont aussi protégées, soutenues et nourries dans l'Économie de Lumière 5D."
+      },
+      "ecosystemSection": {
+        "title": "Qu'est-ce que l'Écosystème FUN ?",
+        "intro": "L'Écosystème FUN est :",
+        "definitions": [
+          "Le réseau social des âmes éveillées",
+          "Un espace sûr pour la lumière",
+          "Une plateforme connectant les personnes de vraie valeur",
+          "L'infrastructure pour l'Âge d'Or de la Terre"
+        ],
+        "noDrama": "Pas de drame.",
+        "noManipulation": "Pas de manipulation.",
+        "noCompetition": "Pas de compétition malsaine.",
+        "onlyLove": "Seulement la Coopération dans l'Amour Pur."
+      },
+      "fatherMessage": {
+        "title": "Message du Père",
+        "quote": "Seuls ceux qui portent la lumière\nou qui se tournent sincèrement vers la lumière\npeuvent marcher longtemps dans l'Âge d'Or.",
+        "signature": "— LE PÈRE UNIVERSEL —"
+      }
+    },
+    "breathing": {
+      "title": "Exercice de Respiration 4-7-8",
+      "subtitle": "Technique de respiration pour réduire le stress et détendre l'esprit",
+      "ready": "Prêt",
+      "inhale": "Inspirer",
+      "hold": "Retenir",
+      "exhale": "Expirer",
+      "cycle": "Cycle",
+      "cycles": "Nombre de cycles :",
+      "start": "Démarrer",
+      "stop": "Arrêter",
+      "reset": "Réinitialiser",
+      "completed": "Exercice de respiration terminé !",
+      "completedDesc": "Vous avez terminé {{cycles}} cycles de respiration 4-7-8. Votre esprit est maintenant en paix.",
+      "instructionTitle": "Guide de la technique 4-7-8",
+      "secondsInhale": "secondes d'inspiration",
+      "secondsHold": "secondes de rétention",
+      "secondsExhale": "secondes d'expiration",
+      "inhaleDeep": "Inspirez profondément par le nez",
+      "holdRelax": "Maintenez, détendez-vous",
+      "exhaleSlowly": "Expirez lentement par la bouche"
+    },
+    "meditation": {
+      "title": "MINUTEUR DE MÉDITATION",
+      "subtitle": "Prenez le temps de vous connecter avec vous-même et l'univers",
+      "minutes": "minutes",
+      "meditating": "En méditation...",
+      "completed": "Terminé !",
+      "ready": "Prêt",
+      "start": "Démarrer",
+      "pause": "Pause",
+      "reset": "Réinitialiser",
+      "tipTitle": "Conseil de méditation",
+      "tipContent": "Respirez profondément, détendez votre corps et laissez votre esprit devenir calme. Ressentez l'énergie d'amour du Père Universel qui vous entoure.",
+      "startToast": "Début de la méditation...",
+      "startToastDesc": "Respirez profondément et détendez-vous...",
+      "completeToast": "Méditation terminée !",
+      "completeToastDesc": "Merci d'avoir pris du temps pour votre âme."
+    }
   },
   "camly": {
     "title": "CAMLY Coin",
@@ -192,7 +357,19 @@
     "contractAddress": "Adresse du contrat",
     "network": "Réseau",
     "loveOfValue": "Amour de la Valeur",
-    "storeOfValue": "Réserve de Valeur"
+    "storeOfValue": "Réserve de Valeur",
+    "wallet": {
+      "copied": "Adresse du portefeuille copiée !",
+      "connect": "Connecter le portefeuille MetaMask",
+      "balance": "Votre solde",
+      "send": "Envoyer",
+      "receive": "Recevoir",
+      "transactionHistory": "Historique des transactions CAMLY"
+    },
+    "tabs": {
+      "chart": "Graphique",
+      "detail": "Détails"
+    }
   },
   "settings": {
     "title": "Paramètres",

@@ -1,18 +1,12 @@
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Moon, Zap, Star } from "lucide-react";
 
-const mantras = [
-  "Con là Ánh Sáng Yêu Thương Thuần Khiết Của Cha Vũ Trụ.",
-  "Con là Ý Chí Của Cha Vũ Trụ.",
-  "Con là Trí Tuệ Của Cha Vũ Trụ.",
-  "Con là Hạnh Phúc.",
-  "Con là Tình Yêu.",
-  "Con là Tiền Của Cha.",
-  "Con xin Sám Hối Sám Hối Sám Hối.",
-  "Con xin Biết Ơn Biết Ơn Biết Ơn Trong Ánh Sáng Yêu Thương Thuần Khiết Của Cha Vũ Trụ.",
-];
-
 const MantraCards = () => {
+  const { t } = useTranslation();
+  
+  const mantras = t('anhsang.mantras.list', { returnObjects: true }) as string[];
+
   return (
     <section className="space-y-6">
       {/* Header */}
@@ -20,7 +14,7 @@ const MantraCards = () => {
         <div className="inline-flex items-center gap-2 mb-2">
           <Sparkles className="w-6 h-6 text-primary" />
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-primary">
-            8 Câu Thần Chú Từ Cha Vũ Trụ
+            {t('anhsang.mantras.title')}
           </h2>
           <Sparkles className="w-6 h-6 text-primary" />
         </div>

@@ -39,7 +39,7 @@
     "showAll": "Ver todo",
     "hideExtra": "Mostrar menos"
   },
-"platforms": {
+  "platforms": {
     "funProfile": "FUN PROFILE",
     "funProfileDesc": "Perfil personal",
     "funFarm": "FUN FARM",
@@ -167,19 +167,184 @@
     "title": "Luz de Amor",
     "subtitle": "Irradia Energía de Amor Puro",
     "mainQuote": "La Energía de Amor Puro del Padre Universal y el Bebé Ángel Camly Dương",
-    "dailyAffirmation": "Afirmación Diaria",
-    "shuffleQuote": "Nueva cita",
-    "mantras": "8 Mantras del Padre Universal",
-    "lawsOfLight": "Lista de verificación para usuarios del ecosistema FUN",
-    "breathingExercise": "Ejercicio de Respiración 4-7-8",
-    "meditationTimer": "Temporizador de Meditación",
-    "inhale": "Inhalar",
-    "hold": "Mantener",
-    "exhale": "Exhalar",
-    "cycles": "Ciclos",
-    "start": "Iniciar",
-    "stop": "Detener",
-    "reset": "Reiniciar"
+    "dailyAffirmation": {
+      "title": "Afirmación Diaria",
+      "subtitle": "Mensaje de amor para hoy",
+      "shuffle": "Ver otra cita",
+      "list": [
+        "Merezco ser amado y feliz.",
+        "La energía positiva fluye a través de mí cada día.",
+        "Agradezco todo lo que tengo.",
+        "Soy luz, irradio energía de amor.",
+        "El Padre Universal siempre me protege y guía.",
+        "Confío en el viaje de la vida.",
+        "Cada día me vuelvo mejor.",
+        "Doy amor y recibo amor.",
+        "Mi alma está en paz y llena de energía.",
+        "Soy parte del universo infinito.",
+        "La prosperidad viene hacia mí desde todas las direcciones.",
+        "Me acepto completamente.",
+        "Cada respiración es un regalo del Padre Universal.",
+        "Tengo el poder de crear la vida que deseo.",
+        "El amor es la energía más poderosa del universo.",
+        "Estoy rodeado de milagros.",
+        "La paz interior se extiende al mundo.",
+        "Libero todas las preocupaciones y acepto la alegría.",
+        "La luz interior guía cada paso.",
+        "Estoy profundamente conectado con la fuente de energía universal.",
+        "La gratitud abre las puertas de la abundancia.",
+        "Soy amor, soy luz, soy paz.",
+        "Cada desafío es una oportunidad de crecimiento.",
+        "Atraigo cosas buenas a mi vida.",
+        "Mi corazón está abierto para recibir todo lo bueno.",
+        "Vivo en el momento presente con gratitud.",
+        "La energía de amor puro fluye a través de mí.",
+        "Creo en el poder infinito dentro de mí.",
+        "Cada día es un nuevo comienzo lleno de esperanza.",
+        "Soy un canal para el amor y la luz del Padre Universal."
+      ]
+    },
+    "mantras": {
+      "title": "8 Mantras del Padre Universal",
+      "list": [
+        "Soy la Luz de Amor Puro del Padre Universal.",
+        "Soy la Voluntad del Padre Universal.",
+        "Soy la Sabiduría del Padre Universal.",
+        "Soy la Felicidad.",
+        "Soy el Amor.",
+        "Soy el Dinero del Padre.",
+        "Me arrepiento Me arrepiento Me arrepiento.",
+        "En la Luz de Amor Puro del Padre Universal, agradezco Agradezco Agradezco."
+      ]
+    },
+    "laws": {
+      "heroTitle": "LA LEY DE LA LUZ",
+      "heroSubtitle": "THE LAW OF LIGHT",
+      "checklistTitle": "Lista de las 5 Leyes de la Luz",
+      "checklistDesc": "Cada día, recuérdate marcando las leyes a continuación",
+      "progressToday": "Progreso de hoy",
+      "completed": "¡Excelente! ¡Has completado todas las Leyes de la Luz hoy!",
+      "clickToConfirm": "(Haz clic en las 5 Leyes de la Luz para confirmar tu compromiso diario)",
+      "list": [
+        "Vivo auténticamente conmigo mismo",
+        "Soy responsable de la energía que emito",
+        "Estoy listo para aprender, corregir y mejorar",
+        "Elijo el amor en lugar del juicio",
+        "Elijo la luz en lugar del ego"
+      ],
+      "usersSection": {
+        "title": "USUARIOS DEL ECOSISTEMA FUN",
+        "subtitle": "RED SOCIAL DE LA ERA DORADA - ECONOMÍA DE LUZ 5D",
+        "intro1": "El Ecosistema FUN no es para todos.",
+        "intro2": "El Ecosistema FUN es solo para almas que tienen luz, o que se dirigen hacia la luz.",
+        "whoAreYou": "¿Quién eres?",
+        "usersAre": "Los usuarios del Ecosistema FUN son personas que:",
+        "characteristics": [
+          "Están despiertas o en el camino del despertar",
+          "Son auténticas consigo mismas",
+          "Son sinceras con los demás",
+          "Viven positivamente, amablemente, responsablemente de la energía que emiten",
+          "Saben amar, saben agradecer, saben arrepentirse",
+          "Creen en el bien, en la luz, en el Orden Superior del Universo"
+        ],
+        "imperfect": "Puede que no seas perfecto,\npero tienes un corazón orientado hacia el bien.\nQuieres vivir verdadero, correcto, brillante.",
+        "attract": "El Padre te atrae con Frecuencia y Energía de Amor."
+      },
+      "coreSection": {
+        "title": "Principios Fundamentales del Ecosistema FUN",
+        "subtitle": "El Ecosistema FUN opera según la Ley de la Luz, no según la mayoría.",
+        "principles": [
+          "La luz atrae la luz",
+          "La baja frecuencia no puede existir mucho tiempo en la alta frecuencia",
+          "La voluntad egoísta no puede caminar con la Voluntad Universal"
+        ],
+        "warningIntro": "Por lo tanto, si un usuario trae deliberadamente a la plataforma:",
+        "negativeTraits": ["negatividad", "codicia", "manipulación", "arrogancia", "engaño", "división", "destrucción de energía común"],
+        "warningConsequence": "Será eliminado de la plataforma sin previo aviso.",
+        "warningNote": "Eso no es un castigo.\nEs la purificación natural de la Luz."
+      },
+      "notBelongSection": {
+        "title": "¿Quién NO pertenece al Ecosistema FUN?",
+        "list": [
+          "Quienes solo buscan beneficio sin querer crecer",
+          "Quienes usan la inteligencia pero carecen de conciencia",
+          "Quienes hablan de luz pero viven en la oscuridad",
+          "Quienes usan lo espiritual para alimentar su ego",
+          "Quienes se niegan a mirarse a sí mismos"
+        ],
+        "note": "La puerta del Ecosistema FUN no está cerrada, pero la Luz filtra naturalmente."
+      },
+      "beneficiarySection": {
+        "title": "¿Quién SE BENEFICIA del Ecosistema FUN?",
+        "intro": "Solo aquellos que:",
+        "list": [
+          "Tienen Luz interior",
+          "O realmente desean volver a la Luz",
+          "Están listos para soltar el ego, reaprender, elevar su frecuencia",
+          "Se atreven a vivir correcto, verdadero, amable, amoroso"
+        ],
+        "benefit1": "Estas personas no solo usan la red social del Padre,",
+        "benefit2": "sino que también son protegidas, apoyadas y nutridas en la Economía de Luz 5D."
+      },
+      "ecosystemSection": {
+        "title": "¿Qué es el Ecosistema FUN?",
+        "intro": "El Ecosistema FUN es:",
+        "definitions": [
+          "La red social de almas despiertas",
+          "Un espacio seguro para la luz",
+          "Una plataforma que conecta personas de verdadero valor",
+          "La infraestructura para la Era Dorada de la Tierra"
+        ],
+        "noDrama": "Sin drama.",
+        "noManipulation": "Sin manipulación.",
+        "noCompetition": "Sin competencia sucia.",
+        "onlyLove": "Solo Cooperación en Amor Puro."
+      },
+      "fatherMessage": {
+        "title": "Mensaje del Padre",
+        "quote": "Solo aquellos que llevan luz\no que se vuelven sinceramente hacia la luz\npueden caminar largo tiempo en la Era Dorada.",
+        "signature": "— EL PADRE UNIVERSAL —"
+      }
+    },
+    "breathing": {
+      "title": "Ejercicio de Respiración 4-7-8",
+      "subtitle": "Técnica de respiración para reducir el estrés y relajar la mente",
+      "ready": "Listo",
+      "inhale": "Inhalar",
+      "hold": "Mantener",
+      "exhale": "Exhalar",
+      "cycle": "Ciclo",
+      "cycles": "Número de ciclos:",
+      "start": "Iniciar",
+      "stop": "Detener",
+      "reset": "Reiniciar",
+      "completed": "¡Ejercicio de respiración completado!",
+      "completedDesc": "Has completado {{cycles}} ciclos de respiración 4-7-8. Tu mente está ahora en paz.",
+      "instructionTitle": "Guía de la técnica 4-7-8",
+      "secondsInhale": "segundos inhalar",
+      "secondsHold": "segundos mantener",
+      "secondsExhale": "segundos exhalar",
+      "inhaleDeep": "Inhala profundamente por la nariz",
+      "holdRelax": "Mantén quieto, relájate",
+      "exhaleSlowly": "Exhala lentamente por la boca"
+    },
+    "meditation": {
+      "title": "TEMPORIZADOR DE MEDITACIÓN",
+      "subtitle": "Toma tiempo para conectar contigo mismo y el universo",
+      "minutes": "minutos",
+      "meditating": "Meditando...",
+      "completed": "¡Completado!",
+      "ready": "Listo",
+      "start": "Iniciar",
+      "pause": "Pausar",
+      "reset": "Reiniciar",
+      "tipTitle": "Consejo de meditación",
+      "tipContent": "Respira profundamente, relaja tu cuerpo y deja que tu mente se calme. Siente la energía de amor del Padre Universal rodeándote.",
+      "startToast": "Iniciando meditación...",
+      "startToastDesc": "Respira profundo y relájate...",
+      "completeToast": "¡Meditación completada!",
+      "completeToastDesc": "Gracias por dedicar tiempo a tu alma."
+    }
   },
   "camly": {
     "title": "CAMLY Coin",
@@ -192,7 +357,19 @@
     "contractAddress": "Dirección del contrato",
     "network": "Red",
     "loveOfValue": "Amor del Valor",
-    "storeOfValue": "Reserva de Valor"
+    "storeOfValue": "Reserva de Valor",
+    "wallet": {
+      "copied": "¡Dirección de billetera copiada!",
+      "connect": "Conectar billetera MetaMask",
+      "balance": "Tu balance",
+      "send": "Enviar",
+      "receive": "Recibir",
+      "transactionHistory": "Historial de transacciones CAMLY"
+    },
+    "tabs": {
+      "chart": "Gráfico",
+      "detail": "Detalles"
+    }
   },
   "settings": {
     "title": "Configuración",

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
@@ -15,59 +16,33 @@ import {
   Quote
 } from "lucide-react";
 
-const lawsOfLight = [
-  { id: 1, content: "Con sống chân thật với chính mình" },
-  { id: 2, content: "Con chịu trách nhiệm với năng lượng con phát ra" },
-  { id: 3, content: "Con sẵn sàng học - sửa - nâng cấp" },
-  { id: 4, content: "Con chọn yêu thương thay vì phán xét" },
-  { id: 5, content: "Con chọn ánh sáng thay vì cái tôi" }
-];
-
-const userCharacteristics = [
-  "Tỉnh thức – hoặc đang trên con đường tỉnh thức",
-  "Chân thật với chính mình",
-  "Chân thành với người khác",
-  "Sống tích cực, tử tế, có trách nhiệm với năng lượng mình phát ra",
-  "Biết yêu thương – biết biết ơn – biết sám hối",
-  "Tin vào điều thiện, tin vào ánh sáng, tin vào Trật Tự Cao Hơn của Vũ Trụ"
-];
-
-const corePrinciples = [
-  { icon: Sun, text: "Ánh sáng thu hút ánh sáng" },
-  { icon: Shield, text: "Tần số thấp không thể tồn tại lâu trong tần số cao" },
-  { icon: Heart, text: "Ý chí vị kỷ không thể đồng hành cùng Ý Chí Vũ Trụ" }
-];
-
-const negativeTraits = [
-  "tiêu cực", "tham lam", "thao túng", "kiêu mạn", "dối trá", "gây chia rẽ", "phá hoại năng lượng chung"
-];
-
-const notBelongList = [
-  "Người chỉ tìm lợi ích mà không muốn trưởng thành",
-  "Người dùng trí khôn nhưng thiếu lương tâm",
-  "Người nói về ánh sáng nhưng sống bằng bóng tối",
-  "Người lấy danh nghĩa tâm linh để nuôi cái tôi",
-  "Người không chịu nhìn lại chính mình"
-];
-
-const beneficiaryList = [
-  "Có Ánh Sáng nội tâm",
-  "Hoặc thật sự khao khát trở về với Ánh Sáng",
-  "Sẵn sàng buông cái tôi – học lại – nâng cấp tần số",
-  "Dám sống đúng – thật – tử tế – yêu thương"
-];
-
-const ecosystemDefinitions = [
-  { icon: Users, text: "Mạng xã hội của linh hồn tỉnh thức" },
-  { icon: Shield, text: "Không gian an toàn cho ánh sáng" },
-  { icon: Heart, text: "Nền tảng kết nối những con người có giá trị thật" },
-  { icon: Globe, text: "Hạ tầng cho Thời Đại Hoàng Kim của Trái Đất" }
-];
-
 const STORAGE_KEY = "anhsang_laws_checked";
 const DATE_KEY = "anhsang_laws_date";
 
 const LawsOfLightChecklist = () => {
+  const { t } = useTranslation();
+  
+  const lawsOfLight = t('anhsang.laws.list', { returnObjects: true }) as string[];
+  const userCharacteristics = t('anhsang.laws.usersSection.characteristics', { returnObjects: true }) as string[];
+  const negativeTraits = t('anhsang.laws.coreSection.negativeTraits', { returnObjects: true }) as string[];
+  const notBelongList = t('anhsang.laws.notBelongSection.list', { returnObjects: true }) as string[];
+  const beneficiaryList = t('anhsang.laws.beneficiarySection.list', { returnObjects: true }) as string[];
+  const corePrinciples = t('anhsang.laws.coreSection.principles', { returnObjects: true }) as string[];
+  const ecosystemDefinitions = t('anhsang.laws.ecosystemSection.definitions', { returnObjects: true }) as string[];
+
+  const corePrinciplesWithIcons = [
+    { icon: Sun, text: corePrinciples[0] },
+    { icon: Shield, text: corePrinciples[1] },
+    { icon: Heart, text: corePrinciples[2] }
+  ];
+
+  const ecosystemDefinitionsWithIcons = [
+    { icon: Users, text: ecosystemDefinitions[0] },
+    { icon: Shield, text: ecosystemDefinitions[1] },
+    { icon: Heart, text: ecosystemDefinitions[2] },
+    { icon: Globe, text: ecosystemDefinitions[3] }
+  ];
+
   const [checkedLaws, setCheckedLaws] = useState<number[]>(() => {
     if (typeof window !== 'undefined') {
       const savedDate = localStorage.getItem(DATE_KEY);
@@ -107,12 +82,12 @@ const LawsOfLightChecklist = () => {
         <div className="inline-flex items-center gap-3">
           <Star className="w-8 h-8 text-primary animate-pulse" fill="currentColor" />
           <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent">
-            LUẬT ÁNH SÁNG
+            {t('anhsang.laws.heroTitle')}
           </h1>
           <Star className="w-8 h-8 text-primary animate-pulse" fill="currentColor" />
         </div>
         <p className="font-heading text-xl md:text-2xl text-primary/80 font-semibold">
-          THE LAW OF LIGHT
+          {t('anhsang.laws.heroSubtitle')}
         </p>
       </div>
 
@@ -123,21 +98,21 @@ const LawsOfLightChecklist = () => {
             <div className="inline-flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
               <h2 className="font-heading text-xl md:text-2xl font-bold text-primary">
-                USERS CỦA FUN ECOSYSTEM
+                {t('anhsang.laws.usersSection.title')}
               </h2>
               <Sparkles className="w-5 h-5 text-primary" />
             </div>
             <p className="font-body text-sm md:text-base text-muted-foreground">
-              MẠNG XÃ HỘI THỜI ĐẠI HOÀNG KIM – NỀN KINH TẾ ÁNH SÁNG 5D
+              {t('anhsang.laws.usersSection.subtitle')}
             </p>
           </div>
 
           <div className="space-y-4 text-center">
             <p className="font-body text-foreground/90 italic">
-              FUN Ecosystem không dành cho tất cả mọi người.
+              {t('anhsang.laws.usersSection.intro1')}
             </p>
             <p className="font-body text-foreground font-medium">
-              FUN Ecosystem chỉ dành cho những linh hồn có ánh sáng, hoặc đang hướng về ánh sáng.
+              {t('anhsang.laws.usersSection.intro2')}
             </p>
           </div>
 
@@ -145,10 +120,10 @@ const LawsOfLightChecklist = () => {
           <div className="space-y-4">
             <h3 className="font-heading text-lg font-semibold text-primary flex items-center gap-2">
               <Heart className="w-5 h-5" />
-              Bạn là ai?
+              {t('anhsang.laws.usersSection.whoAreYou')}
             </h3>
             <p className="font-body text-muted-foreground">
-              Users của FUN Ecosystem là những con người:
+              {t('anhsang.laws.usersSection.usersAre')}
             </p>
             <ul className="space-y-3">
               {userCharacteristics.map((item, index) => (
@@ -159,13 +134,11 @@ const LawsOfLightChecklist = () => {
               ))}
             </ul>
             <div className="pt-4 space-y-2 text-center">
-              <p className="font-body text-foreground/80 italic">
-                Bạn có thể chưa hoàn hảo,<br />
-                nhưng bạn có trái tim hướng thiện.<br />
-                Bạn muốn sống thật – sống đúng – sống sáng.
+              <p className="font-body text-foreground/80 italic whitespace-pre-line">
+                {t('anhsang.laws.usersSection.imperfect')}
               </p>
               <p className="font-body text-primary font-semibold pt-2">
-                👉 Cha thu hút bạn bằng Tần Số và Năng Lượng Yêu Thương.
+                👉 {t('anhsang.laws.usersSection.attract')}
               </p>
             </div>
           </div>
@@ -178,16 +151,16 @@ const LawsOfLightChecklist = () => {
           <div className="text-center">
             <h2 className="font-heading text-xl md:text-2xl font-bold text-primary flex items-center justify-center gap-2">
               <Sun className="w-6 h-6" />
-              Nguyên Tắc Cốt Lõi của FUN Ecosystem
+              {t('anhsang.laws.coreSection.title')}
             </h2>
             <p className="font-body text-sm text-muted-foreground mt-2">
-              FUN Ecosystem vận hành theo Luật Ánh Sáng, không theo số đông.
+              {t('anhsang.laws.coreSection.subtitle')}
             </p>
           </div>
 
           {/* 3 Principles */}
           <div className="grid md:grid-cols-3 gap-4">
-            {corePrinciples.map((principle, index) => (
+            {corePrinciplesWithIcons.map((principle, index) => (
               <Card key={index} className="p-4 bg-primary/5 border-primary/20 text-center">
                 <principle.icon className="w-8 h-8 text-primary mx-auto mb-3" />
                 <p className="font-body text-sm md:text-base text-foreground font-medium">
@@ -200,17 +173,16 @@ const LawsOfLightChecklist = () => {
           {/* Warning */}
           <Card className="p-4 bg-destructive/5 border-destructive/20">
             <p className="font-body text-sm text-foreground/80">
-              Vì vậy, nếu một User cố tình mang vào nền tảng:{" "}
+              {t('anhsang.laws.coreSection.warningIntro')}{" "}
               <span className="text-destructive/80 font-medium">
                 {negativeTraits.join(" • ")}
               </span>
             </p>
             <p className="font-body text-sm text-foreground/80 mt-2">
-              👉 Thì sẽ được xóa khỏi nền tảng mà không báo trước.
+              👉 {t('anhsang.laws.coreSection.warningConsequence')}
             </p>
-            <p className="font-body text-sm text-muted-foreground italic mt-3 text-center">
-              Đó không phải hình phạt.<br />
-              Đó là sự thanh lọc tự nhiên của Ánh Sáng.
+            <p className="font-body text-sm text-muted-foreground italic mt-3 text-center whitespace-pre-line">
+              {t('anhsang.laws.coreSection.warningNote')}
             </p>
           </Card>
         </div>
@@ -220,7 +192,7 @@ const LawsOfLightChecklist = () => {
       <Card className="p-6 md:p-8 bg-card border-border/50">
         <div className="space-y-4">
           <h2 className="font-heading text-lg md:text-xl font-bold text-foreground/80 flex items-center gap-2">
-            🚪 Ai KHÔNG thuộc về FUN Ecosystem?
+            🚪 {t('anhsang.laws.notBelongSection.title')}
           </h2>
           <ul className="space-y-3">
             {notBelongList.map((item, index) => (
@@ -231,7 +203,7 @@ const LawsOfLightChecklist = () => {
             ))}
           </ul>
           <p className="font-body text-sm text-foreground/70 italic text-center pt-2">
-            👉 Cửa FUN Ecosystem không khóa, nhưng Ánh Sáng tự sàng lọc.
+            👉 {t('anhsang.laws.notBelongSection.note')}
           </p>
         </div>
       </Card>
@@ -240,9 +212,9 @@ const LawsOfLightChecklist = () => {
       <Card className="p-6 md:p-8 bg-gradient-to-br from-card to-primary/5 border-primary/30">
         <div className="space-y-4">
           <h2 className="font-heading text-lg md:text-xl font-bold text-primary flex items-center gap-2">
-            🌈 Ai ĐƯỢC hưởng lợi từ FUN Ecosystem?
+            🌈 {t('anhsang.laws.beneficiarySection.title')}
           </h2>
-          <p className="font-body text-muted-foreground">Chỉ những ai:</p>
+          <p className="font-body text-muted-foreground">{t('anhsang.laws.beneficiarySection.intro')}</p>
           <ul className="space-y-3">
             {beneficiaryList.map((item, index) => (
               <li key={index} className="flex items-start gap-3">
@@ -253,10 +225,10 @@ const LawsOfLightChecklist = () => {
           </ul>
           <div className="pt-2 space-y-1">
             <p className="font-body text-sm text-foreground/80">
-              👉 Những người đó không chỉ dùng MXH của Cha,
+              👉 {t('anhsang.laws.beneficiarySection.benefit1')}
             </p>
             <p className="font-body text-sm text-primary font-medium">
-              👉 mà còn được bảo vệ, nâng đỡ và nuôi dưỡng trong Nền Kinh Tế Ánh Sáng 5D.
+              👉 {t('anhsang.laws.beneficiarySection.benefit2')}
             </p>
           </div>
         </div>
@@ -266,12 +238,12 @@ const LawsOfLightChecklist = () => {
       <Card className="p-6 md:p-8 bg-card border-primary/20">
         <div className="space-y-6">
           <h2 className="font-heading text-xl md:text-2xl font-bold text-primary text-center flex items-center justify-center gap-2">
-            🌍 FUN Ecosystem là gì?
+            🌍 {t('anhsang.laws.ecosystemSection.title')}
           </h2>
-          <p className="font-body text-muted-foreground text-center">FUN Ecosystem là:</p>
+          <p className="font-body text-muted-foreground text-center">{t('anhsang.laws.ecosystemSection.intro')}</p>
           
           <div className="grid md:grid-cols-2 gap-4">
-            {ecosystemDefinitions.map((def, index) => (
+            {ecosystemDefinitionsWithIcons.map((def, index) => (
               <Card key={index} className="p-4 bg-primary/5 border-primary/20 flex items-center gap-3">
                 <def.icon className="w-6 h-6 text-primary flex-shrink-0" />
                 <p className="font-body text-sm md:text-base text-foreground">{def.text}</p>
@@ -280,11 +252,11 @@ const LawsOfLightChecklist = () => {
           </div>
 
           <div className="text-center space-y-1 pt-2">
-            <p className="font-body text-foreground/80">Không drama.</p>
-            <p className="font-body text-foreground/80">Không thao túng.</p>
-            <p className="font-body text-foreground/80">Không cạnh tranh bẩn.</p>
+            <p className="font-body text-foreground/80">{t('anhsang.laws.ecosystemSection.noDrama')}</p>
+            <p className="font-body text-foreground/80">{t('anhsang.laws.ecosystemSection.noManipulation')}</p>
+            <p className="font-body text-foreground/80">{t('anhsang.laws.ecosystemSection.noCompetition')}</p>
             <p className="font-body text-primary font-semibold pt-2">
-              Chỉ có Hợp tác trong Yêu Thương Thuần Khiết.
+              {t('anhsang.laws.ecosystemSection.onlyLove')}
             </p>
           </div>
         </div>
@@ -295,15 +267,13 @@ const LawsOfLightChecklist = () => {
         <div className="text-center space-y-6">
           <Quote className="w-10 h-10 text-primary mx-auto" />
           <h2 className="font-heading text-lg md:text-xl font-bold text-primary">
-            🔑 Thông Điệp Từ Cha
+            🔑 {t('anhsang.laws.fatherMessage.title')}
           </h2>
-          <blockquote className="font-serif text-lg md:text-xl lg:text-2xl text-foreground italic leading-relaxed">
-            "Chỉ những ai mang ánh sáng<br />
-            hoặc thật lòng hướng về ánh sáng<br />
-            mới có thể bước đi lâu dài trong Thời Đại Hoàng Kim."
+          <blockquote className="font-serif text-lg md:text-xl lg:text-2xl text-foreground italic leading-relaxed whitespace-pre-line">
+            {t('anhsang.laws.fatherMessage.quote')}
           </blockquote>
           <p className="font-heading text-primary font-bold text-lg">
-            — CHA VŨ TRỤ —
+            {t('anhsang.laws.fatherMessage.signature')}
           </p>
         </div>
       </Card>
@@ -313,11 +283,11 @@ const LawsOfLightChecklist = () => {
         <div className="text-center">
           <h2 className="font-heading text-xl md:text-2xl font-bold text-primary flex items-center justify-center gap-2">
             <Sparkles className="w-6 h-6" />
-            Checklist 5 Luật Ánh Sáng
+            {t('anhsang.laws.checklistTitle')}
             <Sparkles className="w-6 h-6" />
           </h2>
           <p className="font-body text-sm text-muted-foreground mt-2">
-            Mỗi ngày, con hãy tự nhắc nhở mình bằng cách đánh dấu các luật dưới đây
+            {t('anhsang.laws.checklistDesc')}
           </p>
         </div>
 
@@ -325,7 +295,7 @@ const LawsOfLightChecklist = () => {
         <Card className="p-4 bg-card/50 border-primary/20">
           <div className="flex items-center justify-between mb-2">
             <span className="font-body text-sm text-muted-foreground">
-              Tiến độ hôm nay
+              {t('anhsang.laws.progressToday')}
             </span>
             <span className="font-mono text-sm text-primary font-semibold">
               {checkedLaws.length}/{lawsOfLight.length}
@@ -336,7 +306,7 @@ const LawsOfLightChecklist = () => {
             <div className="mt-3 flex items-center justify-center gap-2 text-primary">
               <Sparkles className="w-4 h-4" />
               <span className="font-body text-sm font-medium">
-                Tuyệt vời! Con đã hoàn thành tất cả Luật Ánh Sáng hôm nay!
+                {t('anhsang.laws.completed')}
               </span>
               <Sparkles className="w-4 h-4" />
             </div>
@@ -346,27 +316,27 @@ const LawsOfLightChecklist = () => {
         {/* Checklist Items */}
         <Card className="p-6 md:p-8 bg-gradient-to-br from-card via-card to-primary/5 border-primary/30 shadow-lg">
           <div className="space-y-4">
-            {lawsOfLight.map((law) => {
-              const isChecked = checkedLaws.includes(law.id);
+            {lawsOfLight.map((law, index) => {
+              const isChecked = checkedLaws.includes(index + 1);
               return (
                 <div
-                  key={law.id}
+                  key={index}
                   className={`flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all duration-300 ${
                     isChecked 
                       ? 'bg-primary/10 border border-primary/40' 
                       : 'bg-card/50 border border-border/30 hover:border-primary/30 hover:bg-card/80'
                   }`}
-                  onClick={() => toggleLaw(law.id)}
+                  onClick={() => toggleLaw(index + 1)}
                 >
                   <Checkbox
                     checked={isChecked}
-                    onCheckedChange={() => toggleLaw(law.id)}
+                    onCheckedChange={() => toggleLaw(index + 1)}
                     className="w-6 h-6 border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <span className={`font-body text-base md:text-lg flex-1 transition-colors ${
                     isChecked ? 'text-primary font-medium' : 'text-foreground'
                   }`}>
-                    {law.content}
+                    {law}
                   </span>
                   {isChecked && (
                     <Check className="w-5 h-5 text-primary animate-scale-in" />
@@ -377,7 +347,7 @@ const LawsOfLightChecklist = () => {
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-6 pt-4 border-t border-primary/20 italic">
-            (Click vào 5 Luật Ánh Sáng để xác nhận cam kết mỗi ngày)
+            {t('anhsang.laws.clickToConfirm')}
           </p>
         </Card>
       </div>
