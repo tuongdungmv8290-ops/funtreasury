@@ -413,5 +413,72 @@
   "footer": {
     "poweredBy": "Impulsado por",
     "pureEnergy": "Energía de Amor Puro"
+  },
+  "docs": {
+    "title": "Documentación de Plataforma",
+    "subtitle": "Resumen completo de FUN Treasury para nuevos miembros del equipo",
+    "languages": "idiomas",
+    "vision": "Visión",
+    "visionText": "FUN Treasury es un panel de gestión financiera para billeteras Treasury con una interfaz profesional y transparente. Rastrea con precisión el flujo de efectivo (Entradas/Salidas) y los saldos reales de CAMLY y USDT.",
+    "philosophy": "Energía de Amor Puro - Transparencia Absoluta - Prosperidad Libre",
+    "techStackTitle": "Stack Tecnológico",
+    "featuresTitle": "Funciones Activas",
+    "databaseTitle": "Esquema de Base de Datos",
+    "edgeFunctionsTitle": "Edge Functions",
+    "securityTitle": "Seguridad",
+    "i18nTitle": "Internacionalización",
+    "roadmapTitle": "Hoja de Ruta de Desarrollo",
+    "active": "activo",
+    "tech": {
+      "react": "Biblioteca UI basada en componentes",
+      "vite": "Herramienta de build súper rápida",
+      "typescript": "JavaScript con tipos",
+      "tailwind": "Framework CSS utility-first",
+      "shadcn": "Componentes hermosos y personalizables",
+      "tanstack": "Gestión de estado y caché",
+      "supabase": "Backend-as-a-Service",
+      "ethers": "Interacción con blockchain",
+      "i18next": "Framework de internacionalización",
+      "recharts": "Biblioteca de gráficos React"
+    },
+    "features": {
+      "dashboard": "Resumen de portafolio, Resumen de billeteras, Gráficos de transacciones, Sincronización en tiempo real",
+      "transactions": "Historial de transacciones con filtros, Hoja manual, Alertas de transacciones",
+      "camly": "Conexión MetaMask, UniversalSwap, Gráfico de precios, Tokenomics",
+      "anhsang": "5 Leyes de la Luz, 30 Afirmaciones, 8 Mantras, Ejercicio de respiración, Temporizador de meditación",
+      "nft": "2 Colecciones: Energy Art y FUN Brands, Vista Grid/List, Lightbox",
+      "prices": "Top 50 criptomonedas, Actualizaciones en tiempo real, Búsqueda y ordenación",
+      "settings": "Gestión de Admin, Configuración de billeteras, Contratos de tokens, 2FA"
+    },
+    "db": {
+      "wallets": "Lista de billeteras treasury",
+      "tokens": "Saldos de tokens por billetera",
+      "transactions": "Historial de transacciones",
+      "txMetadata": "Metadatos adicionales de transacciones",
+      "nftCollections": "Colecciones NFT",
+      "nftAssets": "NFTs en colección",
+      "userRoles": "Roles de usuario",
+      "apiSettings": "Configuración de claves API",
+      "notifications": "Notificaciones del sistema"
+    },
+    "edge": {
+      "getCamlyPrice": "Obtener precio CAMLY de PancakeSwap",
+      "getCamlyTrades": "Obtener historial de trades CAMLY",
+      "getCryptoPrices": "Obtener precios de top 50 crypto",
+      "getTokenBalances": "Obtener saldos de tokens de Moralis",
+      "getNftData": "Obtener metadatos NFT",
+      "syncTransactions": "Sincronizar transacciones desde blockchain"
+    },
+    "security": {
+      "auth": "Autenticación",
+      "access": "Control de Acceso"
+    },
+    "i18nNote": "Todo el contenido está traducido a 9 idiomas. Archivos locale: src/locales/*.json",
+    "priority": {
+      "high": "Alta Prioridad",
+      "medium": "Prioridad Media",
+      "future": "Futuro"
+    },
+    "footer": "Esta documentación se genera automáticamente desde el codebase. Se actualiza cuando hay cambios."
   }
 }
