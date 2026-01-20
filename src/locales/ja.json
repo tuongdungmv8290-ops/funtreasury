@@ -29,7 +29,8 @@
     "ecosystem": "FUNエコシステム",
     "camly": "CAMLY Community",
     "anhSang": "愛の光",
-    "settings": "設定"
+    "settings": "設定",
+    "docs": "ドキュメント"
   },
   "ecosystem": {
     "title": "FUNエコシステム",
@@ -412,5 +413,72 @@
   "footer": {
     "poweredBy": "提供元",
     "pureEnergy": "純粋な愛のエネルギー"
+  },
+  "docs": {
+    "title": "プラットフォームドキュメント",
+    "subtitle": "新しいチームメンバー向けFUN Treasuryの包括的な概要",
+    "languages": "言語",
+    "vision": "ビジョン",
+    "visionText": "FUN Treasuryは、プロフェッショナルで透明性のあるインターフェースを持つTreasuryウォレットの財務管理ダッシュボードです。",
+    "philosophy": "純粋な愛のエネルギー - 絶対的な透明性 - 自由な繁栄",
+    "techStackTitle": "技術スタック",
+    "featuresTitle": "アクティブな機能",
+    "databaseTitle": "データベーススキーマ",
+    "edgeFunctionsTitle": "エッジファンクション",
+    "securityTitle": "セキュリティ",
+    "i18nTitle": "国際化",
+    "roadmapTitle": "開発ロードマップ",
+    "active": "アクティブ",
+    "tech": {
+      "react": "コンポーネントベースのUIライブラリ",
+      "vite": "超高速ビルドツール",
+      "typescript": "型付きJavaScript",
+      "tailwind": "ユーティリティファーストCSSフレームワーク",
+      "shadcn": "美しくカスタマイズ可能なコンポーネント",
+      "tanstack": "ステートとキャッシュ管理",
+      "supabase": "Backend-as-a-Service",
+      "ethers": "ブロックチェーン連携",
+      "i18next": "国際化フレームワーク",
+      "recharts": "Reactチャートライブラリ"
+    },
+    "features": {
+      "dashboard": "ポートフォリオ概要、ウォレットサマリー、取引チャート、リアルタイム同期",
+      "transactions": "フィルター付き取引履歴、マニュアルシート、取引アラート",
+      "camly": "MetaMask接続、UniversalSwap、価格チャート、トークノミクス",
+      "anhsang": "光の5法則、30のアファメーション、8つのマントラ、呼吸法、瞑想タイマー",
+      "nft": "2つのコレクション: Energy Art & FUN Brands、グリッド/リストビュー",
+      "prices": "トップ50暗号通貨、リアルタイム更新、検索＆ソート",
+      "settings": "管理者管理、ウォレット設定、トークン契約、2FA"
+    },
+    "db": {
+      "wallets": "Treasuryウォレットリスト",
+      "tokens": "ウォレットごとのトークン残高",
+      "transactions": "取引履歴",
+      "txMetadata": "追加取引メタデータ",
+      "nftCollections": "NFTコレクション",
+      "nftAssets": "コレクション内のNFT",
+      "userRoles": "ユーザー権限",
+      "apiSettings": "APIキー設定",
+      "notifications": "システム通知"
+    },
+    "edge": {
+      "getCamlyPrice": "PancakeSwapからCAMLY価格を取得",
+      "getCamlyTrades": "CAMLY取引履歴を取得",
+      "getCryptoPrices": "トップ50暗号価格を取得",
+      "getTokenBalances": "Moralisからトークン残高を取得",
+      "getNftData": "NFTメタデータを取得",
+      "syncTransactions": "ブロックチェーンから取引を同期"
+    },
+    "security": {
+      "auth": "認証",
+      "access": "アクセス制御"
+    },
+    "i18nNote": "すべてのコンテンツは9言語に翻訳されています。ロケールファイル: src/locales/*.json",
+    "priority": {
+      "high": "高優先度",
+      "medium": "中優先度",
+      "future": "将来"
+    },
+    "footer": "このドキュメントはコードベースから自動生成されます。変更時に更新されます。"
   }
 }

@@ -29,7 +29,8 @@
     "ecosystem": "FUN 生态系统",
     "camly": "CAMLY Community",
     "anhSang": "爱之光",
-    "settings": "设置"
+    "settings": "设置",
+    "docs": "文档"
   },
   "ecosystem": {
     "title": "FUN 生态系统",
@@ -412,5 +413,72 @@
   "footer": {
     "poweredBy": "技术支持",
     "pureEnergy": "纯净爱之能量"
+  },
+  "docs": {
+    "title": "平台文档",
+    "subtitle": "FUN Treasury新团队成员综合概述",
+    "languages": "语言",
+    "vision": "愿景",
+    "visionText": "FUN Treasury是一个专业、透明的财务库钱包管理仪表板。准确跟踪资金流入/流出和CAMLY、USDT的实际余额。",
+    "philosophy": "纯净爱之能量 - 绝对透明 - 自由繁荣",
+    "techStackTitle": "技术栈",
+    "featuresTitle": "活跃功能",
+    "databaseTitle": "数据库架构",
+    "edgeFunctionsTitle": "边缘函数",
+    "securityTitle": "安全",
+    "i18nTitle": "国际化",
+    "roadmapTitle": "开发路线图",
+    "active": "活跃",
+    "tech": {
+      "react": "基于组件的UI库",
+      "vite": "超快构建工具",
+      "typescript": "带类型的JavaScript",
+      "tailwind": "实用优先CSS框架",
+      "shadcn": "美观可定制的组件",
+      "tanstack": "状态和缓存管理",
+      "supabase": "后端即服务",
+      "ethers": "区块链交互",
+      "i18next": "国际化框架",
+      "recharts": "React图表库"
+    },
+    "features": {
+      "dashboard": "投资组合概览、钱包摘要、交易图表、实时同步",
+      "transactions": "带过滤器的交易历史、手动表、交易警报",
+      "camly": "MetaMask连接、UniversalSwap、价格图表、代币经济学",
+      "anhsang": "光之5法则、30条肯定语、8条咒语、呼吸练习、冥想计时器",
+      "nft": "2个收藏品：Energy Art & FUN Brands、网格/列表视图",
+      "prices": "前50名加密货币、实时更新、搜索和排序",
+      "settings": "管理员管理、钱包配置、代币合约、2FA"
+    },
+    "db": {
+      "wallets": "财务库钱包列表",
+      "tokens": "每个钱包的代币余额",
+      "transactions": "交易历史",
+      "txMetadata": "附加交易元数据",
+      "nftCollections": "NFT收藏品",
+      "nftAssets": "收藏品中的NFT",
+      "userRoles": "用户权限",
+      "apiSettings": "API密钥配置",
+      "notifications": "系统通知"
+    },
+    "edge": {
+      "getCamlyPrice": "从PancakeSwap获取CAMLY价格",
+      "getCamlyTrades": "获取CAMLY交易历史",
+      "getCryptoPrices": "获取前50名加密货币价格",
+      "getTokenBalances": "从Moralis获取代币余额",
+      "getNftData": "获取NFT元数据",
+      "syncTransactions": "从区块链同步交易"
+    },
+    "security": {
+      "auth": "认证",
+      "access": "访问控制"
+    },
+    "i18nNote": "所有内容已翻译成9种语言。语言文件：src/locales/*.json",
+    "priority": {
+      "high": "高优先级",
+      "medium": "中优先级",
+      "future": "未来"
+    },
+    "footer": "此文档从代码库自动生成。发生更改时更新。"
   }
 }

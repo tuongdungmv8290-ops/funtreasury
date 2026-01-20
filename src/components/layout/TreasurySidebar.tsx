@@ -28,6 +28,7 @@ import {
   Building,
   ChevronDown,
   Image,
+  FileText,
   type LucideIcon,
 } from 'lucide-react';
 import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
@@ -90,6 +91,7 @@ const treasuryItems: { path: string; labelKey: string; icon: LucideIcon; status:
   { path: '/nft', labelKey: 'nav.nft', icon: Image, status: 'active' },
   { path: '/camly', labelKey: 'nav.camly', icon: Coins, status: 'active', logo: camlyCoinNewLogo },
   { path: '/anh-sang', labelKey: 'nav.anhSang', icon: Sparkles, status: 'active' },
+  { path: '/docs/platform', labelKey: 'nav.docs', icon: FileText, status: 'active' },
   { path: '/settings', labelKey: 'nav.settings', icon: Settings, status: 'active' },
 ];
 

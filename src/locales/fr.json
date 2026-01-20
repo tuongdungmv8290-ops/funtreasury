@@ -29,7 +29,8 @@
     "ecosystem": "Écosystème FUN",
     "camly": "CAMLY Community",
     "anhSang": "Lumière d'Amour",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "docs": "Documentation"
   },
   "ecosystem": {
     "title": "ÉCOSYSTÈME FUN",
@@ -412,5 +413,72 @@
   "footer": {
     "poweredBy": "Propulsé par",
     "pureEnergy": "Énergie d'Amour Pur"
+  },
+  "docs": {
+    "title": "Documentation de la Plateforme",
+    "subtitle": "Aperçu complet de FUN Treasury pour les nouveaux membres",
+    "languages": "langues",
+    "vision": "Vision",
+    "visionText": "FUN Treasury est un tableau de bord de gestion financière pour les portefeuilles Treasury avec une interface professionnelle et transparente.",
+    "philosophy": "Énergie d'Amour Pur - Transparence Absolue - Prospérité Libre",
+    "techStackTitle": "Stack Technique",
+    "featuresTitle": "Fonctionnalités Actives",
+    "databaseTitle": "Schéma de Base de Données",
+    "edgeFunctionsTitle": "Fonctions Edge",
+    "securityTitle": "Sécurité",
+    "i18nTitle": "Internationalisation",
+    "roadmapTitle": "Feuille de Route",
+    "active": "actif",
+    "tech": {
+      "react": "Bibliothèque UI basée sur les composants",
+      "vite": "Outil de build ultra-rapide",
+      "typescript": "JavaScript avec types",
+      "tailwind": "Framework CSS utility-first",
+      "shadcn": "Composants beaux et personnalisables",
+      "tanstack": "Gestion d'état et de cache",
+      "supabase": "Backend-as-a-Service",
+      "ethers": "Interaction blockchain",
+      "i18next": "Framework d'internationalisation",
+      "recharts": "Bibliothèque de graphiques React"
+    },
+    "features": {
+      "dashboard": "Aperçu du portfolio, Résumé des portefeuilles, Graphiques de transactions, Sync temps réel",
+      "transactions": "Historique avec filtres, Feuille manuelle, Alertes de transaction",
+      "camly": "Connexion MetaMask, UniversalSwap, Graphique de prix, Tokenomics",
+      "anhsang": "5 Lois de la Lumière, 30 Affirmations, 8 Mantras, Exercice de respiration, Minuteur de méditation",
+      "nft": "2 Collections: Energy Art & FUN Brands, Vue grille/liste",
+      "prices": "Top 50 cryptomonnaies, Mises à jour temps réel, Recherche et tri",
+      "settings": "Gestion admin, Config portefeuille, Contrats token, 2FA"
+    },
+    "db": {
+      "wallets": "Liste des portefeuilles Treasury",
+      "tokens": "Soldes de tokens par portefeuille",
+      "transactions": "Historique des transactions",
+      "txMetadata": "Métadonnées supplémentaires",
+      "nftCollections": "Collections NFT",
+      "nftAssets": "NFTs dans les collections",
+      "userRoles": "Permissions utilisateur",
+      "apiSettings": "Configuration des clés API",
+      "notifications": "Notifications système"
+    },
+    "edge": {
+      "getCamlyPrice": "Obtenir le prix CAMLY de PancakeSwap",
+      "getCamlyTrades": "Obtenir l'historique des trades CAMLY",
+      "getCryptoPrices": "Obtenir les prix des 50 premières cryptos",
+      "getTokenBalances": "Obtenir les soldes de Moralis",
+      "getNftData": "Obtenir les métadonnées NFT",
+      "syncTransactions": "Synchroniser les transactions blockchain"
+    },
+    "security": {
+      "auth": "Authentification",
+      "access": "Contrôle d'Accès"
+    },
+    "i18nNote": "Tout le contenu est traduit en 9 langues. Fichiers: src/locales/*.json",
+    "priority": {
+      "high": "Haute Priorité",
+      "medium": "Priorité Moyenne",
+      "future": "Futur"
+    },
+    "footer": "Cette documentation est générée automatiquement. Mise à jour lors des changements."
   }
 }
