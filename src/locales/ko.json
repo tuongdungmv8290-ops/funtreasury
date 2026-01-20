@@ -29,7 +29,8 @@
     "ecosystem": "FUN 생태계",
     "camly": "CAMLY Community",
     "anhSang": "사랑의 빛",
-    "settings": "설정"
+    "settings": "설정",
+    "docs": "문서"
   },
   "ecosystem": {
     "title": "FUN 생태계",
@@ -412,5 +413,72 @@
   "footer": {
     "poweredBy": "제공",
     "pureEnergy": "순수한 사랑 에너지"
+  },
+  "docs": {
+    "title": "플랫폼 문서",
+    "subtitle": "새 팀원을 위한 FUN Treasury 종합 개요",
+    "languages": "언어",
+    "vision": "비전",
+    "visionText": "FUN Treasury는 전문적이고 투명한 인터페이스를 갖춘 Treasury 지갑용 재무 관리 대시보드입니다.",
+    "philosophy": "순수한 사랑 에너지 - 절대적 투명성 - 자유로운 번영",
+    "techStackTitle": "기술 스택",
+    "featuresTitle": "활성 기능",
+    "databaseTitle": "데이터베이스 스키마",
+    "edgeFunctionsTitle": "엣지 펑션",
+    "securityTitle": "보안",
+    "i18nTitle": "국제화",
+    "roadmapTitle": "개발 로드맵",
+    "active": "활성",
+    "tech": {
+      "react": "컴포넌트 기반 UI 라이브러리",
+      "vite": "초고속 빌드 도구",
+      "typescript": "타입이 있는 JavaScript",
+      "tailwind": "유틸리티 우선 CSS 프레임워크",
+      "shadcn": "아름답고 사용자 정의 가능한 컴포넌트",
+      "tanstack": "상태 및 캐시 관리",
+      "supabase": "Backend-as-a-Service",
+      "ethers": "블록체인 연동",
+      "i18next": "국제화 프레임워크",
+      "recharts": "React 차트 라이브러리"
+    },
+    "features": {
+      "dashboard": "포트폴리오 개요, 지갑 요약, 거래 차트, 실시간 동기화",
+      "transactions": "필터가 있는 거래 내역, 수동 시트, 거래 알림",
+      "camly": "MetaMask 연결, UniversalSwap, 가격 차트, 토크노믹스",
+      "anhsang": "빛의 5법칙, 30개 확언, 8개 만트라, 호흡 운동, 명상 타이머",
+      "nft": "2개 컬렉션: Energy Art & FUN Brands, 그리드/리스트 뷰",
+      "prices": "상위 50개 암호화폐, 실시간 업데이트, 검색 및 정렬",
+      "settings": "관리자 관리, 지갑 설정, 토큰 계약, 2FA"
+    },
+    "db": {
+      "wallets": "Treasury 지갑 목록",
+      "tokens": "지갑별 토큰 잔액",
+      "transactions": "거래 내역",
+      "txMetadata": "추가 거래 메타데이터",
+      "nftCollections": "NFT 컬렉션",
+      "nftAssets": "컬렉션 내 NFT",
+      "userRoles": "사용자 권한",
+      "apiSettings": "API 키 설정",
+      "notifications": "시스템 알림"
+    },
+    "edge": {
+      "getCamlyPrice": "PancakeSwap에서 CAMLY 가격 가져오기",
+      "getCamlyTrades": "CAMLY 거래 내역 가져오기",
+      "getCryptoPrices": "상위 50개 암호화폐 가격 가져오기",
+      "getTokenBalances": "Moralis에서 토큰 잔액 가져오기",
+      "getNftData": "NFT 메타데이터 가져오기",
+      "syncTransactions": "블록체인에서 거래 동기화"
+    },
+    "security": {
+      "auth": "인증",
+      "access": "접근 제어"
+    },
+    "i18nNote": "모든 콘텐츠가 9개 언어로 번역되었습니다. 로케일 파일: src/locales/*.json",
+    "priority": {
+      "high": "높은 우선순위",
+      "medium": "중간 우선순위",
+      "future": "미래"
+    },
+    "footer": "이 문서는 코드베이스에서 자동 생성됩니다. 변경 시 업데이트됩니다."
   }
 }

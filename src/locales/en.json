@@ -36,7 +36,8 @@
     "camly": "CAMLY Community",
     "anhSang": "Light of Love",
     "settings": "Settings",
-    "nft": "NFT Gallery"
+    "nft": "NFT Gallery",
+    "docs": "Documentation"
   },
   "ecosystem": {
     "title": "FUN ECOSYSTEM",
@@ -455,5 +456,72 @@
   "footer": {
     "poweredBy": "Powered by",
     "pureEnergy": "Pure Love Energy"
+  },
+  "docs": {
+    "title": "Platform Documentation",
+    "subtitle": "Comprehensive overview of FUN Treasury for new team members",
+    "languages": "languages",
+    "vision": "Vision",
+    "visionText": "FUN Treasury is a financial management dashboard for Treasury wallets with a professional, transparent interface. Accurately track cash flow (Inflow/Outflow) and real balances of CAMLY and USDT.",
+    "philosophy": "Pure Love Energy - Absolute Transparency - Free Prosperity",
+    "techStackTitle": "Tech Stack",
+    "featuresTitle": "Active Features",
+    "databaseTitle": "Database Schema",
+    "edgeFunctionsTitle": "Edge Functions",
+    "securityTitle": "Security",
+    "i18nTitle": "Internationalization",
+    "roadmapTitle": "Development Roadmap",
+    "active": "active",
+    "tech": {
+      "react": "Component-based UI library",
+      "vite": "Super fast build tool",
+      "typescript": "JavaScript with types",
+      "tailwind": "Utility-first CSS framework",
+      "shadcn": "Beautiful, customizable components",
+      "tanstack": "State and cache management",
+      "supabase": "Backend-as-a-Service",
+      "ethers": "Blockchain interaction",
+      "i18next": "Internationalization framework",
+      "recharts": "React charts library"
+    },
+    "features": {
+      "dashboard": "Portfolio overview, Wallet Summary, Transaction Charts, Real-time sync",
+      "transactions": "Transaction history with filters, Manual Sheet, Transaction Alerts",
+      "camly": "MetaMask connection, UniversalSwap, Price Chart, Tokenomics",
+      "anhsang": "5 Laws of Light, 30 Affirmations, 8 Mantras, Breathing Exercise, Meditation Timer",
+      "nft": "2 Collections: Energy Art & FUN Brands, Grid/List view, Lightbox",
+      "prices": "Top 50 cryptocurrencies, Real-time updates, Search & Sort",
+      "settings": "Admin Management, Wallet Config, Token Contracts, 2FA"
+    },
+    "db": {
+      "wallets": "Treasury wallet list",
+      "tokens": "Token balances per wallet",
+      "transactions": "Transaction history",
+      "txMetadata": "Additional transaction metadata",
+      "nftCollections": "NFT collections",
+      "nftAssets": "NFTs in collections",
+      "userRoles": "User permissions",
+      "apiSettings": "API key configuration",
+      "notifications": "System notifications"
+    },
+    "edge": {
+      "getCamlyPrice": "Get CAMLY price from PancakeSwap",
+      "getCamlyTrades": "Get CAMLY trade history",
+      "getCryptoPrices": "Get top 50 crypto prices",
+      "getTokenBalances": "Get token balances from Moralis",
+      "getNftData": "Get NFT metadata",
+      "syncTransactions": "Sync transactions from blockchain"
+    },
+    "security": {
+      "auth": "Authentication",
+      "access": "Access Control"
+    },
+    "i18nNote": "All content translated to 9 languages. Locale files: src/locales/*.json",
+    "priority": {
+      "high": "High Priority",
+      "medium": "Medium Priority",
+      "future": "Future"
+    },
+    "footer": "This documentation is auto-generated from the codebase. Updates when changes occur."
   }
 }

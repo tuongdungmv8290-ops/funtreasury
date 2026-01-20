@@ -36,7 +36,8 @@
     "camly": "CAMLY Community",
     "anhSang": "Ánh Sáng",
     "settings": "Cài Đặt",
-    "nft": "NFT Gallery"
+    "nft": "NFT Gallery",
+    "docs": "Tài Liệu"
   },
   "ecosystem": {
     "title": "FUN ECOSYSTEM",
@@ -455,5 +456,72 @@
   "footer": {
     "poweredBy": "Được vận hành bởi",
     "pureEnergy": "Năng Lượng Yêu Thương Thuần Khiết"
+  },
+  "docs": {
+    "title": "Tài Liệu Dự Án",
+    "subtitle": "Tổng hợp toàn diện về FUN Treasury cho thành viên mới",
+    "languages": "ngôn ngữ",
+    "vision": "Tầm Nhìn",
+    "visionText": "FUN Treasury là Dashboard quản lý tài chính cho các ví Treasury với giao diện chuyên nghiệp, minh bạch. Theo dõi chính xác dòng tiền (Inflow/Outflow) và số dư thực tế của CAMLY và USDT.",
+    "philosophy": "Năng Lượng Yêu Thương Thuần Khiết - Minh Bạch Tuyệt Đối - Tự Do Thịnh Vượng",
+    "techStackTitle": "Công Nghệ Sử Dụng",
+    "featuresTitle": "Tính Năng Đang Hoạt Động",
+    "databaseTitle": "Cấu Trúc Database",
+    "edgeFunctionsTitle": "Edge Functions",
+    "securityTitle": "Bảo Mật",
+    "i18nTitle": "Đa Ngôn Ngữ",
+    "roadmapTitle": "Lộ Trình Phát Triển",
+    "active": "hoạt động",
+    "tech": {
+      "react": "Thư viện UI component-based",
+      "vite": "Build tool siêu nhanh",
+      "typescript": "JavaScript với kiểu dữ liệu",
+      "tailwind": "CSS utility-first framework",
+      "shadcn": "Components đẹp và tùy biến",
+      "tanstack": "Quản lý state và cache",
+      "supabase": "Backend-as-a-Service",
+      "ethers": "Tương tác với blockchain",
+      "i18next": "Framework đa ngôn ngữ",
+      "recharts": "Biểu đồ React"
+    },
+    "features": {
+      "dashboard": "Tổng quan portfolio, Wallet Summary, Transaction Charts, Real-time sync",
+      "transactions": "Lịch sử giao dịch với filters, Manual Sheet, Transaction Alerts",
+      "camly": "Kết nối MetaMask, UniversalSwap, Price Chart, Tokenomics",
+      "anhsang": "5 Luật Ánh Sáng, 30 Affirmations, 8 Mantras, Breathing Exercise, Meditation Timer",
+      "nft": "2 Collections: Energy Art & FUN Brands, Grid/List view, Lightbox",
+      "prices": "Top 50 cryptocurrencies, Real-time updates, Search & Sort",
+      "settings": "Admin Management, Wallet Config, Token Contracts, 2FA"
+    },
+    "db": {
+      "wallets": "Danh sách ví treasury",
+      "tokens": "Số dư token trong mỗi ví",
+      "transactions": "Lịch sử giao dịch",
+      "txMetadata": "Metadata bổ sung cho giao dịch",
+      "nftCollections": "Bộ sưu tập NFT",
+      "nftAssets": "Các NFT trong collection",
+      "userRoles": "Phân quyền người dùng",
+      "apiSettings": "Cấu hình API keys",
+      "notifications": "Thông báo hệ thống"
+    },
+    "edge": {
+      "getCamlyPrice": "Lấy giá CAMLY từ PancakeSwap",
+      "getCamlyTrades": "Lấy lịch sử giao dịch CAMLY",
+      "getCryptoPrices": "Lấy giá top 50 crypto",
+      "getTokenBalances": "Lấy số dư token từ Moralis",
+      "getNftData": "Lấy metadata NFT",
+      "syncTransactions": "Đồng bộ transactions từ blockchain"
+    },
+    "security": {
+      "auth": "Xác Thực",
+      "access": "Phân Quyền"
+    },
+    "i18nNote": "Tất cả content đã được dịch sang 9 ngôn ngữ. File locale: src/locales/*.json",
+    "priority": {
+      "high": "Ưu Tiên Cao",
+      "medium": "Ưu Tiên Trung",
+      "future": "Tương Lai"
+    },
+    "footer": "Tài liệu này được tạo tự động từ codebase. Cập nhật khi có thay đổi."
   }
 }
