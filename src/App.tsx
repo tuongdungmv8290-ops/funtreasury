@@ -21,6 +21,7 @@ import FunEcosystem from "./pages/FunEcosystem";
 import NFTGallery from "./pages/NFTGallery";
 import NFTCollectionDetail from "./pages/NFTCollectionDetail";
 import PlatformDocs from "./pages/PlatformDocs";
+import Constitution from "./pages/Constitution";
 
 const queryClient = new QueryClient();
 
