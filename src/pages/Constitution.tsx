@@ -156,7 +156,7 @@ const Constitution = () => {
                           <Badge variant="outline" className="mb-1 text-xs border-primary/30 text-primary">
                             {t('constitution.chapter')} {chapter.number}
                           </Badge>
-                          <CardTitle className="text-xl md:text-2xl font-heading font-bold">
+                          <CardTitle className="text-xl md:text-2xl font-heading font-bold text-elegant-blue">
                             {t(chapter.titleKey)}
                           </CardTitle>
                         </div>

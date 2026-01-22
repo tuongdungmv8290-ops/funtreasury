@@ -50,8 +50,12 @@
     
     --inflow: 217 91% 60%;
     --inflow-glow: 217 91% 70%;
-    --outflow: 0 84% 60%;
-    --outflow-glow: 0 84% 70%;
+      --outflow: 0 84% 60%;
+      --outflow-glow: 0 84% 70%;
+      
+      /* Elegant Blue - Trang Nhã */
+      --elegant-blue: 210 70% 45%;
+      --elegant-blue-light: 210 60% 55%;
     
     --chart-1: 46 65% 52%;
     --chart-2: 217 91% 60%;
@@ -115,6 +119,10 @@
     --border: 220 20% 22%;
     --input: 220 20% 22%;
     --ring: 46 65% 52%;
+    
+    /* Elegant Blue - Trang Nhã (Dark Mode) */
+    --elegant-blue: 210 70% 60%;
+    --elegant-blue-light: 210 60% 70%;
 
     /* Custom Treasury Colors - Dark Theme */
     --treasury-gold: 46 65% 52%;
