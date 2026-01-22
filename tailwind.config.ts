@@ -83,6 +83,10 @@ export default {
           purple: "hsl(var(--crypto-purple))",
           pink: "hsl(var(--crypto-pink))",
         },
+        elegant: {
+          blue: "hsl(var(--elegant-blue))",
+          "blue-light": "hsl(var(--elegant-blue-light))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

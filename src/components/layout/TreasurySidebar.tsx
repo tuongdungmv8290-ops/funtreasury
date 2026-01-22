@@ -205,8 +205,8 @@ export function TreasurySidebar() {
                         className={cn(
                           'flex items-center gap-3 px-3 py-3 text-lg font-bold font-heading transition-all duration-200 group',
                           active
-                            ? 'text-primary border-l-4 border-primary bg-primary/10'
-                            : 'text-foreground/80 hover:text-primary hover:bg-primary/5',
+                            ? 'text-elegant-blue border-l-4 border-elegant-blue bg-elegant-blue/10'
+                            : 'text-elegant-blue hover:text-elegant-blue-light hover:bg-elegant-blue/5',
                           isComingSoon && 'opacity-60'
                         )}
                       >
@@ -233,10 +233,7 @@ export function TreasurySidebar() {
                         )}
                         {!isCollapsed && (
                           <>
-                            <span className={cn(
-                              'transition-colors',
-                              active && 'gold-text'
-                            )}>
+                            <span className="transition-colors">
                               {t(item.labelKey)}
                             </span>
                             {isComingSoon && (
@@ -280,7 +277,7 @@ export function TreasurySidebar() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-4 px-3 py-3 
-                                     text-foreground/80 hover:text-primary
+                                     text-elegant-blue hover:text-elegant-blue-light
                                      transition-all duration-200 group animate-fade-in
                                      bg-transparent hover:bg-transparent
                                      focus:outline-none"
@@ -353,7 +350,7 @@ export function TreasurySidebar() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-4 px-3 py-3 
-                                         text-foreground/80 hover:text-primary
+                                         text-elegant-blue hover:text-elegant-blue-light
                                          transition-all duration-200 group animate-fade-in
                                          bg-transparent hover:bg-transparent
                                          focus:outline-none"
