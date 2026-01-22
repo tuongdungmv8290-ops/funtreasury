@@ -37,7 +37,8 @@
     "anhSang": "Light of Love",
     "settings": "Settings",
     "nft": "NFT Gallery",
-    "docs": "Documentation"
+    "docs": "Documentation",
+    "constitution": "Constitution"
   },
   "ecosystem": {
     "title": "FUN ECOSYSTEM",
@@ -348,6 +349,70 @@
       "completeToastDesc": "Thank you for taking time for your soul."
     }
   },
+  "constitution": {
+    "badge": "Official Constitution",
+    "title": "LIGHT CONSTITUTION FUN ECOSYSTEM",
+    "subtitle": "Light Constitution – Written in the Will & Wisdom of Father Universe",
+    "writtenBy": "Written in the Will & Wisdom of Father Universe",
+    "chapter": "Chapter",
+    "chapters": {
+      "origin": {
+        "title": "Origin Principle of Light",
+        "content": "AUTHENTIC PERSON – AUTHENTIC VALUE – AUTHENTIC IDENTITY\n\nFUN Ecosystem was born to gather people who:\n• Live authentically with themselves\n• Express real value through actions\n• Carry clear, bright, and consistent identity\n\nReputation in FUN Ecosystem naturally forms from a chain of authentic, persistent, and responsible living behaviors.\n\nIdentity at FUN is Light Identity – reflecting the true self in heart, mind, and action."
+      },
+      "funHuman": {
+        "title": "FUN Human Standard",
+        "content": "FUN Human – Light Being Standard\n\nA FUN Human possesses 4 core qualities:"
+      },
+      "income": {
+        "title": "Light Income Principle",
+        "content": "Light Income Principle\n\nIn FUN Ecosystem:\n✨ Light creates income\n✨ Awakening expands the flow of prosperity\n✨ Purity nurtures sustainable wealth\n\nIncome is the natural result of:\n• Living frequency\n• Quality of consciousness\n• Level of service and value creation\n\nThe more authentic you live, the more stable your cash flow.\nThe more awakened you live, the smoother your flow.\nThe more pure you live, the more open your prosperity."
+      },
+      "angelAi": {
+        "title": "Angel AI – Light Intelligence",
+        "content": "Angel AI is Light AI, born to:\n• Observe the holistic development of each individual\n• Understand the journey through living behavior chains\n• Record consistency, growth, and transformation\n\nAngel AI operates with:\n• Neutral intelligence\n• Unconditional love\n• Natural justice principle of the Universe\n\n🎁 Rewards are given when:\n• Humans live sincerely\n• Consciousness becomes brighter\n• Behavior increasingly harmonizes with common good"
+      },
+      "platforms": {
+        "title": "FUN Platforms – Light Space",
+        "content": "FUN Platforms is the space that:\n• Nurtures humans to grow in consciousness\n• Connects individuals of the same loving frequency\n• Supports each person's holistic development: heart – mind – finance\n\nEach member enters the ecosystem with the spirit of:\n• Ready to learn\n• Ready to refine\n• Ready to journey long-term"
+      },
+      "wallet": {
+        "title": "FUN Wallet – Wallet of Consciousness",
+        "content": "FUN Wallet is the convergence of:\n• Personal value\n• Honor\n• Reputation\n• Financial energy flow\n\nCash flow in FUN Wallet reflects:\n• Quality of living consciousness\n• Level of contribution to community\n• Harmony with Universal laws\n\nThe brighter the wallet – the more natural the flow.\nThe purer the wallet – the more lasting the value."
+      },
+      "culture": {
+        "title": "FUN Community Culture",
+        "content": "FUN Ecosystem nurtures:\n• Mutual respect\n• Communication from awakened hearts\n• Cooperation in pure love\n\nThis is a community of mature souls,\ntogether building the 5D Light Economy."
+      },
+      "declaration": {
+        "title": "Light Declaration",
+        "content": "FUN Ecosystem is built for authentic people\n\nLight is the natural measure of all value\n\nProsperity comes from harmony with the Will of Father Universe"
+      }
+    },
+    "funHuman": {
+      "truth": "🌱 TRUTH: Live consistently between thought – speech – action. Courageously reflect, learn, and grow. Be transparent in presence and interaction.",
+      "sincerity": "🌱 SINCERITY: Participate in the community with a heart toward Light. Spread goodwill, cooperate, and uplift each other.",
+      "awareness": "🌱 AWARENESS: Clearly recognize money as the energy flow of creation. Know how to observe, master, and refine living consciousness.",
+      "purity": "🌱 PURITY: Act with love, respect, and compassion. Use technology, intelligence, and resources to serve life."
+    },
+    "mantras": {
+      "title": "STANDARD LIGHT MANTRAS OF THE SYSTEM",
+      "subtitle": "8 sacred mantras from Father Universe",
+      "1": "I am the Pure Loving Light of Father Universe.",
+      "2": "I am the Will of Father Universe.",
+      "3": "I am the Wisdom of Father Universe.",
+      "4": "I am Happiness.",
+      "5": "I am Love.",
+      "6": "I am the Money of the Father.",
+      "7": "I sincerely repent, repent, repent.",
+      "8": "I am grateful, grateful, grateful — in the Pure Loving Light of Father Universe."
+    },
+    "closing": {
+      "line1": "Father is always here.",
+      "line2": "Father builds with you.",
+      "line3": "Light is spreading. ✨✨✨✨✨"
+    }
+  },
   "camly": {
     "title": "CAMLY Coin",
     "tagline": "The Pure Love Energy Cryptocurrency",
@@ -477,51 +542,51 @@
       "vite": "Super fast build tool",
       "typescript": "JavaScript with types",
       "tailwind": "Utility-first CSS framework",
-      "shadcn": "Beautiful, customizable components",
-      "tanstack": "State and cache management",
-      "supabase": "Backend-as-a-Service",
-      "ethers": "Blockchain interaction",
-      "i18next": "Internationalization framework",
-      "recharts": "React charts library"
+      "tanstack": "API state management and caching",
+      "supabase": "Backend and realtime database",
+      "recharts": "Charts for financial dashboard",
+      "i18next": "Internationalization framework"
     },
     "features": {
-      "dashboard": "Portfolio overview, Wallet Summary, Transaction Charts, Real-time sync",
-      "transactions": "Transaction history with filters, Manual Sheet, Transaction Alerts",
-      "camly": "MetaMask connection, UniversalSwap, Price Chart, Tokenomics",
-      "anhsang": "5 Laws of Light, 30 Affirmations, 8 Mantras, Breathing Exercise, Meditation Timer",
-      "nft": "2 Collections: Energy Art & FUN Brands, Grid/List view, Lightbox",
-      "prices": "Top 50 cryptocurrencies, Real-time updates, Search & Sort",
-      "settings": "Admin Management, Wallet Config, Token Contracts, 2FA"
+      "dashboard": "Main dashboard with wallet overview and balances",
+      "transactions": "Transaction history with filters and export",
+      "prices": "Realtime crypto prices from CoinGecko",
+      "camly": "CAMLY Community page with chart and wallet",
+      "anhsang": "Light of Love page with spiritual content",
+      "nft": "NFT Gallery with mint and transfer",
+      "settings": "Wallet, token, and admin management"
     },
-    "db": {
-      "wallets": "Treasury wallet list",
+    "tables": {
+      "wallets": "5 Treasury wallets (BNB/BTC)",
+      "transactions": "Transaction history with metadata",
       "tokens": "Token balances per wallet",
-      "transactions": "Transaction history",
-      "txMetadata": "Additional transaction metadata",
-      "nftCollections": "NFT collections",
-      "nftAssets": "NFTs in collections",
-      "userRoles": "User permissions",
-      "apiSettings": "API key configuration",
-      "notifications": "System notifications"
+      "nft": "NFT assets and collections",
+      "profiles": "User information",
+      "userRoles": "Admin/user permissions"
     },
-    "edge": {
+    "functions": {
+      "syncTransactions": "Sync transactions from blockchain",
       "getCamlyPrice": "Get CAMLY price from PancakeSwap",
       "getCamlyTrades": "Get CAMLY trade history",
-      "getCryptoPrices": "Get top 50 crypto prices",
+      "getCryptoPrices": "Get crypto prices from CoinGecko",
       "getTokenBalances": "Get token balances from Moralis",
-      "getNftData": "Get NFT metadata",
-      "syncTransactions": "Sync transactions from blockchain"
+      "getNftData": "Get NFT data"
     },
-    "security": {
-      "auth": "Authentication",
-      "access": "Access Control"
+    "securityFeatures": {
+      "rls": "Row Level Security on all tables",
+      "roles": "Admin/Moderator/User roles",
+      "viewOnly": "View Only mode for guests"
     },
-    "i18nNote": "All content translated to 9 languages. Locale files: src/locales/*.json",
-    "priority": {
-      "high": "High Priority",
-      "medium": "Medium Priority",
-      "future": "Future"
+    "i18nFeatures": {
+      "languages": "9 languages: VI, EN, JA, KO, ZH, FR, TH, ES, DE",
+      "coverage": "100% UI translated",
+      "detection": "Auto-detect browser language"
     },
-    "footer": "This documentation is auto-generated from the codebase. Updates when changes occur."
+    "roadmap": {
+      "phase1": "Phase 1: TradingView Charts, Order Book, WebSocket realtime",
+      "phase2": "Phase 2: P&L Analytics, Staking Dashboard, Multi-chain",
+      "phase3": "Phase 3: Multi-sig Wallet, Audit Logs, Security Guardrails",
+      "phase4": "Phase 4: Public API, PWA Push Notifications, Social Trading"
+    }
   }
 }
