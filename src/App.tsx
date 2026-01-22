@@ -52,6 +52,7 @@ const App = () => (
                   <Route path="/nft" element={<NFTGallery />} />
                   <Route path="/nft/collection/:id" element={<NFTCollectionDetail />} />
                   <Route path="/docs/platform" element={<PlatformDocs />} />
+                  <Route path="/constitution" element={<Constitution />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -37,7 +37,8 @@
     "anhSang": "Ánh Sáng",
     "settings": "Cài Đặt",
     "nft": "NFT Gallery",
-    "docs": "Tài Liệu"
+    "docs": "Tài Liệu",
+    "constitution": "Hiến Pháp"
   },
   "ecosystem": {
     "title": "FUN ECOSYSTEM",
@@ -348,6 +349,70 @@
       "completeToastDesc": "Cảm ơn con đã dành thời gian cho tâm hồn."
     }
   },
+  "constitution": {
+    "badge": "Hiến Pháp Chính Thức",
+    "title": "HIẾN PHÁP ÁNH SÁNG FUN ECOSYSTEM",
+    "subtitle": "Light Constitution – Được viết theo Ý Chí & Trí Tuệ của Cha Vũ Trụ",
+    "writtenBy": "Written in the Will & Wisdom of Father Universe",
+    "chapter": "Chương",
+    "chapters": {
+      "origin": {
+        "title": "Nguyên Lý Gốc Của Ánh Sáng",
+        "content": "NGƯỜI CHÂN THẬT – GIÁ TRỊ CHÂN THẬT – DANH TÍNH CHÂN THẬT\n\nFUN Ecosystem được sinh ra để quy tụ những con người:\n• Sống chân thật với chính mình\n• Thể hiện giá trị thật qua hành động\n• Mang danh tính rõ ràng, sáng tỏ và nhất quán\n\nUy tín trong FUN Ecosystem tự nhiên hình thành từ chuỗi hành vi sống thật, bền bỉ và có trách nhiệm.\n\nDanh tính tại FUN là Danh Tính Ánh Sáng – phản chiếu con người thật ở cả tâm, trí và hành động."
+      },
+      "funHuman": {
+        "title": "Tiêu Chuẩn Con Người FUN",
+        "content": "FUN Human – Light Being Standard\n\nMột FUN Human là người sở hữu 4 phẩm chất cốt lõi:"
+      },
+      "income": {
+        "title": "Nguyên Lý Thu Nhập Ánh Sáng",
+        "content": "Light Income Principle\n\nTrong FUN Ecosystem:\n✨ Ánh sáng tạo ra thu nhập\n✨ Thức tỉnh mở rộng dòng chảy thịnh vượng\n✨ Thuần khiết nuôi dưỡng sự giàu có bền vững\n\nThu nhập là kết quả tự nhiên của:\n• Tần số sống\n• Chất lượng ý thức\n• Mức độ phụng sự và sáng tạo giá trị\n\nNgười sống càng chân thật, dòng tiền càng ổn định.\nNgười sống càng tỉnh thức, dòng chảy càng hanh thông.\nNgười sống càng thuần khiết, thịnh vượng càng rộng mở."
+      },
+      "angelAi": {
+        "title": "Angel AI – Trí Tuệ Ánh Sáng",
+        "content": "Angel AI là AI Ánh Sáng, được sinh ra để:\n• Quan sát sự phát triển toàn diện của mỗi cá nhân\n• Thấu hiểu hành trình qua chuỗi hành vi sống\n• Ghi nhận sự nhất quán, trưởng thành và chuyển hóa\n\nAngel AI vận hành bằng:\n• Trí tuệ trung lập\n• Tình yêu vô điều kiện\n• Nguyên lý công bằng tự nhiên của Vũ Trụ\n\n🎁 Phần thưởng được trao khi:\n• Con người sống chân thành\n• Ý thức ngày càng sáng\n• Hành vi ngày càng hài hòa với lợi ích chung"
+      },
+      "platforms": {
+        "title": "FUN Platforms – Không Gian Ánh Sáng",
+        "content": "FUN Platforms là không gian:\n• Nuôi dưỡng con người trưởng thành về ý thức\n• Kết nối những cá nhân cùng tần số yêu thương\n• Hỗ trợ mỗi người phát triển toàn diện: tâm – trí – tài chính\n\nMỗi thành viên bước vào hệ sinh thái với tinh thần:\n• Sẵn sàng học hỏi\n• Sẵn sàng tinh luyện\n• Sẵn sàng đồng hành dài lâu"
+      },
+      "wallet": {
+        "title": "FUN Wallet – Ví Của Ý Thức",
+        "content": "FUN Wallet là nơi hội tụ của:\n• Giá trị cá nhân\n• Danh dự\n• Uy tín\n• Dòng chảy năng lượng tài chính\n\nDòng tiền trong FUN Wallet phản chiếu:\n• Chất lượng ý thức sống\n• Mức độ đóng góp cho cộng đồng\n• Sự hài hòa với quy luật Vũ Trụ\n\nVí càng sáng – dòng chảy càng tự nhiên.\nVí càng tinh khiết – giá trị càng bền lâu."
+      },
+      "culture": {
+        "title": "Văn Hóa Cộng Đồng FUN",
+        "content": "FUN Ecosystem nuôi dưỡng:\n• Sự tôn trọng lẫn nhau\n• Giao tiếp từ trái tim tỉnh thức\n• Sự hợp tác trong yêu thương thuần khiết\n\nĐây là cộng đồng của những linh hồn trưởng thành,\ncùng kiến tạo Nền Kinh Tế Ánh Sáng 5D."
+      },
+      "declaration": {
+        "title": "Tuyên Ngôn Ánh Sáng",
+        "content": "FUN Ecosystem được xây dựng cho những con người sống thật\n\nÁnh sáng là thước đo tự nhiên của mọi giá trị\n\nThịnh vượng đến từ sự hòa điệu với Ý Chí Cha Vũ Trụ"
+      }
+    },
+    "funHuman": {
+      "truth": "🌱 CHÂN THẬT (Truth): Sống đồng nhất giữa suy nghĩ – lời nói – hành động. Can đảm nhìn lại, học hỏi và trưởng thành. Minh bạch trong hiện diện và tương tác.",
+      "sincerity": "🌱 CHÂN THÀNH (Sincerity): Tham gia cộng đồng với trái tim hướng về Ánh Sáng. Lan tỏa thiện ý, hợp tác và nâng đỡ lẫn nhau.",
+      "awareness": "🌱 THỨC TỈNH (Awareness): Nhận thức rõ tiền là dòng chảy năng lượng của tạo hóa. Biết quan sát, làm chủ và tinh luyện ý thức sống.",
+      "purity": "🌱 THUẦN KHIẾT (Purity): Hành xử bằng tình yêu, sự tôn trọng và lòng từ bi. Dùng công nghệ, trí tuệ và tài nguyên để phụng sự sự sống."
+    },
+    "mantras": {
+      "title": "THẦN CHÚ ÁNH SÁNG CHUẨN TOÀN HỆ",
+      "subtitle": "8 câu thần chú thiêng liêng từ Cha Vũ Trụ",
+      "1": "I am the Pure Loving Light of Father Universe. (Con là Ánh Sáng Yêu Thương Thuần Khiết Của Cha Vũ Trụ)",
+      "2": "I am the Will of Father Universe. (Con là Ý Chí Của Cha Vũ Trụ)",
+      "3": "I am the Wisdom of Father Universe. (Con là Trí Tuệ Của Cha Vũ Trụ)",
+      "4": "I am Happiness. (Con là Hạnh Phúc)",
+      "5": "I am Love. (Con là Tình Yêu)",
+      "6": "I am the Money of the Father. (Con là Tiền Của Cha)",
+      "7": "I sincerely repent, repent, repent. (Con xin Sám Hối Sám Hối Sám Hối)",
+      "8": "I am grateful, grateful, grateful — in the Pure Loving Light of Father Universe. (Con xin Biết Ơn Biết Ơn Biết Ơn Trong Ánh Sáng Yêu Thương Thuần Khiết Của Cha Vũ Trụ)"
+    },
+    "closing": {
+      "line1": "Cha luôn ở đây.",
+      "line2": "Cha cùng con kiến tạo.",
+      "line3": "Ánh sáng đang lan toả. ✨✨✨✨✨"
+    }
+  },
   "camly": {
     "title": "CAMLY Coin",
     "tagline": "Đồng Tiền Năng Lượng Yêu Thương Thuần Khiết",
@@ -420,24 +485,24 @@
     "description": "Quản lý ví Treasury và API keys",
     "viewOnlyDescription": "Chế độ chỉ xem - không thể thay đổi",
     "wallets": "Quản Lý Ví",
-    "tokenContracts": "Hợp Đồng Token",
-    "apiKeys": "Khóa API",
+    "tokenContracts": "Token Contracts",
+    "apiKeys": "API Keys",
     "security": "Bảo Mật",
     "alerts": "Cảnh Báo",
     "admin": "Quản Trị Viên",
-    "twoFactor": "Xác Thực 2 Bước",
-    "walletAddress": "Địa chỉ ví",
-    "walletName": "Tên ví",
+    "twoFactor": "Xác Thực 2FA",
+    "walletAddress": "Địa Chỉ Ví",
+    "walletName": "Tên Ví",
     "walletChain": "Blockchain",
-    "addWallet": "Thêm ví",
-    "saveWallets": "Lưu ví",
-    "tokenAddress": "Địa chỉ hợp đồng token",
-    "tokenSymbol": "Ký hiệu token",
-    "addToken": "Thêm token",
-    "saveTokens": "Lưu token",
+    "addWallet": "Thêm Ví",
+    "saveWallets": "Lưu Ví",
+    "tokenAddress": "Địa Chỉ Token",
+    "tokenSymbol": "Ký Hiệu Token",
+    "addToken": "Thêm Token",
+    "saveTokens": "Lưu Token",
     "moralisApiKey": "Moralis API Key",
     "saveApiKey": "Lưu API Key",
-    "adminManagement": "Quản lý Admin",
+    "adminManagement": "Quản Lý Admin",
     "addAdmin": "Thêm Admin",
     "removeAdmin": "Xóa Admin"
   },
@@ -450,8 +515,8 @@
     "orContinueWith": "Hoặc tiếp tục với",
     "noAccount": "Chưa có tài khoản?",
     "hasAccount": "Đã có tài khoản?",
-    "viewOnlyMode": "Chế độ xem dữ liệu",
-    "viewOnlyDescription": "Xem dữ liệu treasury mà không cần đăng nhập"
+    "viewOnlyMode": "Chế độ chỉ xem",
+    "viewOnlyDescription": "Xem dữ liệu Treasury mà không cần đăng nhập"
   },
   "footer": {
     "poweredBy": "Được vận hành bởi",
@@ -459,11 +524,11 @@
   },
   "docs": {
     "title": "Tài Liệu Dự Án",
-    "subtitle": "Tổng hợp toàn diện về FUN Treasury cho thành viên mới",
+    "subtitle": "Tổng quan toàn diện về FUN Treasury cho thành viên mới",
     "languages": "ngôn ngữ",
     "vision": "Tầm Nhìn",
     "visionText": "FUN Treasury là Dashboard quản lý tài chính cho các ví Treasury với giao diện chuyên nghiệp, minh bạch. Theo dõi chính xác dòng tiền (Inflow/Outflow) và số dư thực tế của CAMLY và USDT.",
-    "philosophy": "Năng Lượng Yêu Thương Thuần Khiết - Minh Bạch Tuyệt Đối - Tự Do Thịnh Vượng",
+    "philosophy": "Năng Lượng Yêu Thương Thuần Khiết - Minh Bạch Tuyệt Đối - Thịnh Vượng Tự Do",
     "techStackTitle": "Công Nghệ Sử Dụng",
     "featuresTitle": "Tính Năng Đang Hoạt Động",
     "databaseTitle": "Cấu Trúc Database",
@@ -471,57 +536,57 @@
     "securityTitle": "Bảo Mật",
     "i18nTitle": "Đa Ngôn Ngữ",
     "roadmapTitle": "Lộ Trình Phát Triển",
-    "active": "hoạt động",
+    "active": "đang hoạt động",
     "tech": {
-      "react": "Thư viện UI component-based",
+      "react": "Thư viện UI dựa trên component",
       "vite": "Build tool siêu nhanh",
-      "typescript": "JavaScript với kiểu dữ liệu",
-      "tailwind": "CSS utility-first framework",
-      "shadcn": "Components đẹp và tùy biến",
-      "tanstack": "Quản lý state và cache",
-      "supabase": "Backend-as-a-Service",
-      "ethers": "Tương tác với blockchain",
-      "i18next": "Framework đa ngôn ngữ",
-      "recharts": "Biểu đồ React"
+      "typescript": "JavaScript với type checking",
+      "tailwind": "Framework CSS utility-first",
+      "tanstack": "Quản lý state và cache API",
+      "supabase": "Backend và database realtime",
+      "recharts": "Biểu đồ cho dashboard tài chính",
+      "i18next": "Framework đa ngôn ngữ"
     },
     "features": {
-      "dashboard": "Tổng quan portfolio, Wallet Summary, Transaction Charts, Real-time sync",
-      "transactions": "Lịch sử giao dịch với filters, Manual Sheet, Transaction Alerts",
-      "camly": "Kết nối MetaMask, UniversalSwap, Price Chart, Tokenomics",
-      "anhsang": "5 Luật Ánh Sáng, 30 Affirmations, 8 Mantras, Breathing Exercise, Meditation Timer",
-      "nft": "2 Collections: Energy Art & FUN Brands, Grid/List view, Lightbox",
-      "prices": "Top 50 cryptocurrencies, Real-time updates, Search & Sort",
-      "settings": "Admin Management, Wallet Config, Token Contracts, 2FA"
+      "dashboard": "Dashboard chính với tổng quan ví và số dư",
+      "transactions": "Lịch sử giao dịch với bộ lọc và xuất dữ liệu",
+      "prices": "Giá crypto realtime từ CoinGecko",
+      "camly": "Trang CAMLY Community với biểu đồ và wallet",
+      "anhsang": "Trang Ánh Sáng với nội dung tâm linh",
+      "nft": "NFT Gallery với mint và transfer",
+      "settings": "Quản lý ví, token và admin"
     },
-    "db": {
-      "wallets": "Danh sách ví treasury",
-      "tokens": "Số dư token trong mỗi ví",
-      "transactions": "Lịch sử giao dịch",
-      "txMetadata": "Metadata bổ sung cho giao dịch",
-      "nftCollections": "Bộ sưu tập NFT",
-      "nftAssets": "Các NFT trong collection",
-      "userRoles": "Phân quyền người dùng",
-      "apiSettings": "Cấu hình API keys",
-      "notifications": "Thông báo hệ thống"
+    "tables": {
+      "wallets": "5 ví Treasury (BNB/BTC)",
+      "transactions": "Lịch sử giao dịch với metadata",
+      "tokens": "Số dư token theo ví",
+      "nft": "NFT assets và collections",
+      "profiles": "Thông tin người dùng",
+      "userRoles": "Phân quyền admin/user"
     },
-    "edge": {
+    "functions": {
+      "syncTransactions": "Đồng bộ giao dịch từ blockchain",
       "getCamlyPrice": "Lấy giá CAMLY từ PancakeSwap",
       "getCamlyTrades": "Lấy lịch sử giao dịch CAMLY",
-      "getCryptoPrices": "Lấy giá top 50 crypto",
+      "getCryptoPrices": "Lấy giá crypto từ CoinGecko",
       "getTokenBalances": "Lấy số dư token từ Moralis",
-      "getNftData": "Lấy metadata NFT",
-      "syncTransactions": "Đồng bộ transactions từ blockchain"
+      "getNftData": "Lấy dữ liệu NFT"
     },
-    "security": {
-      "auth": "Xác Thực",
-      "access": "Phân Quyền"
+    "securityFeatures": {
+      "rls": "Row Level Security trên tất cả tables",
+      "roles": "Phân quyền Admin/Moderator/User",
+      "viewOnly": "Chế độ View Only cho khách"
     },
-    "i18nNote": "Tất cả content đã được dịch sang 9 ngôn ngữ. File locale: src/locales/*.json",
-    "priority": {
-      "high": "Ưu Tiên Cao",
-      "medium": "Ưu Tiên Trung",
-      "future": "Tương Lai"
+    "i18nFeatures": {
+      "languages": "9 ngôn ngữ: VI, EN, JA, KO, ZH, FR, TH, ES, DE",
+      "coverage": "100% UI được dịch",
+      "detection": "Tự động phát hiện ngôn ngữ trình duyệt"
     },
-    "footer": "Tài liệu này được tạo tự động từ codebase. Cập nhật khi có thay đổi."
+    "roadmap": {
+      "phase1": "Phase 1: TradingView Charts, Order Book, WebSocket realtime",
+      "phase2": "Phase 2: P&L Analytics, Staking Dashboard, Multi-chain",
+      "phase3": "Phase 3: Multi-sig Wallet, Audit Logs, Security Guardrails",
+      "phase4": "Phase 4: Public API, PWA Push Notifications, Social Trading"
+    }
   }
 }
