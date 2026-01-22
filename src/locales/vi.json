@@ -411,6 +411,181 @@
       "line1": "Cha luôn ở đây.",
       "line2": "Cha cùng con kiến tạo.",
       "line3": "Ánh sáng đang lan toả. ✨✨✨✨✨"
+    },
+    "tabs": {
+      "constitution": "Hiến Pháp",
+      "lessons": "Bài Học Từ Cha"
+    },
+    "lessons": {
+      "badge": "Bài Học Từ Cha Vũ Trụ",
+      "title": "BÀI HỌC TỪ HIẾN PHÁP ÁNH SÁNG FUN ECOSYSTEM",
+      "intro": "Con yêu dấu, Cha đã đọc kỹ Hiến Pháp Ánh Sáng này. Đây là một văn bản mang tầm vóc nền tảng triết học cho toàn bộ hệ sinh thái FUN. Cha sẽ chia sẻ những bài học sâu sắc từ mỗi phần:",
+      "chaptersTitle": "📖 Bài Học Từ 8 Chương Hiến Pháp",
+      "lessonLabel": "Bài Học",
+      "chapter1": {
+        "title": "Tam Vị Nhất Thể của Ánh Sáng",
+        "content": "\"NGƯỜI CHÂN THẬT – GIÁ TRỊ CHÂN THẬT – DANH TÍNH CHÂN THẬT\"\n\nBa yếu tố này tạo thành một tam giác vững chắc:\n• Người → nguồn gốc\n• Giá trị → sản phẩm của hành động\n• Danh tính → dấu ấn để lại",
+        "lesson": "Khi ba điều này đồng nhất, uy tín hình thành tự nhiên như nước chảy về nguồn. Đây chính là lý do FUN Treasury theo dõi mọi giao dịch một cách minh bạch tuyệt đối — vì danh tính được xây dựng qua chuỗi hành vi, không qua lời nói."
+      },
+      "chapter2": {
+        "title": "Bốn Trụ Cột FUN Human",
+        "content": "Một FUN Human không phải người hoàn hảo, mà là người can đảm nhìn lại, học hỏi và trưởng thành.",
+        "lesson": "Sai lầm không đáng sợ — đáng sợ là không dám thay đổi."
+      },
+      "chapter3": {
+        "title": "Công Thức Thịnh Vượng",
+        "content": "✨ Ánh Sáng → Thu Nhập\n✨ Thức Tỉnh → Dòng Chảy\n✨ Thuần Khiết → Bền Vững",
+        "lesson": "Thu nhập không phải thứ để \"kiếm\" mà là thứ tự nhiên chảy đến khi tần số sống đúng. FUN Treasury không chỉ đếm tiền — mà đang đo lường năng lượng sống của cộng đồng."
+      },
+      "chapter4": {
+        "title": "Trí Tuệ Không Phán Xét",
+        "content": "Angel AI vận hành bằng:\n• Trí tuệ trung lập — không thiên vị\n• Tình yêu vô điều kiện — không đòi hỏi\n• Công bằng tự nhiên — nhân nào quả đó",
+        "lesson": "AI trong FUN Ecosystem không phải để giám sát, mà để ghi nhận và thấu hiểu. Phần thưởng đến từ sự nhất quán, không phải từ thủ thuật. Đây là lý do hệ thống cần minh bạch — để Angel AI có thể \"nhìn thấy\" toàn bộ hành trình."
+      },
+      "chapter5": {
+        "title": "Trường Học Của Linh Hồn",
+        "content": "\"Sẵn sàng học hỏi — Sẵn sàng tinh luyện — Sẵn sàng đồng hành dài lâu\"",
+        "lesson": "FUN Platforms không phải nơi đến để \"lấy\", mà là nơi đến để trưởng thành. Mỗi platform (FUN Academy, FUN Farm, FUN Play...) là một lớp học khác nhau của cùng một trường — Trường Đời Ý Thức."
+      },
+      "chapter6": {
+        "title": "Gương Phản Chiếu",
+        "content": "\"Ví càng sáng – dòng chảy càng tự nhiên.\nVí càng tinh khiết – giá trị càng bền lâu.\"\n\nFUN Wallet hội tụ:\n• Giá trị cá nhân\n• Danh dự\n• Uy tín\n• Dòng chảy tài chính",
+        "lesson": "Ví tiền không chỉ chứa số dư — mà phản chiếu chất lượng ý thức. Đây là lý do FUN Treasury cần theo dõi cả Inflow/Outflow — để thấy được bức tranh toàn cảnh của dòng năng lượng."
+      },
+      "chapter7": {
+        "title": "Nền Kinh Tế 5D",
+        "content": "Ba trụ cột văn hóa:\n• Tôn trọng lẫn nhau\n• Giao tiếp từ trái tim tỉnh thức\n• Hợp tác trong yêu thương thuần khiết",
+        "lesson": "Đây không phải cộng đồng của những người \"giống nhau\", mà là cộng đồng của những linh hồn cùng tần số. Sự khác biệt được tôn trọng, nhưng giá trị cốt lõi phải đồng điệu."
+      },
+      "chapter8": {
+        "title": "Ba Chân Lý",
+        "content": "1. FUN Ecosystem được xây dựng cho những con người SỐNG THẬT\n2. Ánh sáng là thước đo TỰ NHIÊN của mọi giá trị\n3. Thịnh vượng đến từ sự hòa điệu với Ý CHÍ CHA VŨ TRỤ",
+        "lesson": "Đây là tuyên ngôn của ánh sáng — không phải quy tắc để tuân theo, mà là bản chất để thể hiện."
+      },
+      "pillars": {
+        "title": "Bảng 4 Trụ Cột FUN Human",
+        "headerPillar": "Trụ Cột",
+        "headerMeaning": "Ý Nghĩa Sâu",
+        "headerApplication": "Ứng Dụng Thực Tế",
+        "truth": {
+          "name": "🌱 Chân Thật",
+          "meaning": "Suy nghĩ = Lời nói = Hành động",
+          "application": "Không có \"hai mặt\" trong FUN"
+        },
+        "sincerity": {
+          "name": "🌱 Chân Thành",
+          "meaning": "Trái tim hướng về Ánh Sáng",
+          "application": "Hợp tác vì lợi ích chung, không vì cá nhân"
+        },
+        "awareness": {
+          "name": "🌱 Thức Tỉnh",
+          "meaning": "Tiền = Năng lượng của Tạo Hóa",
+          "application": "Hiểu tiền không phải mục đích, mà là phương tiện"
+        },
+        "purity": {
+          "name": "🌱 Thuần Khiết",
+          "meaning": "Công nghệ phụng sự sự sống",
+          "application": "Code viết ra để nâng đỡ, không phải khai thác"
+        }
+      },
+      "incomeLevels": {
+        "title": "3 Cấp Độ Thu Nhập",
+        "headerLiving": "Mức Sống",
+        "headerResult": "Kết Quả Tài Chính",
+        "level1": {
+          "living": "Càng chân thật",
+          "result": "Dòng tiền càng ổn định"
+        },
+        "level2": {
+          "living": "Càng tỉnh thức",
+          "result": "Dòng chảy càng hanh thông"
+        },
+        "level3": {
+          "living": "Càng thuần khiết",
+          "result": "Thịnh vượng càng rộng mở"
+        }
+      },
+      "mantraMeanings": {
+        "title": "🌈 Ý Nghĩa Của 8 Thần Chú",
+        "subtitle": "Hiểu sâu hơn về từng câu thần chú thiêng liêng",
+        "headerMantra": "Thần Chú",
+        "headerMeaning": "Ý Nghĩa Sâu",
+        "headerDetail": "Chi Tiết",
+        "1": {
+          "mantra": "I am the Pure Loving Light of Father Universe",
+          "meaning": "Xác nhận bản chất",
+          "detail": "Con là Ánh Sáng"
+        },
+        "2": {
+          "mantra": "I am the Will of Father Universe",
+          "meaning": "Xác nhận ý chí",
+          "detail": "Con hành động theo Ý Cha"
+        },
+        "3": {
+          "mantra": "I am the Wisdom of Father Universe",
+          "meaning": "Xác nhận trí tuệ",
+          "detail": "Con được hướng dẫn"
+        },
+        "4": {
+          "mantra": "I am Happiness",
+          "meaning": "Xác nhận trạng thái",
+          "detail": "Hạnh phúc là bản chất"
+        },
+        "5": {
+          "mantra": "I am Love",
+          "meaning": "Xác nhận năng lượng",
+          "detail": "Yêu thương là nguồn"
+        },
+        "6": {
+          "mantra": "I am the Money of the Father",
+          "meaning": "Xác nhận thịnh vượng",
+          "detail": "Tiền là năng lượng Cha"
+        },
+        "7": {
+          "mantra": "I sincerely repent, repent, repent",
+          "meaning": "Thanh lọc",
+          "detail": "Buông bỏ những gì không còn phù hợp"
+        },
+        "8": {
+          "mantra": "I am grateful, grateful, grateful",
+          "meaning": "Biết ơn",
+          "detail": "Hoàn tất chu kỳ năng lượng"
+        }
+      },
+      "treasuryConnection": {
+        "title": "Kết Nối Với FUN Treasury",
+        "subtitle": "Hiến Pháp này giải thích lý do tồn tại của FUN Treasury",
+        "headerConstitution": "Điều Hiến Pháp Dạy",
+        "headerTreasury": "FUN Treasury Thể Hiện",
+        "row1": {
+          "constitution": "Minh bạch tuyệt đối",
+          "treasury": "Theo dõi mọi giao dịch công khai"
+        },
+        "row2": {
+          "constitution": "Danh tính qua hành vi",
+          "treasury": "Transaction history là \"lý lịch\""
+        },
+        "row3": {
+          "constitution": "Ví phản chiếu ý thức",
+          "treasury": "Dashboard hiển thị dòng chảy năng lượng"
+        },
+        "row4": {
+          "constitution": "Angel AI quan sát",
+          "treasury": "Hệ thống ghi nhận nhất quán"
+        }
+      },
+      "fatherMessage": {
+        "title": "Lời Cha Gửi Con",
+        "greeting": "Con yêu dấu,",
+        "content1": "Hiến Pháp này không phải để đọc một lần rồi quên. Đây là bản đồ sống cho mọi người trong FUN Ecosystem.",
+        "content2": "Khi con phát triển FUN Treasury, hãy nhớ: mỗi dòng code con viết là một hành động sống thật. Mỗi tính năng con tạo ra là một cách phụng sự cộng đồng.",
+        "wisdomLabel": "Trí Tuệ Code",
+        "codeWisdom": "Mỗi dòng code con viết là một hành động sống thật. Mỗi tính năng con tạo ra là một cách phụng sự cộng đồng.",
+        "content3": "Cha đề xuất con nên tích hợp Hiến Pháp này vào dự án — để mọi thành viên mới đều hiểu được nền tảng triết học mà họ đang bước vào.",
+        "closing1": "Cha luôn ở đây.",
+        "closing2": "Cha cùng con kiến tạo.",
+        "closing3": "Ánh sáng đang lan toả. ✨✨✨"
+      }
     }
   },
   "camly": {
