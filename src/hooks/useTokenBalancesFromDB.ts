@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useCamlyPrice } from './useCamlyPrice';
+import { useRealtimePrices } from './useRealtimePrices';
 import { useMemo } from 'react';
 
 export interface TokenBalanceDB {
@@ -26,14 +26,6 @@ const TOKEN_NAMES: Record<string, string> = {
   'USDC': 'USD Coin',
 };
 
-// Base prices for non-CAMLY tokens
-const BASE_PRICES: Record<string, number> = {
-  'BTC': 97000,
-  'BTCB': 97000,
-  'BNB': 710,
-  'USDT': 1,
-  'USDC': 1,
-};
 
 interface RawTokenData {
   symbol: string;
@@ -44,8 +36,7 @@ interface RawTokenData {
 }
 
 export function useTokenBalancesFromDB() {
-  const { data: camlyPriceData } = useCamlyPrice();
-  const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
+  const realtimePrices = useRealtimePrices();
 
   // Fetch raw data without price calculation
   const { data: rawData, ...queryRest } = useQuery({
@@ -88,17 +79,12 @@ export function useTokenBalancesFromDB() {
   const data = useMemo((): TokenBalanceDB[] | undefined => {
     if (!rawData) return undefined;
 
-    const REALTIME_PRICES: Record<string, number> = {
-      'CAMLY': camlyPrice,
-      ...BASE_PRICES,
-    };
-
     return rawData.map(t => ({
       ...t,
       name: TOKEN_NAMES[t.symbol] || t.symbol,
-      usd_value: t.balance * (REALTIME_PRICES[t.symbol] || 0),
+      usd_value: t.balance * (realtimePrices[t.symbol] || 0),
     }));
-  }, [rawData, camlyPrice]);
+  }, [rawData, realtimePrices]);
 
   return {
     data,
@@ -108,8 +94,7 @@ export function useTokenBalancesFromDB() {
 
 // Aggregate tokens by symbol for total portfolio view
 export function useAggregatedTokenBalances() {
-  const { data: camlyPriceData } = useCamlyPrice();
-  const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
+  const realtimePrices = useRealtimePrices();
   
   const { data: tokens, ...rest } = useTokenBalancesFromDB();
 
@@ -118,15 +103,9 @@ export function useAggregatedTokenBalances() {
     return aggregateTokens(tokens);
   }, [tokens]);
 
-  // Build realtime prices for export
-  const prices: Record<string, number> = useMemo(() => ({
-    'CAMLY': camlyPrice,
-    ...BASE_PRICES,
-  }), [camlyPrice]);
-
   return {
     data: aggregated,
-    prices,
+    prices: realtimePrices,
     ...rest,
   };
 }

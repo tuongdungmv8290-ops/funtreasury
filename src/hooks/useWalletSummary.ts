@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useWallets } from './useWallets';
-import { useCamlyPrice } from './useCamlyPrice';
+import { useRealtimePrices } from './useRealtimePrices';
 
 export interface WalletTokenSummary {
   token_symbol: string;
@@ -28,15 +28,6 @@ export interface WalletSummary {
   total_net_usd: number;
 }
 
-// Fallback prices (will be overridden by realtime prices)
-const FALLBACK_PRICES: Record<string, number> = {
-  'CAMLY': 0.000022,
-  'BTC': 97000,
-  'BTCB': 97000,
-  'BNB': 710,
-  'USDT': 1,
-  'USDC': 1,
-};
 
 // Core tokens to display (filter out spam/airdrop tokens)
 const CORE_TOKENS = ['CAMLY', 'USDT', 'BTC'];
@@ -61,11 +52,10 @@ interface RawWalletSummary {
 export function useWalletSummary() {
   const queryClient = useQueryClient();
   const { data: wallets } = useWallets();
-  const { data: camlyPriceData } = useCamlyPrice();
+  const realtimePrices = useRealtimePrices();
 
   // Stabilize wallet IDs to prevent unnecessary re-renders
   const walletIds = useMemo(() => wallets?.map(w => w.id) ?? [], [wallets]);
-  const camlyPrice = camlyPriceData?.price_usd ?? FALLBACK_PRICES['CAMLY'];
 
   // STEP 1: Fetch raw transaction data (WITHOUT price in queryKey!)
   const rawQuery = useQuery({
@@ -218,11 +208,6 @@ export function useWalletSummary() {
   const data = useMemo((): WalletSummary[] | undefined => {
     if (!rawQuery.data) return undefined;
 
-    const realtimePrices: Record<string, number> = {
-      ...FALLBACK_PRICES,
-      'CAMLY': camlyPrice,
-    };
-
     return rawQuery.data.map(wallet => {
       const tokens: WalletTokenSummary[] = wallet.tokens.map(t => {
         const price = realtimePrices[t.token_symbol] || 0;
@@ -259,7 +244,7 @@ export function useWalletSummary() {
         total_net_usd: totalInflowUsd - totalOutflowUsd,
       };
     });
-  }, [rawQuery.data, camlyPrice]);
+  }, [rawQuery.data, realtimePrices]);
 
   // STEP 3: Realtime updates with debounce (listen to BOTH transactions AND tokens)
   useEffect(() => {

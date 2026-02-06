@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useCamlyPrice } from './useCamlyPrice';
+import { useRealtimePrices } from './useRealtimePrices';
 import { useMemo, useEffect } from 'react';
 
 export interface Token {
@@ -22,14 +22,6 @@ export interface Wallet {
 // Core tokens to display (filter out spam/airdrops)
 const CORE_TOKENS = ['CAMLY', 'BNB', 'USDT', 'BTC', 'BTCB', 'USDC'];
 
-// Base prices for non-CAMLY tokens
-const BASE_PRICES: Record<string, number> = {
-  'BTC': 97000,
-  'BTCB': 97000,
-  'BNB': 710,
-  'USDT': 1,
-  'USDC': 1,
-};
 
 interface RawWalletData {
   id: string;
@@ -41,8 +33,7 @@ interface RawWalletData {
 
 export function useWallets() {
   const queryClient = useQueryClient();
-  const { data: camlyPriceData } = useCamlyPrice();
-  const camlyPrice = camlyPriceData?.price_usd || 0.00002069;
+  const realtimePrices = useRealtimePrices();
   
   // Realtime subscription for tokens table - DEBOUNCED to prevent flicker
   useEffect(() => {
@@ -119,15 +110,10 @@ export function useWallets() {
   const data = useMemo((): Wallet[] | undefined => {
     if (!rawData) return undefined;
 
-    const REALTIME_PRICES: Record<string, number> = {
-      'CAMLY': camlyPrice,
-      ...BASE_PRICES,
-    };
-
     return rawData.map(wallet => {
       const tokensWithUsd = wallet.tokens.map(t => ({
         ...t,
-        usd_value: t.balance * (REALTIME_PRICES[t.symbol] || 0),
+        usd_value: t.balance * (realtimePrices[t.symbol] || 0),
       }));
 
       const totalBalance = tokensWithUsd.reduce((sum, t) => sum + t.usd_value, 0);
@@ -138,7 +124,7 @@ export function useWallets() {
         totalBalance,
       };
     });
-  }, [rawData, camlyPrice]);
+  }, [rawData, realtimePrices]);
 
   return {
     data,
