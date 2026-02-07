@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Gift, Clock, ExternalLink, FileSpreadsheet, MessageCircle, BarChart3, Search } from 'lucide-react';
+import { CamlyWalletPanel } from '@/components/camly/CamlyWalletPanel';
 import { GiftDialog } from '@/components/gifts/GiftDialog';
 import { Leaderboard } from '@/components/gifts/Leaderboard';
 import { LightScoreBadge } from '@/components/gifts/LightScoreBadge';
@@ -73,6 +74,11 @@ const Rewards = () => {
               Tặng Thưởng
             </Button>
           </div>
+        </div>
+
+        {/* Wallet Panel - CAMLY */}
+        <div className="my-2">
+          <CamlyWalletPanel />
         </div>
 
         {/* Post Section */}

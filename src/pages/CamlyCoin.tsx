@@ -1,4 +1,3 @@
-import { CamlyWalletPanel } from "@/components/camly/CamlyWalletPanel";
 import { PhilosophyComparison } from "@/components/camly/PhilosophyComparison";
 import { TokenomicsSection } from "@/components/camly/TokenomicsSection";
 import { CamlyStorySection } from "@/components/camly/CamlyStorySection";
@@ -16,11 +15,6 @@ export default function CamlyCoin() {
           Love of Value — A Token of Pure Love Energy
         </p>
       </header>
-
-      {/* Wallet Panel - MetaMask Style */}
-      <div className="my-8">
-        <CamlyWalletPanel />
-      </div>
 
       {/* Main Quote */}
       <div className="my-12">
