@@ -269,7 +269,7 @@ export function useUserProfiles() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email, avatar_url')
+        .select('user_id, display_name, email, avatar_url, wallet_address')
         .order('display_name');
 
       if (error) throw error;
