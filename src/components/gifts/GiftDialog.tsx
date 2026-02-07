@@ -338,18 +338,18 @@ export function GiftDialog({ open, onOpenChange, defaultReceiverId, postId }: Gi
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-2 border-amber-400/30 dark:border-amber-600/30 shadow-2xl">
-          <DialogHeader className="px-6 pt-6 pb-2">
+        <DialogContent className="max-w-md p-0 border-2 border-amber-400/30 dark:border-amber-600/30 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+          <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Gift className="w-6 h-6 text-amber-500" />
-              <span className="gold-shimmer text-2xl font-bold">Thưởng Camly Coin</span>
+              <span className="text-2xl font-bold text-foreground">Thưởng Camly Coin</span>
             </DialogTitle>
             <DialogDescription>
               Tặng token cho thành viên trong cộng đồng
             </DialogDescription>
           </DialogHeader>
 
-          <div className="px-6 pb-6 space-y-4">
+          <div className="px-6 pb-6 space-y-4 overflow-y-auto flex-1">
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setDropdownOpen(false); }}>
               <TabsList className="w-full grid grid-cols-2 h-12 rounded-xl bg-amber-100/50 dark:bg-amber-900/20 border border-amber-300/30 dark:border-amber-700/30">
