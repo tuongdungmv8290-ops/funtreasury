@@ -55,6 +55,7 @@ import funCharityLogo from '@/assets/fun-charity-logo.png';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
+import { useUnreadCount } from '@/hooks/useMessages';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -140,6 +141,7 @@ export function TreasurySidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
   const [platformsOpen, setPlatformsOpen] = useState(false);
+  const { data: unreadCount } = useUnreadCount();
 
   const handleLogout = async () => {
     if (isViewOnly) {
@@ -238,6 +240,13 @@ export function TreasurySidebar() {
                             <span className="transition-colors">
                               {t(item.labelKey)}
                             </span>
+                            {item.path === '/rewards' && unreadCount && unreadCount > 0 && (
+                              <Badge
+                                className="ml-auto text-[10px] px-1.5 py-0 h-4 bg-destructive text-destructive-foreground"
+                              >
+                                {unreadCount}
+                              </Badge>
+                            )}
                             {isComingSoon && (
                               <Badge
                                 variant="outline"

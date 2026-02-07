@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputWithPaste } from '@/components/ui/input-with-paste';
@@ -12,17 +12,19 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste, Copy, Lock } from 'lucide-react';
+import { Wallet, RefreshCw, Save, Crown, Link, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, UserPlus, Shield, Trash2, ClipboardPaste, Copy, Lock, User, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWalletSettings } from '@/hooks/useWalletSettings';
 import { useTokenContracts } from '@/hooks/useTokenContracts';
 import { useApiSettings } from '@/hooks/useApiSettings';
 import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { TwoFactorSetup } from '@/components/security/TwoFactorSetup';
 import { WalletConnect } from '@/components/security/WalletConnect';
 import { useViewMode } from '@/contexts/ViewModeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 
 // Chain display names
@@ -39,6 +41,63 @@ const CHAIN_NAMES: Record<string, string> = {
 const Settings = () => {
   const { t } = useTranslation();
   const { isViewOnly } = useViewMode();
+  const { user } = useAuth();
+
+  // Profile state
+  const [profileName, setProfileName] = useState('');
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState('');
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: profile } = useQuery({
+    queryKey: ['my-profile', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('user_id', user!.id).single();
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (profile) {
+      setProfileName(profile.display_name || '');
+      setProfileAvatarUrl(profile.avatar_url || '');
+    }
+  }, [profile]);
+
+  const saveProfile = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('profiles').update({
+        display_name: profileName,
+        avatar_url: profileAvatarUrl,
+      }).eq('user_id', user!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-profile'] });
+      toast.success('Đã lưu hồ sơ cá nhân!');
+    },
+    onError: () => toast.error('Không thể lưu hồ sơ'),
+  });
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setIsUploadingAvatar(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `${user.id}/avatar.${ext}`;
+      const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      setProfileAvatarUrl(urlData.publicUrl + '?t=' + Date.now());
+      toast.success('Đã upload ảnh đại diện!');
+    } catch {
+      toast.error('Upload thất bại');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
   const { wallets, isLoading, updateWallets, isUpdating } = useWalletSettings();
   const { contracts, isLoading: isLoadingContracts, updateAllContracts, getContractBySymbol } = useTokenContracts();
   const { settings: apiSettings, isLoading: isLoadingApiSettings, updateSettingAsync, getSettingByKey } = useApiSettings();
@@ -501,6 +560,67 @@ const Settings = () => {
               ? t('settings.viewOnlyDescription')
               : t('settings.description')}
           </p>
+        </div>
+
+        {/* Profile Section */}
+        <div className="treasury-card mb-6 bg-card">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+              <User className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h2 className="font-heading text-xl font-bold tracking-wide text-foreground">Hồ sơ cá nhân</h2>
+              <p className="font-body text-sm text-muted-foreground">Chỉnh sửa tên hiển thị và ảnh đại diện</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 mb-6">
+            <Avatar className="w-20 h-20 border-2 border-primary/30">
+              <AvatarImage src={profileAvatarUrl} />
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                {profileName?.charAt(0)?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-2">
+              <input
+                type="file"
+                ref={avatarInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={isViewOnly || isUploadingAvatar}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {isUploadingAvatar ? 'Đang upload...' : 'Đổi ảnh đại diện'}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="profileName" className="font-body text-foreground font-medium">Tên hiển thị</Label>
+              <Input
+                id="profileName"
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                placeholder="Nhập tên hiển thị"
+                disabled={isViewOnly}
+              />
+            </div>
+            <Button
+              onClick={() => saveProfile.mutate()}
+              disabled={isViewOnly || saveProfile.isPending}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {saveProfile.isPending ? 'Đang lưu...' : 'Lưu hồ sơ'}
+            </Button>
+          </div>
         </div>
 
         {/* Wallet 1 Card */}
