@@ -217,17 +217,52 @@ export function MemberDirectory() {
                                 <Upload className="w-3 h-3" /> Tải ảnh
                               </TabsTrigger>
                               <TabsTrigger value="url" className="text-xs h-6 px-2 gap-1">
-                                <Link className="w-3 h-3" /> Dán URL
+                                <Link className="w-3 h-3" /> Dán ảnh
                               </TabsTrigger>
                             </TabsList>
                           </Tabs>
-                          {avatarMode === 'url' && (
-                            <Input
-                              value={editAvatarUrl}
-                              onChange={e => setEditAvatarUrl(e.target.value)}
-                              placeholder="https://... dán link ảnh đại diện"
-                              className="h-8 text-xs"
-                            />
+                        {avatarMode === 'url' && (
+                            <div
+                              className="relative border-2 border-dashed border-primary/30 rounded-md p-3 text-center cursor-pointer hover:border-primary/60 transition-colors min-h-[60px] flex items-center justify-center"
+                              onPaste={async (e) => {
+                                const items = e.clipboardData?.items;
+                                if (!items) return;
+                                for (const item of Array.from(items)) {
+                                  if (item.type.startsWith('image/')) {
+                                    e.preventDefault();
+                                    const file = item.getAsFile();
+                                    if (!file) return;
+                                    setIsUploading(true);
+                                    try {
+                                      const ext = file.type.split('/')[1] || 'png';
+                                      const path = `${p.user_id}/avatar-paste.${ext}`;
+                                      const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+                                      if (error) throw error;
+                                      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+                                      setEditAvatarUrl(urlData.publicUrl + '?t=' + Date.now());
+                                      toast.success('Đã dán ảnh thành công!');
+                                    } catch {
+                                      toast.error('Dán ảnh thất bại');
+                                    } finally {
+                                      setIsUploading(false);
+                                    }
+                                    return;
+                                  }
+                                }
+                                toast.error('Không tìm thấy ảnh trong clipboard');
+                              }}
+                              tabIndex={0}
+                            >
+                              {isUploading ? (
+                                <p className="text-xs text-muted-foreground">Đang tải...</p>
+                              ) : editAvatarUrl && avatarMode === 'url' ? (
+                                <img src={editAvatarUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover mx-auto" />
+                              ) : (
+                                <p className="text-xs text-muted-foreground">
+                                  📋 Nhấn vào đây rồi <span className="font-semibold text-primary">Ctrl+V</span> để dán ảnh
+                                </p>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
