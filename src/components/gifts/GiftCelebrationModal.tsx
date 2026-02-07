@@ -1,11 +1,11 @@
-import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Copy, ExternalLink, X, PartyPopper, FileText } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Copy, X, ArrowRight, Link } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateGiftReceiptPDF } from '@/lib/giftReceiptPDF';
 import type { GiftData } from '@/hooks/useGifts';
+import camlyLogo from '@/assets/camly-coin-gold-logo.png';
 
 interface GiftCelebrationModalProps {
   open: boolean;
@@ -16,165 +16,121 @@ interface GiftCelebrationModalProps {
 export function GiftCelebrationModal({ open, onClose, gift }: GiftCelebrationModalProps) {
   if (!gift) return null;
 
-  const bscScanUrl = gift.tx_hash
-    ? `https://bscscan.com/tx/${gift.tx_hash}`
-    : null;
-
-  const copyInfo = () => {
+  const copyLink = () => {
     const text = [
       `🎁 FUN Rewards - Chứng nhận tặng thưởng`,
       `Người tặng: ${gift.sender_name || 'N/A'}`,
       `Người nhận: ${gift.receiver_name || 'N/A'}`,
-      `Số lượng: ${gift.amount} ${gift.token_symbol}`,
-      `Giá trị: ~$${gift.usd_value.toFixed(2)}`,
-      gift.message ? `Lời nhắn: "${gift.message}"` : '',
-      gift.tx_hash ? `Tx: ${bscScanUrl}` : '',
+      `Số lượng: ${gift.amount.toLocaleString()} ${gift.token_symbol}`,
       `Thời gian: ${new Date(gift.created_at).toLocaleString('vi-VN')}`,
+      gift.message ? `Lời nhắn: "${gift.message}"` : '',
     ].filter(Boolean).join('\n');
-
     navigator.clipboard.writeText(text);
-    toast.success('Đã copy thông tin!');
+    toast.success('Đã sao chép!');
   };
+
+  const senderInitial = (gift.sender_name || '?')[0].toUpperCase();
+  const receiverInitial = (gift.receiver_name || '?')[0].toUpperCase();
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="max-w-lg p-0 overflow-hidden border-2 border-treasury-gold/50 bg-background [&>button]:hidden"
+        className="max-w-md p-0 overflow-hidden border-0 bg-transparent [&>button]:hidden"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        {/* Fireworks / Confetti CSS */}
+        {/* Confetti */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-          {Array.from({ length: 40 }).map((_, i) => (
+          {Array.from({ length: 30 }).map((_, i) => (
             <div
               key={i}
               className="absolute w-2 h-2 rounded-full animate-confetti"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `-5%`,
-                backgroundColor: [
-                  'hsl(var(--primary))',
-                  '#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1',
-                  '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8',
-                ][i % 9],
+                backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#F97316', '#FBBF24', '#A78BFA', '#FB923C'][i % 7],
                 animationDelay: `${Math.random() * 3}s`,
                 animationDuration: `${2 + Math.random() * 3}s`,
               }}
             />
           ))}
-          {/* Sparkle bursts */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={`spark-${i}`}
-              className="absolute w-1 h-8 bg-gradient-to-b from-treasury-gold to-transparent animate-firework"
-              style={{
-                left: `${10 + Math.random() * 80}%`,
-                top: `${10 + Math.random() * 40}%`,
-                transform: `rotate(${i * 45}deg)`,
-                animationDelay: `${i * 0.3}s`,
-              }}
-            />
-          ))}
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 p-6 md:p-8 text-center">
-          {/* Close button */}
+        {/* Gradient Header */}
+        <div className="relative z-10 bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 px-6 pt-6 pb-8 text-center text-white">
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-secondary transition-colors"
+            className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-white/20 transition-colors"
           >
-            <X className="w-5 h-5 text-muted-foreground" />
+            <X className="w-5 h-5 text-white" />
           </button>
 
-          {/* Header */}
-          <div className="mb-6">
-            <PartyPopper className="w-14 h-14 mx-auto mb-3 text-treasury-gold animate-bounce" />
-            <h2 className="text-2xl md:text-3xl font-heading font-bold gold-text">
-              🎉 Chúc mừng!
-            </h2>
-            <p className="text-muted-foreground mt-1">Bạn đã chuyển thành công!</p>
+          <img src={camlyLogo} alt="Camly" className="w-14 h-14 mx-auto mb-2 drop-shadow-lg" />
+          <h2 className="text-xl font-bold">🎉 Chúc mừng!</h2>
+          <p className="text-sm opacity-90 mt-1">Bạn đã chuyển thành công!</p>
+        </div>
+
+        {/* Content Card */}
+        <div className="relative z-10 bg-background rounded-t-2xl -mt-4 px-6 py-5 space-y-4">
+          {/* Sender → Receiver Row */}
+          <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-col items-center gap-1">
+              <Avatar className="w-12 h-12 border-2 border-amber-400">
+                <AvatarFallback className="bg-amber-100 text-amber-700 font-bold">
+                  {senderInitial}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs font-medium text-foreground max-w-[80px] truncate">
+                {gift.sender_name || 'N/A'}
+              </span>
+            </div>
+
+            <ArrowRight className="w-5 h-5 text-muted-foreground shrink-0" />
+
+            <div className="flex flex-col items-center gap-1">
+              <Avatar className="w-12 h-12 border-2 border-amber-400">
+                <AvatarFallback className="bg-amber-100 text-amber-700 font-bold">
+                  {receiverInitial}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs font-medium text-foreground max-w-[80px] truncate">
+                {gift.receiver_name || 'N/A'}
+              </span>
+            </div>
           </div>
 
-          {/* Receipt Card */}
-          <div className="bg-secondary/50 rounded-xl border border-border/60 p-5 text-left space-y-3 mb-6">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Người chuyển</span>
-              <span className="font-semibold text-foreground">{gift.sender_name || 'N/A'}</span>
-            </div>
-            <div className="border-t border-border/40" />
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Người nhận</span>
-              <span className="font-semibold text-foreground">{gift.receiver_name || 'N/A'}</span>
-            </div>
-            <div className="border-t border-border/40" />
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Số lượng</span>
-              <span className="font-mono font-bold gold-text text-lg">
-                {gift.amount} {gift.token_symbol}
+          {/* Amount Card */}
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <img src={camlyLogo} alt="" className="w-7 h-7" />
+              <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                {gift.amount.toLocaleString()}
+              </span>
+              <span className="text-sm text-amber-600/80 dark:text-amber-400/80 font-medium">
+                {gift.token_symbol}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Giá trị USD</span>
-              <span className="font-mono text-foreground">~${gift.usd_value.toFixed(2)}</span>
-            </div>
-            {gift.message && (
-              <>
-                <div className="border-t border-border/40" />
-                <div>
-                  <span className="text-sm text-muted-foreground">Lời nhắn</span>
-                  <p className="mt-1 text-foreground italic">"{gift.message}"</p>
-                </div>
-              </>
-            )}
-            <div className="border-t border-border/40" />
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Thời gian</span>
-              <span className="text-sm text-foreground">
-                {new Date(gift.created_at).toLocaleString('vi-VN')}
-              </span>
-            </div>
-            {gift.tx_hash && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Tx Hash</span>
-                <a
-                  href={bscScanUrl!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
-                >
-                  {gift.tx_hash.slice(0, 8)}...{gift.tx_hash.slice(-6)}
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            )}
           </div>
+
+          {/* Message */}
+          {gift.message && (
+            <div className="bg-secondary/50 rounded-lg p-3">
+              <p className="text-sm text-foreground italic">"{gift.message}"</p>
+            </div>
+          )}
+
+          {/* Timestamp */}
+          <p className="text-xs text-center text-muted-foreground">
+            {new Date(gift.created_at).toLocaleString('vi-VN')}
+          </p>
 
           {/* Actions */}
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Button variant="outline" size="sm" onClick={copyInfo} className="gap-2">
-              <Copy className="w-4 h-4" /> Copy
+          <div className="flex gap-3 pt-1">
+            <Button variant="outline" className="flex-1 gap-2" onClick={copyLink}>
+              <Link className="w-4 h-4" /> Sao chép link
             </Button>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                generateGiftReceiptPDF(gift);
-                toast.success('Đã tải PDF chứng nhận!');
-              }}
-              className="gap-2"
-            >
-              <FileText className="w-4 h-4" /> Tải PDF
-            </Button>
-            {bscScanUrl && (
-              <Button variant="outline" size="sm" asChild className="gap-2">
-                <a href={bscScanUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-4 h-4" /> BscScan
-                </a>
-              </Button>
-            )}
-            <Button
+              className="flex-1 bg-gradient-to-r from-amber-500 to-yellow-400 text-white gap-2"
               onClick={onClose}
-              className="bg-gradient-to-r from-treasury-gold to-treasury-gold-dark text-white gap-2"
             >
               Đóng
             </Button>
