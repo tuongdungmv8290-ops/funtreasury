@@ -2,6 +2,7 @@ import { ArrowDownLeft, ArrowUpRight, ExternalLink, History, Wallet } from "luci
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTransactions } from "@/hooks/useTransactions";
+import { useAddressLabels } from "@/hooks/useAddressLabels";
 import { formatNumber } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -21,13 +22,12 @@ export function CamlyTransactionHistory({
   const { data: transactions, isLoading } = useTransactions({
     tokenSymbol: 'CAMLY',
     days: 90,
-    // Lọc theo địa chỉ ví liên kết nếu có
     search: connectedAddress || undefined,
   });
+  const { getLabel } = useAddressLabels();
 
   const displayedTxs = transactions?.slice(0, limit) || [];
 
-  // Hiển thị khi chưa kết nối ví
   if (!connectedAddress) {
     return (
       <div className="text-center py-8">
@@ -77,6 +77,8 @@ export function CamlyTransactionHistory({
     <div className="space-y-3">
       {displayedTxs.map((tx) => {
         const isIncoming = tx.direction === 'IN';
+        const counterparty = isIncoming ? tx.from_address : tx.to_address;
+        const { label, isLabeled } = getLabel(counterparty);
         
         return (
           <div
@@ -88,7 +90,6 @@ export function CamlyTransactionHistory({
               "group"
             )}
           >
-            {/* Direction Icon */}
             <div className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center",
               isIncoming ? "bg-inflow/10" : "bg-outflow/10"
@@ -100,17 +101,20 @@ export function CamlyTransactionHistory({
               )}
             </div>
 
-            {/* Transaction Info */}
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">
-                {isIncoming ? 'Nhận' : 'Gửi'} CAMLY
+                {isIncoming ? 'Nhận từ ' : 'Gửi đến '}
+                <span className={cn(
+                  isLabeled ? "text-yellow-500 font-semibold" : "font-mono text-muted-foreground"
+                )}>
+                  {label}
+                </span>
               </p>
               <p className="text-xs text-muted-foreground truncate">
                 {format(tx.timestamp, 'dd/MM/yyyy HH:mm', { locale: vi })}
               </p>
             </div>
 
-            {/* Amount */}
             <div className="text-right">
               <p className={cn(
                 "font-mono font-medium text-sm",
@@ -123,7 +127,6 @@ export function CamlyTransactionHistory({
               </p>
             </div>
 
-            {/* View on Explorer */}
             <a
               href={`https://bscscan.com/tx/${tx.tx_hash}`}
               target="_blank"
@@ -136,11 +139,9 @@ export function CamlyTransactionHistory({
         );
       })}
 
-      {/* View All Button */}
       {transactions && transactions.length > limit && onViewAll && (
         <Button
-          variant="ghost"
-          size="sm"
+          variant="ghost" size="sm"
           onClick={onViewAll}
           className="w-full text-muted-foreground hover:text-primary"
         >
