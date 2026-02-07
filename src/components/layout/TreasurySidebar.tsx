@@ -237,7 +237,7 @@ export function TreasurySidebar() {
                         )}
                         {!isCollapsed && (
                           <>
-                            <span className={cn("transition-colors", item.path === '/rewards' && 'gold-shimmer')}>
+                            <span className={cn("transition-colors", item.path === '/rewards' && 'text-amber-500 dark:text-amber-400 font-extrabold drop-shadow-[0_2px_4px_rgba(201,162,39,0.5)]')}>
                               {t(item.labelKey)}
                             </span>
                             {item.path === '/rewards' && unreadCount && unreadCount > 0 && (
