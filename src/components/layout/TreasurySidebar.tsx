@@ -237,7 +237,7 @@ export function TreasurySidebar() {
                         )}
                         {!isCollapsed && (
                           <>
-                            <span className="transition-colors">
+                            <span className={cn("transition-colors", item.path === '/rewards' && 'gold-shimmer')}>
                               {t(item.labelKey)}
                             </span>
                             {item.path === '/rewards' && unreadCount && unreadCount > 0 && (
