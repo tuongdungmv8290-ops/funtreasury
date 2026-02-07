@@ -89,6 +89,42 @@ export type Database = {
         }
         Relationships: []
       }
+      camly_transfers: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          recipient_address: string
+          recipient_name: string | null
+          sender_address: string
+          status: string | null
+          tx_hash: string | null
+          usd_value: number | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          recipient_address: string
+          recipient_name?: string | null
+          sender_address: string
+          status?: string | null
+          tx_hash?: string | null
+          usd_value?: number | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          recipient_address?: string
+          recipient_name?: string | null
+          sender_address?: string
+          status?: string | null
+          tx_hash?: string | null
+          usd_value?: number | null
+        }
+        Relationships: []
+      }
       gifts: {
         Row: {
           amount: number
