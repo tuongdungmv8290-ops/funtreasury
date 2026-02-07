@@ -77,7 +77,7 @@ export function GiftDialog({ open, onOpenChange, defaultReceiverId, postId }: Gi
       .filter(p => {
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
-        return p.display_name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q);
+        return p.display_name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q) || p.wallet_address?.toLowerCase().includes(q);
       });
   }, [profiles, user?.id, searchQuery]);
 
@@ -215,6 +215,11 @@ export function GiftDialog({ open, onOpenChange, defaultReceiverId, postId }: Gi
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{p.display_name || 'Unnamed'}</p>
+                {p.wallet_address && (
+                  <p className="text-[11px] font-mono text-amber-600/70 dark:text-amber-400/60 truncate">
+                    {p.wallet_address.slice(0, 6)}...{p.wallet_address.slice(-4)}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground truncate">{p.email}</p>
               </div>
             </button>

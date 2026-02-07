@@ -23,6 +23,7 @@ import NFTCollectionDetail from "./pages/NFTCollectionDetail";
 import PlatformDocs from "./pages/PlatformDocs";
 import Constitution from "./pages/Constitution";
 import Rewards from "./pages/Rewards";
+import PublicRewards from "./pages/PublicRewards";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
             <AuthProvider>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/public/rewards" element={<PublicRewards />} />
                 <Route
                   element={
                     <ProtectedRoute>
