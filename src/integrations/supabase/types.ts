@@ -38,6 +38,127 @@ export type Database = {
         }
         Relationships: []
       }
+      gifts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          message: string | null
+          post_id: string | null
+          receiver_id: string
+          sender_id: string
+          status: string
+          token_symbol: string
+          tx_hash: string | null
+          usd_value: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          message?: string | null
+          post_id?: string | null
+          receiver_id: string
+          sender_id: string
+          status?: string
+          token_symbol?: string
+          tx_hash?: string | null
+          usd_value?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          message?: string | null
+          post_id?: string | null
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          token_symbol?: string
+          tx_hash?: string | null
+          usd_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gifts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      light_scores: {
+        Row: {
+          gift_count_received: number
+          gift_count_sent: number
+          id: string
+          light_score: number
+          total_given_usd: number
+          total_received_usd: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          gift_count_received?: number
+          gift_count_sent?: number
+          id?: string
+          light_score?: number
+          total_given_usd?: number
+          total_received_usd?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          gift_count_received?: number
+          gift_count_sent?: number
+          id?: string
+          light_score?: number
+          total_given_usd?: number
+          total_received_usd?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          gift_id: string | null
+          id: string
+          read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          gift_id?: string | null
+          id?: string
+          read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          gift_id?: string | null
+          id?: string
+          read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_gift_id_fkey"
+            columns: ["gift_id"]
+            isOneToOne: false
+            referencedRelation: "gifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nft_assets: {
         Row: {
           collection_id: string | null
@@ -199,6 +320,39 @@ export type Database = {
           id?: string
           token_breakdown?: Json | null
           total_usd_value?: number
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          gift_count: number
+          id: string
+          image_url: string | null
+          total_gifts_received: number
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          gift_count?: number
+          id?: string
+          image_url?: string | null
+          total_gifts_received?: number
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          gift_count?: number
+          id?: string
+          image_url?: string | null
+          total_gifts_received?: number
+          updated_at?: string
         }
         Relationships: []
       }

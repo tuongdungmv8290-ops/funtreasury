@@ -8,7 +8,7 @@ import { CamlyTradesCard } from '@/components/dashboard/CamlyTradesCard';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/formatUtils';
-import { RefreshCw, Loader2, Crown, Clock, FileDown, Eye } from 'lucide-react';
+import { RefreshCw, Loader2, Crown, Clock, FileDown, Eye, Gift } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -22,6 +22,7 @@ import { ReportFilterDialog } from '@/components/reports/ReportFilterDialog';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
+import { GiftDialog } from '@/components/gifts/GiftDialog';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ const Index = () => {
   const [dateRange, setDateRange] = useState<7 | 30>(30);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showGiftDialog, setShowGiftDialog] = useState(false);
   const { data: wallets, isLoading: walletsLoading } = useWallets();
   const { data: transactions } = useTransactions();
   
@@ -178,6 +180,13 @@ const Index = () => {
             {/* Admin actions - hidden in View Only mode */}
             {!isViewOnly && (
               <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setShowGiftDialog(true)}
+                  className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                >
+                  <Gift className="w-4 h-4" />
+                  <span className="hidden sm:inline">Tặng Thưởng</span>
+                </Button>
                 <Button 
                   variant="outline"
                   className="gap-2 border-treasury-gold/50 text-treasury-gold hover:bg-treasury-gold/10"
@@ -319,6 +328,9 @@ const Index = () => {
         isGenerating={isGenerating}
         availableTokens={availableTokens}
       />
+
+      {/* Gift Dialog */}
+      <GiftDialog open={showGiftDialog} onOpenChange={setShowGiftDialog} />
     </div>
   );
 };
