@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Search, Save, Upload, Pencil, X, Check, Wallet } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, Search, Upload, Pencil, X, Check, Wallet, Link, Send as SendIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProfileRow {
@@ -18,6 +19,7 @@ interface ProfileRow {
   email: string | null;
   avatar_url: string | null;
   wallet_address: string | null;
+  telegram: string | null;
 }
 
 export function MemberDirectory() {
@@ -28,10 +30,11 @@ export function MemberDirectory() {
   const [editName, setEditName] = useState('');
   const [editWallet, setEditWallet] = useState('');
   const [editAvatarUrl, setEditAvatarUrl] = useState('');
+  const [editTelegram, setEditTelegram] = useState('');
+  const [avatarMode, setAvatarMode] = useState<'upload' | 'url'>('upload');
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check admin
   const { data: isAdmin } = useQuery({
     queryKey: ['is-admin', user?.id],
     enabled: !!user,
@@ -41,22 +44,22 @@ export function MemberDirectory() {
     },
   });
 
-  // Fetch all profiles
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['all-profiles'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('id, user_id, display_name, email, avatar_url, wallet_address').order('created_at', { ascending: true });
+      const { data, error } = await supabase.from('profiles').select('id, user_id, display_name, email, avatar_url, wallet_address, telegram').order('created_at', { ascending: true });
       if (error) throw error;
       return data as ProfileRow[];
     },
   });
 
   const updateProfile = useMutation({
-    mutationFn: async ({ userId, name, wallet, avatar }: { userId: string; name: string; wallet: string; avatar: string }) => {
+    mutationFn: async ({ userId, name, wallet, avatar, telegram }: { userId: string; name: string; wallet: string; avatar: string; telegram: string }) => {
       const { error } = await supabase.from('profiles').update({
         display_name: name,
         wallet_address: wallet || null,
         avatar_url: avatar || null,
+        telegram: telegram || null,
       }).eq('user_id', userId);
       if (error) throw error;
     },
@@ -74,10 +77,12 @@ export function MemberDirectory() {
     setEditName(p.display_name || '');
     setEditWallet(p.wallet_address || '');
     setEditAvatarUrl(p.avatar_url || '');
+    setEditTelegram(p.telegram || '');
+    setAvatarMode('upload');
   };
 
   const handleSave = (userId: string) => {
-    updateProfile.mutate({ userId, name: editName, wallet: editWallet, avatar: editAvatarUrl });
+    updateProfile.mutate({ userId, name: editName, wallet: editWallet, avatar: editAvatarUrl, telegram: editTelegram });
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>, userId: string) => {
@@ -105,7 +110,8 @@ export function MemberDirectory() {
     return (
       p.display_name?.toLowerCase().includes(q) ||
       p.email?.toLowerCase().includes(q) ||
-      p.wallet_address?.toLowerCase().includes(q)
+      p.wallet_address?.toLowerCase().includes(q) ||
+      p.telegram?.toLowerCase().includes(q)
     );
   });
 
@@ -121,18 +127,16 @@ export function MemberDirectory() {
         </Badge>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Tìm tên, email, ví..."
+            placeholder="Tìm tên, email, ví, telegram..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-9 h-9 text-sm"
           />
         </div>
 
-        {/* Member List */}
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
@@ -147,17 +151,17 @@ export function MemberDirectory() {
               return (
                 <div
                   key={p.user_id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border/40 bg-secondary/20 hover:bg-secondary/40 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-lg border border-border/40 bg-secondary/20 hover:bg-secondary/40 transition-colors"
                 >
                   {/* Avatar */}
-                  <div className="relative shrink-0">
+                  <div className="relative shrink-0 pt-1">
                     <Avatar className="w-12 h-12 border-2 border-primary/20">
                       <AvatarImage src={isEditing ? editAvatarUrl : (p.avatar_url || undefined)} />
                       <AvatarFallback className="bg-primary/10 text-primary font-bold">
                         {(p.display_name || p.email || '?').charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    {isEditing && isAdmin && (
+                    {isEditing && isAdmin && avatarMode === 'upload' && (
                       <>
                         <input
                           type="file"
@@ -178,7 +182,7 @@ export function MemberDirectory() {
                   </div>
 
                   {/* Info */}
-                  <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex-1 min-w-0 space-y-1.5">
                     {isEditing ? (
                       <div className="space-y-2">
                         <Input
@@ -196,6 +200,36 @@ export function MemberDirectory() {
                             className="h-8 text-xs font-mono"
                           />
                         </div>
+                        <div className="flex items-center gap-1">
+                          <SendIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          <Input
+                            value={editTelegram}
+                            onChange={e => setEditTelegram(e.target.value)}
+                            placeholder="@username hoặc link Telegram"
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        {/* Avatar mode toggle */}
+                        <div className="space-y-1">
+                          <Tabs value={avatarMode} onValueChange={v => setAvatarMode(v as 'upload' | 'url')}>
+                            <TabsList className="h-7 p-0.5">
+                              <TabsTrigger value="upload" className="text-xs h-6 px-2 gap-1">
+                                <Upload className="w-3 h-3" /> Tải ảnh
+                              </TabsTrigger>
+                              <TabsTrigger value="url" className="text-xs h-6 px-2 gap-1">
+                                <Link className="w-3 h-3" /> Dán URL
+                              </TabsTrigger>
+                            </TabsList>
+                          </Tabs>
+                          {avatarMode === 'url' && (
+                            <Input
+                              value={editAvatarUrl}
+                              onChange={e => setEditAvatarUrl(e.target.value)}
+                              placeholder="https://... dán link ảnh đại diện"
+                              className="h-8 text-xs"
+                            />
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <>
@@ -211,40 +245,35 @@ export function MemberDirectory() {
                         {!p.wallet_address && (
                           <p className="text-xs text-muted-foreground/60 italic">Chưa có ví</p>
                         )}
+                        {p.telegram && (
+                          <a
+                            href={p.telegram.startsWith('http') ? p.telegram : `https://t.me/${p.telegram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary/80 hover:text-primary flex items-center gap-1 truncate"
+                          >
+                            <SendIcon className="w-3 h-3 shrink-0" />
+                            {p.telegram}
+                          </a>
+                        )}
                       </>
                     )}
                   </div>
 
-                  {/* Actions (admin only) */}
+                  {/* Actions */}
                   {isAdmin && (
-                    <div className="shrink-0 flex items-center gap-1">
+                    <div className="shrink-0 flex items-center gap-1 pt-1">
                       {isEditing ? (
                         <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleSave(p.user_id)}
-                            disabled={updateProfile.isPending}
-                          >
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleSave(p.user_id)} disabled={updateProfile.isPending}>
                             <Check className="w-4 h-4 text-green-500" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => setEditingId(null)}
-                          >
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingId(null)}>
                             <X className="w-4 h-4 text-muted-foreground" />
                           </Button>
                         </>
                       ) : (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleEdit(p)}
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(p)}>
                           <Pencil className="w-4 h-4 text-muted-foreground hover:text-primary" />
                         </Button>
                       )}
