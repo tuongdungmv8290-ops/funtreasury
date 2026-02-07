@@ -571,3 +571,42 @@
   box-shadow: 0 0 6px #f5d742, 0 0 12px rgba(201, 162, 39, 0.5);
   z-index: 100;
 }
+
+/* Confetti animation for gift celebration */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg) scale(0.3);
+    opacity: 0;
+  }
+}
+
+.animate-confetti {
+  animation: confetti-fall linear infinite;
+}
+
+/* Firework burst animation */
+@keyframes firework-burst {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--fw-rotate, 0deg)) scaleY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: rotate(var(--fw-rotate, 0deg)) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--fw-rotate, 0deg)) scaleY(0.3) translateY(-20px);
+  }
+}
+
+.animate-firework {
+  animation: firework-burst 1.5s ease-out infinite;
+}

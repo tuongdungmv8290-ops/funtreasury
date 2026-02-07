@@ -22,6 +22,7 @@ import NFTGallery from "./pages/NFTGallery";
 import NFTCollectionDetail from "./pages/NFTCollectionDetail";
 import PlatformDocs from "./pages/PlatformDocs";
 import Constitution from "./pages/Constitution";
+import Rewards from "./pages/Rewards";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
                   <Route path="/nft/collection/:id" element={<NFTCollectionDetail />} />
                   <Route path="/docs/platform" element={<PlatformDocs />} />
                   <Route path="/constitution" element={<Constitution />} />
+                  <Route path="/rewards" element={<Rewards />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

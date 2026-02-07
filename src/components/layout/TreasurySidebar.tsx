@@ -30,6 +30,7 @@ import {
   ChevronDown,
   Image,
   FileText,
+  Gift,
   type LucideIcon,
 } from 'lucide-react';
 import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
@@ -88,6 +89,7 @@ import { SparkleOnClick } from '@/components/effects/SparkleOnClick';
 const treasuryItems: { path: string; labelKey: string; icon: LucideIcon; status: string; logo?: string }[] = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard, status: 'active' },
   { path: '/transactions', labelKey: 'nav.transactions', icon: ArrowLeftRight, status: 'active' },
+  { path: '/rewards', labelKey: 'nav.rewards', icon: Gift, status: 'active' },
   { path: '/prices', labelKey: 'nav.defi', icon: Coins, status: 'active' },
   { path: '/nft', labelKey: 'nav.nft', icon: Image, status: 'active' },
   { path: '/camly', labelKey: 'nav.camly', icon: Coins, status: 'active', logo: camlyCoinNewLogo },
