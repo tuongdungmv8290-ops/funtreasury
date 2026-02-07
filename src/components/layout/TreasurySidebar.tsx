@@ -33,7 +33,6 @@ import {
   Gift,
   type LucideIcon,
 } from 'lucide-react';
-import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
 // Logo imports for FUN Platforms
 import funProfileLogo from '@/assets/fun-profile-logo.png';
 import funEcosystemLogo from '@/assets/fun-ecosystem-logo.png';
@@ -161,29 +160,17 @@ export function TreasurySidebar() {
       {/* Header with Logo */}
       <SidebarHeader className="border-b border-border/50 p-4">
         <Link to="/" className="flex items-center gap-4 group">
-          <SparkleOnClick>
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden gold-shimmer-border animate-treasury-glow-pulse transition-all duration-300">
-                <img
-                  src={funTreasuryLogo}
-                  alt="FUN Treasury Logo"
-                  className="w-full h-full object-cover brightness-110 relative z-10"
-                />
-              </div>
-              <div className="absolute inset-0 -z-10 w-24 h-24 rounded-full bg-primary/40 blur-xl" />
-            </div>
-          </SparkleOnClick>
-          {!isCollapsed && (
-            <div className="flex flex-col">
-              <span className="text-2xl font-heading font-bold gold-text tracking-wide 
-                               drop-shadow-[0_0_12px_rgba(201,162,39,0.5)]">
-                FUN Treasury
-              </span>
+          <div className="flex flex-col">
+            <span className="text-2xl font-heading font-bold gold-text tracking-wide 
+                             drop-shadow-[0_0_12px_rgba(201,162,39,0.5)]">
+              FUN Treasury
+            </span>
+            {!isCollapsed && (
               <span className="text-sm font-body text-primary/70">
                 A Treasury of the Universe
               </span>
-            </div>
-          )}
+            )}
+          </div>
         </Link>
       </SidebarHeader>
 

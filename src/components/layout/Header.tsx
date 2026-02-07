@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ArrowLeftRight, Settings, LogOut, Eye, LogIn } from 'lucide-react';
-import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
@@ -9,7 +8,7 @@ import { toast } from 'sonner';
 import { NotificationCenter } from './NotificationCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
-import { SparkleOnClick } from '@/components/effects/SparkleOnClick';
+
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -42,20 +41,6 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
-          <SparkleOnClick>
-            <div className="relative">
-              {/* Logo với Gold Shimmer Border - Viền Vàng Lấp Lánh */}
-              <div className="w-16 h-16 rounded-full overflow-hidden gold-shimmer-border animate-treasury-glow-pulse transition-all duration-300 group-hover:scale-110">
-                <img 
-                  src={funTreasuryLogo} 
-                  alt="FUN Treasury Logo" 
-                  className="w-full h-full object-cover relative z-10"
-                />
-              </div>
-              {/* Bright Gold Glow Behind Logo */}
-              <div className="absolute inset-0 -z-10 w-16 h-16 rounded-full bg-primary/50 blur-xl group-hover:bg-primary/70 transition-all duration-300" />
-            </div>
-          </SparkleOnClick>
           <div className="flex flex-col">
             <span className="text-xl font-heading font-bold gold-text tracking-wide">FUN Treasury</span>
             <span className="text-xs font-body text-muted-foreground -mt-1">A Treasury of the Universe</span>

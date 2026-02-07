@@ -27,8 +27,6 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import funTreasuryLogo from '@/assets/fun-treasury-logo.png';
-
 export default function PlatformDocs() {
   const { t } = useTranslation();
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
@@ -207,11 +205,6 @@ export default function PlatformDocs() {
     <div className="container max-w-5xl mx-auto py-8 px-4 space-y-8">
       {/* Hero Section */}
       <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="w-32 h-32 rounded-full overflow-hidden gold-shimmer-border animate-treasury-glow-pulse">
-            <img src={funTreasuryLogo} alt="FUN Treasury" className="w-full h-full object-cover" />
-          </div>
-        </div>
         <div>
           <h1 className="text-4xl md:text-5xl font-bold gold-text mb-4">
             {t('docs.title')}
