@@ -1,83 +1,169 @@
 
 
-# Kế Hoạch: Cập Nhật Giá Realtime Cho Tất Cả Ví Treasury
+# Dot 1: He Thong Tang Thuong FUN Rewards - Core
 
-## Vấn Đề Hiện Tại
+## Tong Quan
+Tao he thong tang thuong (Gift/Reward) cho phep user chuyen token that (CAMLY, USDT, BNB) tren BNB Chain, voi hieu ung chuc mung phao hoa, bang xep hang Leaderboard, va Light Score.
 
-Hiện tại, các ví Treasury đang sử dụng **giá cố định (hardcoded)** để quy đổi ra USD:
+## Phan 1: Database Migration
 
-| Token | Giá Hardcoded | Giá Thực Tế (biến động) |
-|-------|--------------|------------------------|
-| BTC   | $97,000      | Thay doi theo thi truong |
-| BTCB  | $97,000      | Thay doi theo thi truong |
-| BNB   | $710         | Thay doi theo thi truong |
-| USDT  | $1           | OK (stablecoin) |
-| USDC  | $1           | OK (stablecoin) |
-| CAMLY | Realtime     | Da dung gia realtime |
+Tao 4 bang moi voi RLS policies:
 
-Gia hardcoded khien so du USD hien thi **khong chinh xac** khi thi truong thay doi.
-
-## Giai Phap
-
-Lay gia realtime tu `useCryptoPrices` (CoinGecko API) va truyen vao `useWallets`, `useTokenBalancesFromDB`, va `useWalletSummary` thay vi dung gia co dinh.
-
-## Chi Tiet Ky Thuat
-
-### 1. Tao hook moi: `src/hooks/useRealtimePrices.ts`
-
-Hook trung tam lay gia realtime cua tat ca token tu `useCryptoPrices` + `useCamlyPrice`, tra ve mot `Record<string, number>`:
-
-```typescript
-// Ket qua tra ve:
-{
-  CAMLY: 0.00002198,  // tu useCamlyPrice (chinh xac nhat)
-  BTC: 104500,        // tu CoinGecko realtime
-  BTCB: 104500,       // = BTC price
-  BNB: 685,           // tu CoinGecko realtime
-  USDT: 1,            // fallback stablecoin
-  USDC: 1,            // fallback stablecoin
-}
+### Bang `gifts`
+```sql
+CREATE TABLE public.gifts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id uuid NOT NULL REFERENCES auth.users(id),
+  receiver_id uuid NOT NULL REFERENCES auth.users(id),
+  token_symbol text NOT NULL DEFAULT 'CAMLY',
+  amount numeric NOT NULL DEFAULT 0,
+  usd_value numeric NOT NULL DEFAULT 0,
+  tx_hash text,
+  message text,
+  post_id uuid,
+  status text NOT NULL DEFAULT 'pending',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
 ```
 
-Logic: Uu tien CoinGecko realtime, fallback ve gia co dinh neu API loi.
+### Bang `posts`
+```sql
+CREATE TABLE public.posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  author_id uuid NOT NULL REFERENCES auth.users(id),
+  content text NOT NULL,
+  image_url text,
+  total_gifts_received numeric NOT NULL DEFAULT 0,
+  gift_count integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+```
 
-### 2. Cap nhat `src/hooks/useWallets.ts`
+### Bang `messages`
+```sql
+CREATE TABLE public.messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id uuid NOT NULL REFERENCES auth.users(id),
+  receiver_id uuid NOT NULL REFERENCES auth.users(id),
+  content text NOT NULL,
+  gift_id uuid REFERENCES public.gifts(id),
+  read boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+```
 
-- Xoa `BASE_PRICES` hardcoded
-- Import va su dung `useRealtimePrices()` thay the
-- `useMemo` tinh USD value voi gia realtime
+### Bang `light_scores`
+```sql
+CREATE TABLE public.light_scores (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) UNIQUE,
+  total_given_usd numeric NOT NULL DEFAULT 0,
+  total_received_usd numeric NOT NULL DEFAULT 0,
+  gift_count_sent integer NOT NULL DEFAULT 0,
+  gift_count_received integer NOT NULL DEFAULT 0,
+  light_score numeric NOT NULL DEFAULT 0,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+```
 
-### 3. Cap nhat `src/hooks/useTokenBalancesFromDB.ts`
+### RLS Policies
+- `gifts`: Authenticated users co the SELECT tat ca, INSERT gifts ma sender_id = auth.uid()
+- `posts`: Authenticated users co the SELECT tat ca, INSERT posts ma author_id = auth.uid()
+- `messages`: Users chi co the SELECT messages ma minh la sender hoac receiver, INSERT messages ma sender_id = auth.uid()
+- `light_scores`: Authenticated users co the SELECT tat ca (public leaderboard), chi update qua trigger
 
-- Xoa `BASE_PRICES` hardcoded
-- Import va su dung `useRealtimePrices()` thay the
-- Cap nhat ca `useTokenBalancesFromDB` va `useAggregatedTokenBalances`
+### Trigger: Tu dong cap nhat light_scores khi gift duoc confirmed
+Tao trigger function `update_light_scores_on_gift()` chay khi gift.status chuyen sang 'confirmed'.
 
-### 4. Cap nhat `src/hooks/useWalletSummary.ts`
+### Enable Realtime cho `gifts`, `messages`, `posts`
 
-- Xoa `FALLBACK_PRICES` hardcoded
-- Import va su dung `useRealtimePrices()` thay the
+## Phan 2: Gift Dialog (`src/components/gifts/GiftDialog.tsx`)
 
-### 5. Cap nhat `src/components/dashboard/WalletCard.tsx`
+Modal tang thuong voi cac buoc:
+1. Chon nguoi nhan - dropdown search tu bang `profiles` (display_name, email)
+2. Chon token - CAMLY (uu tien, hien dau), USDT, BNB, cac dong khac
+3. Nhap so luong - hien thi USD value tuong duong (dung `useRealtimePrices`)
+4. Nhap loi nhan (optional)
+5. Nut "Tang Thuong" -> ket noi MetaMask (dung ethers.js tuong tu usePancakeSwap) -> ky giao dich -> doi confirm
+6. Khi tx confirmed -> cap nhat gift status -> hien CelebrationModal
 
-- Hien thi gia USDT equivalent ro rang hon cho moi token
-- Format so luong token chinh xac (VD: BTC hien thi 6 decimals)
+## Phan 3: Gift Celebration Modal (`src/components/gifts/GiftCelebrationModal.tsx`)
 
-## Files Can Thay Doi
+Hien thi sau khi tang thanh cong:
+- **Hieu ung phao hoa CSS** - confetti particles bay khap man hinh, dung CSS keyframes animations (khong can thu vien ngoai)
+- **Bang thong tin chinh** (de chup hinh):
+  - Tieu de: "Chuc mung ban da chuyen thanh cong!"
+  - Nguoi chuyen: avatar + ten
+  - Nguoi nhan: avatar + ten
+  - Token + So luong + USD value
+  - Tx Hash (link BscScan)
+  - Thoi gian
+- **Hieu ung giu lau** - Modal KHONG tu dong dong, chi dong khi user bam nut "Dong" hoac "X"
+- **Nut "Copy" va "Chia se"** - copy thong tin de dan
+
+## Phan 4: Leaderboard (`src/components/gifts/Leaderboard.tsx`)
+
+Component tabs:
+- **Tab "Top Givers"** - Xep hang theo tong USD da tang (tu `light_scores.total_given_usd`)
+- **Tab "Top Receivers"** - Xep hang theo tong USD da nhan
+- **Tab "Top Sponsors" (Manh Thuong Quan)** - All-time top givers voi huy hieu dac biet
+- Moi dong: Avatar, Ten, So tien, So giao dich, Light Score badge
+- Highlight top 3 voi mau gold/silver/bronze
+
+## Phan 5: Light Score Badge (`src/components/gifts/LightScoreBadge.tsx`)
+
+Huy hieu nho hien thi diem uy tin:
+- Cong thuc: `light_score = (total_given_usd * 2) + (total_received_usd * 1) + (gift_count_sent * 10) + (gift_count_received * 5)`
+- Hien thi dang icon + so diem, mau gold
+
+## Phan 6: Hook `src/hooks/useGifts.ts`
+
+- `sendGift(receiverId, tokenSymbol, amount, message)` - Tao gift record (status=pending), goi MetaMask chuyen token, cap nhat status khi confirmed
+- `useGiftHistory(userId?)` - Query gifts table, join profiles de lay ten sender/receiver
+- `useLeaderboard(type: 'givers' | 'receivers' | 'sponsors', limit)` - Query light_scores order by tuong ung
+- `useLightScore(userId)` - Lay diem uy tin cua 1 user
+
+## Phan 7: Tich Hop Vao Giao Dien
+
+### Trang Dashboard (`src/pages/Index.tsx`)
+- Them nut "Tang Thuong" mau gold noi bat o header (canh nut Sync Now)
+- Click mo GiftDialog
+
+### Sidebar (`src/components/layout/TreasurySidebar.tsx`)
+- Them menu item "Rewards" voi icon Gift, link toi `/rewards`
+
+### Trang Rewards (`src/pages/Rewards.tsx`)
+- Layout: Leaderboard + Gift History table
+- Nut "Tang Thuong" o header
+- GiftDialog modal
+
+### Route (`src/App.tsx`)
+- Them route `/rewards` -> `<Rewards />`
+
+## Files Can Tao/Thay Doi
 
 | File | Thay Doi |
 |------|----------|
-| `src/hooks/useRealtimePrices.ts` | **Tao moi** - Hook trung tam lay gia realtime |
-| `src/hooks/useWallets.ts` | Thay `BASE_PRICES` bang `useRealtimePrices()` |
-| `src/hooks/useTokenBalancesFromDB.ts` | Thay `BASE_PRICES` bang `useRealtimePrices()` |
-| `src/hooks/useWalletSummary.ts` | Thay `FALLBACK_PRICES` bang `useRealtimePrices()` |
-| `src/components/dashboard/WalletCard.tsx` | Hien thi gia USDT chinh xac hon |
+| **Migration SQL** | Tao 4 bang: gifts, posts, messages, light_scores + RLS + triggers + realtime |
+| `src/hooks/useGifts.ts` | **Tao moi** - Core gift logic, blockchain transfer, leaderboard queries |
+| `src/components/gifts/GiftDialog.tsx` | **Tao moi** - Modal tang thuong (chon user, token, amount, message) |
+| `src/components/gifts/GiftCelebrationModal.tsx` | **Tao moi** - Modal chuc mung voi hieu ung phao hoa CSS |
+| `src/components/gifts/Leaderboard.tsx` | **Tao moi** - Bang xep hang 3 tabs (Givers, Receivers, Sponsors) |
+| `src/components/gifts/LightScoreBadge.tsx` | **Tao moi** - Huy hieu diem uy tin |
+| `src/pages/Rewards.tsx` | **Tao moi** - Trang chinh /rewards |
+| `src/App.tsx` | Them route `/rewards` |
+| `src/components/layout/TreasurySidebar.tsx` | Them menu "Rewards" |
+| `src/pages/Index.tsx` | Them nut "Tang Thuong" o header |
 
-## Ket Qua Mong Doi
+## Thu Tu Thuc Hien
 
-- Tat ca vi hien thi so tien USD **chinh xac theo gia thi truong realtime**
-- Gia cap nhat moi 60 giay tu CoinGecko
-- CAMLY van dung gia rieng tu `useCamlyPrice` (chinh xac nhat)
-- Neu API loi, fallback ve gia co dinh de khong bi loi hien thi
-- Tong gia tri Treasury (`$1,219,288.08`) se phan anh dung gia thi truong
+1. Chay migration SQL tao 4 bang + RLS + triggers
+2. Tao `useGifts.ts` hook
+3. Tao `GiftDialog.tsx`
+4. Tao `GiftCelebrationModal.tsx` voi hieu ung phao hoa
+5. Tao `LightScoreBadge.tsx`
+6. Tao `Leaderboard.tsx`
+7. Tao `Rewards.tsx` page
+8. Cap nhat `App.tsx` (route), `TreasurySidebar.tsx` (menu), `Index.tsx` (nut tang thuong)
 
