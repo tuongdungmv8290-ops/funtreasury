@@ -43,9 +43,9 @@ interface CryptoData {
 // Simple in-memory cache
 let cachedData: CryptoData[] | null = null;
 let cacheTimestamp: number = 0;
-const CACHE_TTL_MS = 60 * 1000; // 60 seconds cache
+const CACHE_TTL_MS = 120 * 1000; // 120 seconds cache
 
-async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<Response> {
+async function fetchWithRetry(url: string, retries = 4, delay = 2000): Promise<Response> {
   for (let i = 0; i < retries; i++) {
     const response = await fetch(url, {
       headers: {
@@ -58,9 +58,9 @@ async function fetchWithRetry(url: string, retries = 3, delay = 1000): Promise<R
     }
     
     if (response.status === 429 && i < retries - 1) {
-      console.log(`[get-crypto-prices] Rate limited, retry ${i + 1}/${retries} after ${delay}ms`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      delay *= 2; // Exponential backoff
+      const wait = delay * Math.pow(2, i);
+      console.log(`[get-crypto-prices] Rate limited, retry ${i + 1}/${retries} after ${wait}ms`);
+      await new Promise(resolve => setTimeout(resolve, wait));
       continue;
     }
     
