@@ -1,107 +1,120 @@
 
-# Nang Cap Giao Dien "Thuong Camly Coin" - Theo Mockup
+# Nang Cap GiftDialog: Multi-Token Selector + Hieu Ung Gold
 
 ## Tong Quan
 
-Nang cap toan bo GiftDialog thanh giao dien giong mockup voi:
-1. **Tabs "Camly Coin" / "Chuyen Crypto"** - 2 che do tang thuong
-2. **Hien thi so du** voi gradient vang noi bat  
-3. **2 cach nhap nguoi nhan**: "Dia chi vi" va "Tu ho so" (toggle buttons)
-4. **Canh bao vi Web3** khi nguoi nhan chua dang ky vi
-5. **Man hinh chuc mung** voi avatar nguoi gui/nhan, gradient cam, hieu ung phao hoa
-6. **Bien nhan tang thuong** hien thi bai viet lien ket, avatar, logo CAMLY
+Nang cap GiftDialog de ho tro chon nhieu loai token (CAMLY, FUN Money, USDT, BNB, BTC) thay vi chi CAMLY, dong thoi them hieu ung vang gold lap lanh cho tieu de "Rewards" tren trang va sidebar.
 
 ---
 
-## 1. Tab "Camly Coin" (Tang thuong noi bo qua database)
+## 1. Multi-Token Selector trong GiftDialog
 
-Giong screenshot 1: Hien balance "6.500 Camly Coin" bang gradient vang, tim nguoi nhan theo ten, nhap so luong (toi thieu 100), tin nhan tuy chon, nut "Xac nhan thuong".
+Thay the layout co dinh "Camly Coin" bang mot dropdown chon token giong mockup, voi cac token:
 
-- Che do nay **khong can vi Web3** - chi luu vao bang `gifts` nhu hien tai
-- So du hien thi tu `useCamlyWallet` hoac tu database tuy ket noi
+| Token | Symbol | Loai | Badge |
+|-------|--------|------|-------|
+| FUN Money | FUNM | Noi bo | "Noi bo" (xanh) |
+| Camly Coin | CAMLY | On-chain | - |
+| Binance Coin | BNB | On-chain | - |
+| Tether USD | USDT | On-chain | - |
+| Bitcoin | BTC | On-chain | - |
 
-## 2. Tab "Chuyen Crypto" (Chuyen on-chain qua MetaMask)
+**UI theo mockup:**
+- Dropdown "Chon Token" voi emoji/logo + ten token + symbol
+- Hien thi "So du: X [SYMBOL]" ben canh
+- Token "FUN Money (FUNM)" co badge "Noi bo" mau xanh
+- Nut submit tu dong cap nhat: "Tang 0 FUNM ->" hoac "Tang 500 CAMLY ->"
 
-Giong screenshot 2-4: Hien wallet balance voi dia chi rut gon, toggle "Dia chi vi" / "Tu ho so":
-- **Dia chi vi**: Nhap truc tiep 0x...
-- **Tu ho so**: Tim kiem profile, hien avatar, ten, canh bao "Nguoi nay chua dang ky vi Web3" neu profile khong co wallet_address
-
-## 3. Man hinh chuc mung (Celebration)
-
-Giong screenshot 5: Gradient cam-vang, logo CAMLY, avatar nguoi gui va nguoi nhan voi ten, so luong lon, loi nhan, timestamp, nut "Sao chep link" va "Dong".
-
-## 4. Bien nhan (Receipt)
-
-Giong screenshot 6: Header gradient vang "Bien Nhan Tang Thuong", avatar sender/receiver, so luong lon voi logo, loi nhan, hien thi bai viet lien ket, nut "Sao chep link" va "Ve trang chu".
+**Logic:**
+- Khi chon FUNM: chuyen noi bo (khong can MetaMask), tuong tu tab "Camly Coin" hien tai
+- Khi chon CAMLY/BNB/USDT/BTC: can vi Web3, tuong tu tab "Chuyen Crypto" hien tai
+- USD value tu dong tinh theo `useRealtimePrices`
 
 ---
 
-## Database: Them cot wallet_address vao profiles
+## 2. Xoa Tabs, Giao Dien Don Giong Mockup
 
-Hien tai bang `profiles` chua co `wallet_address`. Can them de biet nguoi nhan da dang ky vi Web3 hay chua.
+Thay vi 2 tabs "Camly Coin" / "Chuyen Crypto", chuyen sang giao dien thong nhat:
+- Header: "Thuong & Tang" voi icon
+- Card nguoi gui (avatar + ten)
+- Input "Nguoi nhan" (search profiles)
+- Dropdown "Chon Token" voi so du
+- Input so luong (hoac nhanh chon 100/500/1000)
+- Textarea "Loi nhan yeu thuong" voi dem ky tu 0/200
+- Button gradient rainbow: "Tang X [TOKEN] ->"
 
-```text
-ALTER TABLE profiles ADD COLUMN wallet_address TEXT;
-```
+---
+
+## 3. Hieu Ung Gold Lap Lanh cho "Rewards"
+
+- Them CSS class `gold-shimmer` voi animation keyframe lap lanh
+- Ap dung cho chu "Rewards" tren trang Rewards.tsx (h1)
+- Ap dung cho nav item "Rewards" trong TreasurySidebar
 
 ---
 
 ## Chi Tiet Ky Thuat
 
-### File thay doi
+### Files thay doi
 
 | File | Thay doi |
 |------|----------|
-| Migration SQL | Them `wallet_address` vao `profiles` |
-| `GiftDialog.tsx` | Viet lai hoan toan: Tabs, balance card, toggle dia chi vi/tu ho so, canh bao Web3, min amount 100 |
-| `GiftCelebrationModal.tsx` | Nang cap: gradient cam, avatar nguoi gui/nhan, logo CAMLY, layout giong mockup |
-| `useGifts.ts` > `useUserProfiles` | Query them `wallet_address` |
+| `src/components/gifts/GiftDialog.tsx` | Viet lai: xoa Tabs, them token selector dropdown, giao dien theo mockup |
+| `src/pages/Rewards.tsx` | Them CSS class gold-shimmer cho tieu de "Rewards" |
+| `src/index.css` | Them keyframe animation `gold-shimmer` lap lanh |
+| `src/components/layout/TreasurySidebar.tsx` | Them hieu ung gold cho nav "Rewards" |
 
 ### GiftDialog.tsx - Cau truc moi
 
 ```text
-Dialog "Thuong Camly Coin"
-  Tabs:
-    Tab "Camly Coin":
-      - Balance card gradient vang: "So du cua ban: X Camly Coin"
-      - Input tim nguoi nhan (search profiles)
-      - Dropdown ket qua: avatar + ten
-      - Selected: card profile voi avatar + ten + "Thay doi"
-      - Input so luong (min 100, hint "Toi thieu 100 Camly Coin")
-      - Textarea tin nhan (tuy chon)
-      - Button "Xac nhan thuong" gradient vang
-
-    Tab "Chuyen Crypto":
-      - Balance card gradient vang: "So du CAMLY trong vi: X CAMLY" + dia chi rut gon
-      - Toggle buttons: "Dia chi vi" | "Tu ho so"
-      - Mode "Dia chi vi": Input 0x...
-      - Mode "Tu ho so": 
-        - Search input
-        - Profile list voi avatar
-        - Selected profile card + canh bao Web3 neu chua co wallet_address
-      - Input so luong CAMLY
-      - Hint "Can co BNB trong vi de thanh toan phi gas"
-      - Button "Xac nhan chuyen" gradient cam
+Dialog "Thuong & Tang"
+  - Card nguoi gui: avatar + ten + "Nguoi gui"
+  - Input "Nguoi nhan" (search profiles, avatar dropdown)
+  - "Chon Token" dropdown:
+    - FUN Money (FUNM) - badge "Noi bo"
+    - Camly Coin (CAMLY)
+    - Binance Coin (BNB)
+    - Tether USD (USDT)
+    - Bitcoin (BTC)
+  - Hien thi "So du: X [TOKEN]"
+  - Input so luong (placeholder "Hoac nhap so tuy chon...")
+  - Textarea "Loi nhan yeu thuong" + dem 0/200
+  - Button gradient: "Tang X [TOKEN] ->"
 ```
 
-### GiftCelebrationModal.tsx - Layout moi
+### Token Config Array
 
 ```text
-Background: gradient tu #F97316 (orange) den #F59E0B (amber)
-Header: Logo CAMLY (icon) + "Chuc mung ban da chuyen thanh cong!"
-Body (card trang bo tron):
-  - Row: Avatar nguoi gui + ten + arrow -> Avatar nguoi nhan + ten
-  - Amount card (bo vang): "1.000 Camly Coin" voi icon
-  - Message card (xam nhat): Loi nhan
-  - Bai viet lien ket (xanh nhat): Tieu de bai viet (neu co post_id)
-  - Timestamp
-Footer: "Sao chep link" + "Dong" (gradient vang)
+GIFT_TOKENS = [
+  { symbol: 'FUNM', name: 'FUN Money', emoji: globe, internal: true, badge: 'Noi bo' },
+  { symbol: 'CAMLY', name: 'Camly Coin', logo: camlyLogo, internal: false },
+  { symbol: 'BNB', name: 'Binance Coin', emoji: coin, internal: false },
+  { symbol: 'USDT', name: 'Tether USD', emoji: dollar, internal: false },
+  { symbol: 'BTC', name: 'Bitcoin', emoji: bitcoin, internal: false },
+]
 ```
 
-### useUserProfiles - Cap nhat query
+Khi token.internal === true: gui qua database (khong can MetaMask)
+Khi token.internal === false: gui qua on-chain (can MetaMask + gas fee)
+
+### CSS gold-shimmer animation
 
 ```text
-.select('user_id, display_name, email, avatar_url, wallet_address')
+@keyframes gold-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.gold-shimmer {
+  background: linear-gradient(
+    90deg,
+    #C9A227 0%, #FFD700 25%, #FFF8DC 50%, #FFD700 75%, #C9A227 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gold-shimmer 3s linear infinite;
+}
 ```
 
 ---
@@ -110,7 +123,7 @@ Footer: "Sao chep link" + "Dong" (gradient vang)
 
 | Buoc | Noi dung |
 |------|----------|
-| 1 | Migration: them `wallet_address` vao `profiles` |
-| 2 | Cap nhat `useUserProfiles` query them wallet_address |
-| 3 | Viet lai `GiftDialog.tsx` theo mockup voi Tabs + toggle + balance |
-| 4 | Nang cap `GiftCelebrationModal.tsx` voi gradient cam + avatar layout |
+| 1 | Them CSS `gold-shimmer` animation vao `index.css` |
+| 2 | Viet lai `GiftDialog.tsx` voi token selector + giao dien mockup |
+| 3 | Cap nhat `Rewards.tsx` tieu de voi hieu ung gold shimmer |
+| 4 | Cap nhat `TreasurySidebar.tsx` nav Rewards voi hieu ung gold |
