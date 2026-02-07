@@ -120,16 +120,6 @@ const Login = () => {
 
       {/* Logo & Title */}
       <div className="relative z-10 flex flex-col items-center mb-8 animate-fade-in">
-        <div className="relative mb-4">
-          <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-primary/30">
-            <img 
-              src="/apple-touch-icon.png" 
-              alt="FUN Treasury Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="absolute -inset-3 bg-primary/20 rounded-3xl blur-xl -z-10 animate-pulse-slow" />
-        </div>
         <h1 className="text-3xl font-bold gold-text mb-2">FUN Treasury</h1>
         <p className="text-muted-foreground text-center">
           Quản lý tài sản blockchain chuyên nghiệp
