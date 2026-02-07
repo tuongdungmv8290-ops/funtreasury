@@ -4,6 +4,7 @@ import { formatNumber } from "@/lib/formatNumber";
 
 interface SendConfirmStepProps {
   senderAddress: string;
+  senderName?: string;
   recipient: string;
   recipientName: string;
   amount: string;
@@ -19,7 +20,7 @@ function shortenAddress(addr: string) {
 }
 
 export function SendConfirmStep({
-  senderAddress, recipient, recipientName,
+  senderAddress, senderName, recipient, recipientName,
   amount, camlyPrice, bnbBalance,
   isSending, onConfirm, onBack,
 }: SendConfirmStepProps) {
@@ -33,7 +34,8 @@ export function SendConfirmStep({
         <div className="flex items-center gap-3">
           <div className="flex-1 text-center">
             <p className="text-xs text-muted-foreground">Từ</p>
-            <p className="font-mono text-sm font-medium">{shortenAddress(senderAddress)}</p>
+            <p className="font-semibold text-sm text-primary">{senderName || "FUN TREASURY"}</p>
+            <p className="font-mono text-[10px] text-muted-foreground">{shortenAddress(senderAddress)}</p>
           </div>
           <ArrowRight className="w-5 h-5 text-primary shrink-0" />
           <div className="flex-1 text-center">
