@@ -1,169 +1,90 @@
 
 
-# Dot 1: He Thong Tang Thuong FUN Rewards - Core
+# Dot 2: He Thong Post (PostFeed, CreatePost, PostCard) + Tich Hop Trang /rewards
 
 ## Tong Quan
-Tao he thong tang thuong (Gift/Reward) cho phep user chuyen token that (CAMLY, USDT, BNB) tren BNB Chain, voi hieu ung chuc mung phao hoa, bang xep hang Leaderboard, va Light Score.
 
-## Phan 1: Database Migration
+Xay dung he thong bai viet (Social Feed) cho phep user dang bai, xem feed, va tang thuong truc tiep tren moi bai viet. Tich hop vao trang `/rewards` hien co.
 
-Tao 4 bang moi voi RLS policies:
+## Cac Files Can Tao Moi
 
-### Bang `gifts`
-```sql
-CREATE TABLE public.gifts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_id uuid NOT NULL REFERENCES auth.users(id),
-  receiver_id uuid NOT NULL REFERENCES auth.users(id),
-  token_symbol text NOT NULL DEFAULT 'CAMLY',
-  amount numeric NOT NULL DEFAULT 0,
-  usd_value numeric NOT NULL DEFAULT 0,
-  tx_hash text,
-  message text,
-  post_id uuid,
-  status text NOT NULL DEFAULT 'pending',
-  created_at timestamptz NOT NULL DEFAULT now()
-);
+### 1. `src/hooks/usePosts.ts` - Hook quan ly bai viet
+
+- `usePosts()` - Query danh sach posts, join profiles de lay ten/avatar tac gia, sap xep theo `created_at` desc
+- `useCreatePost()` - Mutation tao bai viet moi (content, image_url)
+- `useDeletePost()` - Mutation xoa bai viet (chi author)
+- Invalidate query khi tao/xoa thanh cong
+
+### 2. `src/components/posts/CreatePost.tsx` - Form tao bai viet
+
+- Avatar user hien tai + Textarea nhap noi dung
+- Nut "Dang bai" voi style gold
+- Validate: content khong duoc rong
+- Sau khi dang thanh cong: clear form, hien toast thong bao
+
+### 3. `src/components/posts/PostCard.tsx` - Card hien thi 1 bai viet
+
+- Header: Avatar + Ten tac gia + Thoi gian (relative: "2 gio truoc")
+- Body: Noi dung bai viet + Hinh anh (neu co)
+- Footer: 
+  - Hien thi so gift da nhan va tong gia tri (`gift_count`, `total_gifts_received`)
+  - Nut "Tang Thuong" mo GiftDialog voi `postId` va `defaultReceiverId` = author_id
+  - Nut xoa bai (chi hien cho author)
+- Style: Card voi border gold nhe, hover effect
+
+### 4. `src/components/posts/PostFeed.tsx` - Danh sach bai viet
+
+- Render danh sach PostCard tu `usePosts()`
+- Loading state voi Skeleton
+- Empty state khi chua co bai viet
+- Truyen callback mo GiftDialog xuong PostCard
+
+## Files Can Cap Nhat
+
+### 5. `src/pages/Rewards.tsx` - Trang chinh
+
+Thay doi layout thanh 3 phan:
+- **Tren cung**: Header + nut Tang Thuong (giu nguyen)
+- **Giua**: CreatePost + PostFeed (phan moi)
+- **Duoi**: Grid 2 cot - Gift History (trai) + Leaderboard (phai) (giu nguyen)
+
+Layout moi:
+
+```text
++------------------------------------------+
+| FUN Rewards Header + Light Score + Button |
++------------------------------------------+
+| CreatePost (textarea + nut Dang bai)     |
++------------------------------------------+
+| PostFeed (danh sach bai viet)            |
+|   PostCard 1 [Tang Thuong]               |
+|   PostCard 2 [Tang Thuong]               |
+|   PostCard 3 [Tang Thuong]               |
++------------------------------------------+
+| Gift History (2/3)  | Leaderboard (1/3)  |
++------------------------------------------+
 ```
 
-### Bang `posts`
-```sql
-CREATE TABLE public.posts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  author_id uuid NOT NULL REFERENCES auth.users(id),
-  content text NOT NULL,
-  image_url text,
-  total_gifts_received numeric NOT NULL DEFAULT 0,
-  gift_count integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-```
+## Chi Tiet Ky Thuat
 
-### Bang `messages`
-```sql
-CREATE TABLE public.messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_id uuid NOT NULL REFERENCES auth.users(id),
-  receiver_id uuid NOT NULL REFERENCES auth.users(id),
-  content text NOT NULL,
-  gift_id uuid REFERENCES public.gifts(id),
-  read boolean NOT NULL DEFAULT false,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-```
+### usePosts hook
+- Query `posts` table, join `profiles` bang `author_id = user_id` de lay `display_name`, `avatar_url`
+- Do RLS chi cho phep user SELECT tat ca posts, INSERT posts cua minh -> khong can thay doi RLS
+- Dung `useQuery` voi key `['posts']`, `useMutation` cho create/delete
 
-### Bang `light_scores`
-```sql
-CREATE TABLE public.light_scores (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users(id) UNIQUE,
-  total_given_usd numeric NOT NULL DEFAULT 0,
-  total_received_usd numeric NOT NULL DEFAULT 0,
-  gift_count_sent integer NOT NULL DEFAULT 0,
-  gift_count_received integer NOT NULL DEFAULT 0,
-  light_score numeric NOT NULL DEFAULT 0,
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-```
+### PostCard - Nut Tang Thuong
+- Click nut "Tang Thuong" tren bai viet -> mo GiftDialog voi props:
+  - `defaultReceiverId = post.author_id`
+  - `postId = post.id`
+- GiftDialog da co san `postId` prop tu Dot 1, chi can truyen vao
 
-### RLS Policies
-- `gifts`: Authenticated users co the SELECT tat ca, INSERT gifts ma sender_id = auth.uid()
-- `posts`: Authenticated users co the SELECT tat ca, INSERT posts ma author_id = auth.uid()
-- `messages`: Users chi co the SELECT messages ma minh la sender hoac receiver, INSERT messages ma sender_id = auth.uid()
-- `light_scores`: Authenticated users co the SELECT tat ca (public leaderboard), chi update qua trigger
+### Thoi gian tuong doi
+- Dung `date-fns` (da cai san) de format: `formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: vi })`
 
-### Trigger: Tu dong cap nhat light_scores khi gift duoc confirmed
-Tao trigger function `update_light_scores_on_gift()` chay khi gift.status chuyen sang 'confirmed'.
-
-### Enable Realtime cho `gifts`, `messages`, `posts`
-
-## Phan 2: Gift Dialog (`src/components/gifts/GiftDialog.tsx`)
-
-Modal tang thuong voi cac buoc:
-1. Chon nguoi nhan - dropdown search tu bang `profiles` (display_name, email)
-2. Chon token - CAMLY (uu tien, hien dau), USDT, BNB, cac dong khac
-3. Nhap so luong - hien thi USD value tuong duong (dung `useRealtimePrices`)
-4. Nhap loi nhan (optional)
-5. Nut "Tang Thuong" -> ket noi MetaMask (dung ethers.js tuong tu usePancakeSwap) -> ky giao dich -> doi confirm
-6. Khi tx confirmed -> cap nhat gift status -> hien CelebrationModal
-
-## Phan 3: Gift Celebration Modal (`src/components/gifts/GiftCelebrationModal.tsx`)
-
-Hien thi sau khi tang thanh cong:
-- **Hieu ung phao hoa CSS** - confetti particles bay khap man hinh, dung CSS keyframes animations (khong can thu vien ngoai)
-- **Bang thong tin chinh** (de chup hinh):
-  - Tieu de: "Chuc mung ban da chuyen thanh cong!"
-  - Nguoi chuyen: avatar + ten
-  - Nguoi nhan: avatar + ten
-  - Token + So luong + USD value
-  - Tx Hash (link BscScan)
-  - Thoi gian
-- **Hieu ung giu lau** - Modal KHONG tu dong dong, chi dong khi user bam nut "Dong" hoac "X"
-- **Nut "Copy" va "Chia se"** - copy thong tin de dan
-
-## Phan 4: Leaderboard (`src/components/gifts/Leaderboard.tsx`)
-
-Component tabs:
-- **Tab "Top Givers"** - Xep hang theo tong USD da tang (tu `light_scores.total_given_usd`)
-- **Tab "Top Receivers"** - Xep hang theo tong USD da nhan
-- **Tab "Top Sponsors" (Manh Thuong Quan)** - All-time top givers voi huy hieu dac biet
-- Moi dong: Avatar, Ten, So tien, So giao dich, Light Score badge
-- Highlight top 3 voi mau gold/silver/bronze
-
-## Phan 5: Light Score Badge (`src/components/gifts/LightScoreBadge.tsx`)
-
-Huy hieu nho hien thi diem uy tin:
-- Cong thuc: `light_score = (total_given_usd * 2) + (total_received_usd * 1) + (gift_count_sent * 10) + (gift_count_received * 5)`
-- Hien thi dang icon + so diem, mau gold
-
-## Phan 6: Hook `src/hooks/useGifts.ts`
-
-- `sendGift(receiverId, tokenSymbol, amount, message)` - Tao gift record (status=pending), goi MetaMask chuyen token, cap nhat status khi confirmed
-- `useGiftHistory(userId?)` - Query gifts table, join profiles de lay ten sender/receiver
-- `useLeaderboard(type: 'givers' | 'receivers' | 'sponsors', limit)` - Query light_scores order by tuong ung
-- `useLightScore(userId)` - Lay diem uy tin cua 1 user
-
-## Phan 7: Tich Hop Vao Giao Dien
-
-### Trang Dashboard (`src/pages/Index.tsx`)
-- Them nut "Tang Thuong" mau gold noi bat o header (canh nut Sync Now)
-- Click mo GiftDialog
-
-### Sidebar (`src/components/layout/TreasurySidebar.tsx`)
-- Them menu item "Rewards" voi icon Gift, link toi `/rewards`
-
-### Trang Rewards (`src/pages/Rewards.tsx`)
-- Layout: Leaderboard + Gift History table
-- Nut "Tang Thuong" o header
-- GiftDialog modal
-
-### Route (`src/App.tsx`)
-- Them route `/rewards` -> `<Rewards />`
-
-## Files Can Tao/Thay Doi
-
-| File | Thay Doi |
-|------|----------|
-| **Migration SQL** | Tao 4 bang: gifts, posts, messages, light_scores + RLS + triggers + realtime |
-| `src/hooks/useGifts.ts` | **Tao moi** - Core gift logic, blockchain transfer, leaderboard queries |
-| `src/components/gifts/GiftDialog.tsx` | **Tao moi** - Modal tang thuong (chon user, token, amount, message) |
-| `src/components/gifts/GiftCelebrationModal.tsx` | **Tao moi** - Modal chuc mung voi hieu ung phao hoa CSS |
-| `src/components/gifts/Leaderboard.tsx` | **Tao moi** - Bang xep hang 3 tabs (Givers, Receivers, Sponsors) |
-| `src/components/gifts/LightScoreBadge.tsx` | **Tao moi** - Huy hieu diem uy tin |
-| `src/pages/Rewards.tsx` | **Tao moi** - Trang chinh /rewards |
-| `src/App.tsx` | Them route `/rewards` |
-| `src/components/layout/TreasurySidebar.tsx` | Them menu "Rewards" |
-| `src/pages/Index.tsx` | Them nut "Tang Thuong" o header |
-
-## Thu Tu Thuc Hien
-
-1. Chay migration SQL tao 4 bang + RLS + triggers
-2. Tao `useGifts.ts` hook
-3. Tao `GiftDialog.tsx`
-4. Tao `GiftCelebrationModal.tsx` voi hieu ung phao hoa
-5. Tao `LightScoreBadge.tsx`
-6. Tao `Leaderboard.tsx`
-7. Tao `Rewards.tsx` page
-8. Cap nhat `App.tsx` (route), `TreasurySidebar.tsx` (menu), `Index.tsx` (nut tang thuong)
+### Thu tu tao file
+1. `src/hooks/usePosts.ts`
+2. `src/components/posts/CreatePost.tsx`
+3. `src/components/posts/PostCard.tsx`
+4. `src/components/posts/PostFeed.tsx`
+5. Cap nhat `src/pages/Rewards.tsx`
 
