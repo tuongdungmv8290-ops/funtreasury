@@ -37,7 +37,7 @@ export async function saveNotification(
 export function useNotifications() {
   const queryClient = useQueryClient();
 
-  // Fetch notifications
+  // Fetch notifications (user_id filter handled by RLS)
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {

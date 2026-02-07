@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Gift, Check, CheckCheck, Send } from 'lucide-react';
+import { Gift, Check, CheckCheck, Send, Search } from 'lucide-react';
 import { useMessages, useMarkAsRead, useSendMessage } from '@/hooks/useMessages';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,6 +22,14 @@ export function GiftMessageThread({ open, onClose, otherUserId, otherUserName }:
   const sendMessage = useSendMessage(open ? otherUserId : undefined);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredMessages = useMemo(() => {
+    if (!messages) return [];
+    if (!searchQuery.trim()) return messages;
+    const q = searchQuery.toLowerCase();
+    return messages.filter(m => m.content.toLowerCase().includes(q));
+  }, [messages, searchQuery]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -52,19 +60,32 @@ export function GiftMessageThread({ open, onClose, otherUserId, otherUserName }:
         </DialogHeader>
 
         <ScrollArea className="h-[400px] pr-3" ref={scrollRef}>
+          {/* Search bar */}
+          {messages && messages.length > 3 && (
+            <div className="relative mb-3">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm tin nhắn..."
+                className="pl-8 h-8 text-xs"
+              />
+            </div>
+          )}
+
           {isLoading ? (
             <div className="space-y-3 p-2">
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-14 w-3/4" style={{ marginLeft: i % 2 ? 'auto' : 0 }} />
               ))}
             </div>
-          ) : !messages || messages.length === 0 ? (
+          ) : filteredMessages.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground text-sm">
-              Chưa có tin nhắn nào
+              {searchQuery ? 'Không tìm thấy tin nhắn phù hợp' : 'Chưa có tin nhắn nào'}
             </div>
           ) : (
             <div className="space-y-2 p-2">
-              {messages.map(msg => {
+              {filteredMessages.map(msg => {
                 const isMe = msg.sender_id === user?.id;
                 const hasGift = !!msg.gift_id;
 
