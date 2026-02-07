@@ -1,27 +1,24 @@
 
-
-# Di chuyen Wallet Panel tu CAMLY Community sang Tặng Thưởng
+# Cap nhat phan "Tu" (From) trong dialog xac nhan giao dich
 
 ## Thay doi
 
-Di chuyen component `CamlyWalletPanel` (bao gom ket noi vi MetaMask, hien thi so du, gui/nhan CAMLY, bieu do gia, swap) tu trang CAMLY Community (`/camly`) sang trang Tặng Thưởng (`/rewards`).
+Hien tai `SendConfirmStep.tsx` chi hien thi dia chi vi rut gon (0x1234...5678) o phan "Tu". Can cap nhat de hien thi ten **FUN TREASURY** (hoac ten sender tu profile) kem dia chi vi, giong cach hien thi ben "Den" (To).
 
-## Chi tiet
+## Chi tiet ky thuat
 
-### 1. Trang Rewards (`src/pages/Rewards.tsx`)
-- Import `CamlyWalletPanel`
-- Them component `CamlyWalletPanel` vao phia tren phan Post Section (sau header, truoc CreatePost)
-- Vi tri: ngay sau block header, truoc phan bai viet
+### File: `src/components/camly/modals/SendConfirmStep.tsx`
+- Them prop `senderName` (string, optional)
+- Phan "Tu": hien thi ten sender (mac dinh "FUN TREASURY") bang chu vang noi bat, kem dia chi vi rut gon phia duoi
 
-### 2. Trang CamlyCoin (`src/pages/CamlyCoin.tsx`)
-- Xoa import va su dung `CamlyWalletPanel`
-- Giu lai cac phan con: GoldQuoteCard, PhilosophyComparison, TokenomicsSection, CamlyStorySection (day la noi dung gioi thieu CAMLY, khong lien quan den vi)
+### File: `src/components/camly/modals/CamlySendModal.tsx`
+- Truyen them prop `senderName="FUN TREASURY"` vao `SendConfirmStep`
 
-## Ket qua
+## Truoc va sau
 
-| Trang | Truoc | Sau |
-|-------|-------|-----|
-| CAMLY Community (`/camly`) | Co WalletPanel + Quote + Philosophy + Tokenomics + Story | Chi con Quote + Philosophy + Tokenomics + Story |
-| Tặng Thưởng (`/rewards`) | Post + History + Analytics | **WalletPanel** + Post + History + Analytics |
+| Phan | Truoc | Sau |
+|------|-------|-----|
+| Tu (From) | `0x1234...5678` | **FUN TREASURY** + `0x1234...5678` |
+| Den (To) | Khong doi | Khong doi |
 
-Chi 2 file thay doi, khong can migration database.
+Chi 2 file thay doi nho, khong can migration database.
