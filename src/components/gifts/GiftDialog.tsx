@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Gift, Loader2, Search, AlertTriangle, ChevronDown, ArrowRight, Wallet, Users } from 'lucide-react';
+import { Gift, Loader2, Search, AlertTriangle, ChevronDown, ArrowRight, Wallet, Users, BookUser, Plus, Trash2, Check } from 'lucide-react';
+import { useAddressBook } from '@/hooks/useAddressBook';
 import { useGifts, useUserProfiles } from '@/hooks/useGifts';
 import { useRealtimePrices } from '@/hooks/useRealtimePrices';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,7 +48,7 @@ export function GiftDialog({ open, onOpenChange, defaultReceiverId, postId }: Gi
   const { data: profiles } = useUserProfiles();
   const prices = useRealtimePrices();
   const wallet = useCamlyWallet();
-
+  const { savedAddresses, saveAddress, deleteAddress } = useAddressBook();
   const [activeTab, setActiveTab] = useState('internal');
   const [selectedInternal, setSelectedInternal] = useState<TokenItem>(INTERNAL_TOKENS[0] as TokenItem);
   const [selectedCrypto, setSelectedCrypto] = useState<TokenItem>(CRYPTO_TOKENS[0] as TokenItem);
@@ -62,7 +63,9 @@ export function GiftDialog({ open, onOpenChange, defaultReceiverId, postId }: Gi
   // Crypto tab: toggle between wallet address / profile
   const [cryptoReceiverMode, setCryptoReceiverMode] = useState<'profile' | 'address'>('profile');
   const [manualAddress, setManualAddress] = useState('');
-
+  const [showSaveForm, setShowSaveForm] = useState(false);
+  const [newContactName, setNewContactName] = useState('');
+  const [newContactAddress, setNewContactAddress] = useState('');
   const isInternal = activeTab === 'internal';
   const selectedToken = isInternal ? selectedInternal : selectedCrypto;
   const currentTokens = isInternal ? INTERNAL_TOKENS : CRYPTO_TOKENS;
@@ -414,12 +417,80 @@ export function GiftDialog({ open, onOpenChange, defaultReceiverId, postId }: Gi
                 {/* Receiver input */}
                 <div className="space-y-2">
                   {cryptoReceiverMode === 'address' ? (
-                    <>
+                    <div className="space-y-3">
                       <Label className="text-sm font-semibold">Người nhận</Label>
                       <Input placeholder="0x..." value={manualAddress}
                         onChange={e => setManualAddress(e.target.value)}
                         className="font-mono text-sm border-2 border-amber-300/40 focus:border-amber-400 focus-visible:ring-amber-400/30" />
-                    </>
+
+                      {/* Saved Contacts */}
+                      {savedAddresses.length > 0 && (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                            <BookUser className="w-3.5 h-3.5" /> Danh bạ đã lưu
+                          </Label>
+                          <div className="max-h-32 overflow-y-auto border-2 border-amber-300/40 dark:border-amber-700/30 rounded-xl bg-popover">
+                            {savedAddresses.map(item => (
+                              <div key={item.address}
+                                className="flex items-center gap-2 px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors border-b border-border/30 last:border-b-0 group">
+                                <button
+                                  className="flex-1 flex items-center gap-2 text-left min-w-0"
+                                  onClick={() => setManualAddress(item.address)}>
+                                  <span className="text-sm font-semibold truncate">{item.label}</span>
+                                  <span className="text-xs text-muted-foreground font-mono truncate">
+                                    {item.address.slice(0, 6)}...{item.address.slice(-4)}
+                                  </span>
+                                </button>
+                                {manualAddress.toLowerCase() === item.address.toLowerCase() && (
+                                  <Check className="w-4 h-4 text-green-500 shrink-0" />
+                                )}
+                                <button
+                                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-all shrink-0"
+                                  onClick={() => deleteAddress.mutate(item.address)}
+                                  title="Xoá">
+                                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Save new contact */}
+                      {!showSaveForm ? (
+                        <button
+                          onClick={() => setShowSaveForm(true)}
+                          className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
+                          <Plus className="w-3.5 h-3.5" /> Lưu người nhận mới
+                        </button>
+                      ) : (
+                        <div className="p-3 border-2 border-amber-400/50 rounded-xl bg-gradient-to-r from-amber-50/50 to-yellow-50/30 dark:from-amber-900/20 dark:to-yellow-900/10 space-y-2">
+                          <p className="text-xs font-bold text-amber-700 dark:text-amber-300">Lưu người nhận mới</p>
+                          <Input placeholder="Tên người nhận" value={newContactName}
+                            onChange={e => setNewContactName(e.target.value)}
+                            className="h-8 text-sm border-amber-300/40 focus:border-amber-400" />
+                          <Input placeholder="Địa chỉ ví (0x...)" value={newContactAddress}
+                            onChange={e => setNewContactAddress(e.target.value)}
+                            className="h-8 text-sm font-mono border-amber-300/40 focus:border-amber-400" />
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="h-7 text-xs"
+                              onClick={() => { setShowSaveForm(false); setNewContactName(''); setNewContactAddress(''); }}>
+                              Huỷ
+                            </Button>
+                            <Button size="sm" className="h-7 text-xs bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0"
+                              disabled={!newContactName.trim() || !newContactAddress.trim() || saveAddress.isPending}
+                              onClick={() => {
+                                saveAddress.mutate(
+                                  { address: newContactAddress.trim(), label: newContactName.trim() },
+                                  { onSuccess: () => { setShowSaveForm(false); setNewContactName(''); setNewContactAddress(''); } }
+                                );
+                              }}>
+                              {saveAddress.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Lưu'}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <>
                       {renderProfileSearch()}

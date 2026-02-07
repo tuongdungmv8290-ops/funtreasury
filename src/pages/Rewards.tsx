@@ -54,7 +54,7 @@ const Rewards = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-1 tracking-wide">
-              FUN <span className="gold-shimmer text-4xl md:text-5xl">Rewards</span>
+              FUN <span className="gold-shimmer text-4xl md:text-5xl">Tặng Thưởng</span>
             </h1>
             <p className="font-body text-sm md:text-base text-muted-foreground">
               Tặng thưởng token cho bạn bè • Bảng xếp hạng • Light Score
@@ -65,7 +65,7 @@ const Rewards = () => {
             {myScore && <LightScoreBadge score={myScore.light_score} size="lg" />}
             <Button
               onClick={() => setShowGiftDialog(true)}
-              className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark text-white font-semibold shadow-lg hover:shadow-xl transition-all px-6"
+              className="gap-2 bg-gradient-to-r from-treasury-gold to-treasury-gold-dark text-white font-semibold shadow-lg hover:shadow-xl hover:shadow-amber-400/40 transition-all px-6 border-2 border-amber-400"
             >
               <Gift className="w-4 h-4" />
               Tặng Thưởng
