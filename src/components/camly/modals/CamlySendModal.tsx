@@ -106,6 +106,7 @@ export function CamlySendModal({ open, onOpenChange }: CamlySendModalProps) {
           {step === 'confirm' && (
             <SendConfirmStep
               senderAddress={wallet.address || ''}
+              senderName="FUN TREASURY"
               recipient={recipient}
               recipientName={recipientName}
               amount={amount}
