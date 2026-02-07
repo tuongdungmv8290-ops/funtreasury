@@ -1,24 +1,29 @@
 
-# Cap nhat phan "Tu" (From) trong dialog xac nhan giao dich
 
-## Thay doi
+## Xoa logo FUN Treasury
 
-Hien tai `SendConfirmStep.tsx` chi hien thi dia chi vi rut gon (0x1234...5678) o phan "Tu". Can cap nhat de hien thi ten **FUN TREASURY** (hoac ten sender tu profile) kem dia chi vi, giong cach hien thi ben "Den" (To).
+Con muon xoa logo ruong kho bau (treasure chest) ra khoi giao dien FUN Treasury. Logo nay hien dang xuat hien o 3 noi:
 
-## Chi tiet ky thuat
+### Thay doi
 
-### File: `src/components/camly/modals/SendConfirmStep.tsx`
-- Them prop `senderName` (string, optional)
-- Phan "Tu": hien thi ten sender (mac dinh "FUN TREASURY") bang chu vang noi bat, kem dia chi vi rut gon phia duoi
+**1. Sidebar (TreasurySidebar.tsx)**
+- Xoa hinh logo tron lon (w-24 h-24) o phan header sidebar
+- Giu lai text "FUN Treasury" va dong mo ta "A Treasury of the Universe"
+- Xoa import `funTreasuryLogo`
 
-### File: `src/components/camly/modals/CamlySendModal.tsx`
-- Truyen them prop `senderName="FUN TREASURY"` vao `SendConfirmStep`
+**2. Header di dong (Header.tsx)**
+- Xoa hinh logo tron (w-16 h-16) trong header
+- Giu lai text "FUN Treasury"
+- Xoa import `funTreasuryLogo`
 
-## Truoc va sau
+**3. Trang Docs (PlatformDocs.tsx)**
+- Xoa hinh logo tron (w-32 h-32) tren trang tai lieu
+- Xoa import `funTreasuryLogo`
 
-| Phan | Truoc | Sau |
-|------|-------|-----|
-| Tu (From) | `0x1234...5678` | **FUN TREASURY** + `0x1234...5678` |
-| Den (To) | Khong doi | Khong doi |
+### Chi tiet ky thuat
 
-Chi 2 file thay doi nho, khong can migration database.
+- Xoa dong `import funTreasuryLogo` trong ca 3 file
+- Xoa cac khoi `<div>` chua `<img src={funTreasuryLogo}>` va cac hieu ung xung quanh (gold-shimmer-border, SparkleOnClick)
+- Khong anh huong den chuc nang navigation hay cac logo khac (FUN Platforms)
+- File anh `src/assets/fun-treasury-logo.png` van giu lai (co the dung cho PWA icons)
+
