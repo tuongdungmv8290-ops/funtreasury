@@ -1,103 +1,73 @@
 
 
-# Dot 3: Messaging + Invoice PDF + Excel Export + Light Score Badge
+# Realtime Messaging cho Gift Messages
 
 ## Tong Quan
 
-Bo sung 4 tinh nang cho FUN Rewards: messaging (tin nhan lien ket gift), xuat PDF chung nhan, export Excel lich su gift, va hien thi Light Score badge tren header + post cards.
+Them tinh nang realtime cho he thong tin nhan gift: khi co tin nhan moi duoc gui/nhan, UI tu dong cap nhat ma khong can refresh trang.
 
----
+## Thay Doi Can Thuc Hien
 
-## Phan 1: Messaging Hook va UI
+### 1. Migration: Enable Realtime cho bang `messages`
 
-### `src/hooks/useMessages.ts` (Tao moi)
-- `useMessages(otherUserId)` - Query `messages` table giua user hien tai va 1 user khac, order `created_at` asc
-- `useUnreadCount()` - Dem messages chua doc (`read = false`, `receiver_id = auth.uid()`)
-- `markAsRead(messageId)` - Mutation update `read = true`
-- Join `profiles` de lay ten sender/receiver
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+```
 
-### `src/components/gifts/GiftMessageThread.tsx` (Tao moi)
-- Dialog hien thi tin nhan giua 2 user
-- Tin cua minh ben phai (mau gold), tin nguoi khac ben trai
-- Tin co `gift_id` hien icon gift + link BscScan
-- Auto scroll xuong cuoi
-- Hien ngay gio + trang thai da doc
+### 2. Cap nhat `src/hooks/useMessages.ts`
 
-### Tich hop vao Rewards.tsx
-- Click vao 1 gift trong lich su -> mo GiftMessageThread voi user tuong ung
+Them realtime subscription trong `useMessages` hook:
+- Subscribe vao channel `messages-{sortedUserIds}` lang nghe `postgres_changes` tren bang `messages`
+- Filter theo `sender_id` va `receiver_id` de chi nhan tin nhan lien quan
+- Khi co INSERT moi -> `invalidateQueries(['messages', ...])` de refetch
+- Khi co UPDATE (read status) -> cung invalidate
+- Cleanup subscription khi unmount hoac khi `otherUserId` thay doi
 
----
+Them realtime vao `useUnreadCount`:
+- Subscribe vao channel `unread-{userId}` lang nghe INSERT/UPDATE tren `messages` voi `receiver_id = user.id`
+- Invalidate `['unread-messages']` khi co thay doi
 
-## Phan 2: Invoice/Receipt PDF
+### 3. Thu tu
 
-### `src/lib/giftReceiptPDF.ts` (Tao moi)
-- Dung `jsPDF` (da cai)
-- Noi dung: tieu de "FUN Treasury - Chung Nhan Tang Thuong", ma giao dich, ngay gio, nguoi gui/nhan, token + so luong + USD, tx hash, loi nhan, footer
-- Style gold accent
+1. Chay migration enable realtime
+2. Cap nhat `useMessages.ts` - them `useEffect` voi Supabase realtime channel
 
-### `src/components/gifts/GiftReceiptButton.tsx` (Tao moi)
-- Nut nho "PDF" hien canh moi gift trong lich su
-- Goi `generateGiftReceiptPDF(gift)` khi click
+## Chi Tiet Ky Thuat
 
-### Tich hop
-- Them nut PDF vao moi dong gift history trong `Rewards.tsx`
-- Them nut "Tai chung nhan" vao `GiftCelebrationModal.tsx`
+### useMessages - Realtime subscription
 
----
+```text
+useEffect:
+  if (!user || !otherUserId) return
+  
+  channel = supabase.channel(`messages-${user.id}-${otherUserId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+      queryClient.invalidateQueries({ queryKey: ['messages', user.id, otherUserId] })
+    })
+    .subscribe()
+  
+  return () => supabase.removeChannel(channel)
+```
 
-## Phan 3: Excel Export cho Gifts
+### useUnreadCount - Realtime subscription
 
-### `src/lib/giftExcelExport.ts` (Tao moi)
-- Theo pattern giong `src/lib/excelExport.ts`
-- Columns: Date, Sender, Receiver, Token, Amount, USD Value, Message, Tx Hash, Explorer Link, Status
-- Color-coded: CAMLY = gold (#FFF8E1), USDT = blue (#E3F2FD), BNB = orange (#FFF3E0)
-- Header dark, white bold text, auto filter, clickable links
-- File: `FUN-Rewards-Gifts-DD-MM-YYYY.xlsx`
+```text
+useEffect:
+  if (!user) return
+  
+  channel = supabase.channel(`unread-${user.id}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, () => {
+      queryClient.invalidateQueries({ queryKey: ['unread-messages', user.id] })
+    })
+    .subscribe()
+  
+  return () => supabase.removeChannel(channel)
+```
 
-### Tich hop vao `Rewards.tsx`
-- Them nut "Export Excel" trong CardHeader cua Gift History
-
----
-
-## Phan 4: Light Score Badge tren Avatar
-
-### Cap nhat `src/components/layout/AppHeader.tsx`
-- Import `useLightScore` va `LightScoreBadge`
-- Hien thi badge canh notification area khi user dang nhap va co diem > 0
-
-### Cap nhat `src/hooks/usePosts.ts`
-- Join them `light_scores` table de lay `author_light_score`
-- Them truong `author_light_score` vao interface `PostWithAuthor`
-
-### Cap nhat `src/components/posts/PostCard.tsx`
-- Hien thi `LightScoreBadge` (size sm) canh ten tac gia
-
----
-
-## Thu Tu Thuc Hien
-
-1. `src/hooks/useMessages.ts`
-2. `src/components/gifts/GiftMessageThread.tsx`
-3. `src/lib/giftReceiptPDF.ts`
-4. `src/components/gifts/GiftReceiptButton.tsx`
-5. `src/lib/giftExcelExport.ts`
-6. Cap nhat `src/pages/Rewards.tsx` - messages + PDF + Excel
-7. Cap nhat `src/components/gifts/GiftCelebrationModal.tsx` - nut PDF
-8. Cap nhat `src/components/layout/AppHeader.tsx` - Light Score badge
-9. Cap nhat `src/hooks/usePosts.ts` + `src/components/posts/PostCard.tsx` - Light Score tren post
-
-## Files
+### Files thay doi
 
 | File | Thay Doi |
 |------|----------|
-| `src/hooks/useMessages.ts` | Tao moi |
-| `src/components/gifts/GiftMessageThread.tsx` | Tao moi |
-| `src/lib/giftReceiptPDF.ts` | Tao moi |
-| `src/components/gifts/GiftReceiptButton.tsx` | Tao moi |
-| `src/lib/giftExcelExport.ts` | Tao moi |
-| `src/pages/Rewards.tsx` | Cap nhat - tich hop messages, PDF, Excel |
-| `src/components/gifts/GiftCelebrationModal.tsx` | Cap nhat - them nut PDF |
-| `src/components/layout/AppHeader.tsx` | Cap nhat - Light Score badge |
-| `src/hooks/usePosts.ts` | Cap nhat - join light_scores |
-| `src/components/posts/PostCard.tsx` | Cap nhat - hien thi LightScoreBadge |
+| Migration SQL | Enable realtime cho `messages` table |
+| `src/hooks/useMessages.ts` | Them useEffect realtime subscriptions cho `useMessages` va `useUnreadCount` |
 
