@@ -1,29 +1,44 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Gift, Sparkles, ExternalLink, Clock } from 'lucide-react';
+import { Gift, Clock, ExternalLink } from 'lucide-react';
 import { GiftDialog } from '@/components/gifts/GiftDialog';
 import { Leaderboard } from '@/components/gifts/Leaderboard';
 import { LightScoreBadge } from '@/components/gifts/LightScoreBadge';
+import { CreatePost } from '@/components/posts/CreatePost';
+import { PostFeed } from '@/components/posts/PostFeed';
 import { useGiftHistory, useLightScore } from '@/hooks/useGifts';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/lib/formatUtils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from 'react-i18next';
 
 const Rewards = () => {
-  const { t } = useTranslation();
   const { user } = useAuth();
   const [showGiftDialog, setShowGiftDialog] = useState(false);
+  const [giftPostId, setGiftPostId] = useState<string | undefined>();
+  const [giftReceiverId, setGiftReceiverId] = useState<string | undefined>();
   const { data: gifts, isLoading: giftsLoading } = useGiftHistory();
   const { data: myScore } = useLightScore(user?.id);
 
+  const handlePostGift = (postId: string, authorId: string) => {
+    setGiftPostId(postId);
+    setGiftReceiverId(authorId);
+    setShowGiftDialog(true);
+  };
+
+  const handleOpenGiftDialog = (open: boolean) => {
+    setShowGiftDialog(open);
+    if (!open) {
+      setGiftPostId(undefined);
+      setGiftReceiverId(undefined);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <main className="container py-6 md:py-8">
+      <main className="container py-6 md:py-8 space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-1 tracking-wide">
               FUN <span className="gold-text">Rewards</span>
@@ -44,7 +59,13 @@ const Rewards = () => {
           </div>
         </div>
 
-        {/* Main Grid */}
+        {/* Post Section */}
+        <div className="space-y-4">
+          <CreatePost />
+          <PostFeed onGift={handlePostGift} />
+        </div>
+
+        {/* Gift History + Leaderboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Gift History */}
           <div className="lg:col-span-2">
@@ -134,7 +155,12 @@ const Rewards = () => {
         </div>
       </main>
 
-      <GiftDialog open={showGiftDialog} onOpenChange={setShowGiftDialog} />
+      <GiftDialog
+        open={showGiftDialog}
+        onOpenChange={handleOpenGiftDialog}
+        defaultReceiverId={giftReceiverId}
+        postId={giftPostId}
+      />
     </div>
   );
 };
