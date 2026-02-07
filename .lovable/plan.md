@@ -1,90 +1,128 @@
 
 
-# Dot 2: He Thong Post (PostFeed, CreatePost, PostCard) + Tich Hop Trang /rewards
+# Dot 3: Messaging + Invoice/Receipt PDF + Excel Export + Light Score Badge tren Avatar
 
 ## Tong Quan
 
-Xay dung he thong bai viet (Social Feed) cho phep user dang bai, xem feed, va tang thuong truc tiep tren moi bai viet. Tich hop vao trang `/rewards` hien co.
+Xay dung 4 tinh nang con lai cua he thong FUN Rewards:
+1. **Messaging** - Hien thi tin nhan gift giua 2 user (da co auto-message tu trigger)
+2. **Invoice/Receipt PDF** - Xuat chung nhan tang thuong dang PDF (dung jsPDF da cai)
+3. **Excel Export cho Gifts** - Xuat lich su tang thuong ra XLSX (dung exceljs da cai)
+4. **Light Score Badge tren avatar** - Hien thi diem uy tin canh ten user o header va cac noi khac
 
-## Cac Files Can Tao Moi
+---
 
-### 1. `src/hooks/usePosts.ts` - Hook quan ly bai viet
+## Phan 1: Gift Messages Component
 
-- `usePosts()` - Query danh sach posts, join profiles de lay ten/avatar tac gia, sap xep theo `created_at` desc
-- `useCreatePost()` - Mutation tao bai viet moi (content, image_url)
-- `useDeletePost()` - Mutation xoa bai viet (chi author)
-- Invalidate query khi tao/xoa thanh cong
+### `src/hooks/useMessages.ts`
+- `useMessages(otherUserId)` - Query bang `messages` giua user hien tai va user khac, order by `created_at` asc
+- `useUnreadCount()` - Dem so tin chua doc (`read = false` va `receiver_id = auth.uid()`)
+- `markAsRead(messageId)` - Mutation cap nhat `read = true`
+- Dung `profiles` join de lay ten sender/receiver
 
-### 2. `src/components/posts/CreatePost.tsx` - Form tao bai viet
+### `src/components/gifts/GiftMessageThread.tsx`
+- Hien thi danh sach tin nhan giua 2 user
+- Moi tin nhan co icon gift neu `gift_id` khac null -> click mo chi tiet gift (link BscScan)
+- Tin cua minh hien ben phai (mau gold), tin cua nguoi khac ben trai
+- Tu dong scroll xuong tin moi nhat
+- Hien thi ngay gio + trang thai "da doc"
 
-- Avatar user hien tai + Textarea nhap noi dung
-- Nut "Dang bai" voi style gold
-- Validate: content khong duoc rong
-- Sau khi dang thanh cong: clear form, hien toast thong bao
+### Tich hop vao `src/pages/Rewards.tsx`
+- Them section "Tin nhan" phia duoi gift history
+- Hoac: them tab "Tin nhan" trong Gift History card
+- Click vao 1 gift trong lich su -> mo GiftMessageThread voi user tuong ung
 
-### 3. `src/components/posts/PostCard.tsx` - Card hien thi 1 bai viet
+---
 
-- Header: Avatar + Ten tac gia + Thoi gian (relative: "2 gio truoc")
-- Body: Noi dung bai viet + Hinh anh (neu co)
-- Footer: 
-  - Hien thi so gift da nhan va tong gia tri (`gift_count`, `total_gifts_received`)
-  - Nut "Tang Thuong" mo GiftDialog voi `postId` va `defaultReceiverId` = author_id
-  - Nut xoa bai (chi hien cho author)
-- Style: Card voi border gold nhe, hover effect
+## Phan 2: Invoice/Receipt PDF
 
-### 4. `src/components/posts/PostFeed.tsx` - Danh sach bai viet
+### `src/lib/giftReceiptPDF.ts`
+- Dung `jsPDF` (da cai san) de tao PDF receipt
+- Noi dung PDF:
+  - Tieu de: "FUN Treasury - Chung Nhan Tang Thuong"
+  - Ma giao dich (gift.id)
+  - Ngay gio
+  - Nguoi gui: ten + email
+  - Nguoi nhan: ten + email
+  - Token + So luong + USD value
+  - Tx Hash + BSCScan link
+  - Loi nhan (neu co)
+  - Footer: "FUN Ecosystem - BNB Chain"
+- Style: gold accent, clear layout
 
-- Render danh sach PostCard tu `usePosts()`
-- Loading state voi Skeleton
-- Empty state khi chua co bai viet
-- Truyen callback mo GiftDialog xuong PostCard
+### `src/components/gifts/GiftReceiptButton.tsx`
+- Nut "Xuat PDF" nho, co the dat canh moi gift trong lich su
+- Goi `generateGiftReceiptPDF(gift)` khi click
+- Hien toast "Da tai PDF"
 
-## Files Can Cap Nhat
+### Tich hop
+- Them nut "Xuat PDF" vao moi dong gift history trong `Rewards.tsx`
+- Them nut "Tai chung nhan" vao `GiftCelebrationModal.tsx` (canh nut Copy va BscScan)
 
-### 5. `src/pages/Rewards.tsx` - Trang chinh
+---
 
-Thay doi layout thanh 3 phan:
-- **Tren cung**: Header + nut Tang Thuong (giu nguyen)
-- **Giua**: CreatePost + PostFeed (phan moi)
-- **Duoi**: Grid 2 cot - Gift History (trai) + Leaderboard (phai) (giu nguyen)
+## Phan 3: Excel Export cho Gifts
 
-Layout moi:
+### `src/lib/giftExcelExport.ts`
+- Theo pattern y het `src/lib/excelExport.ts` (da co)
+- Dung ExcelJS
+- Columns: Date, Sender, Receiver, Token, Amount, USD Value, Message, Tx Hash, Explorer Link, Status
+- Color-coded: CAMLY = gold background, USDT = blue background, BNB = light orange
+- Header style: dark background, white bold text
+- Explorer link clickable
+- Auto filter
+- File name: `FUN-Rewards-Gifts-DD-MM-YYYY.xlsx`
 
-```text
-+------------------------------------------+
-| FUN Rewards Header + Light Score + Button |
-+------------------------------------------+
-| CreatePost (textarea + nut Dang bai)     |
-+------------------------------------------+
-| PostFeed (danh sach bai viet)            |
-|   PostCard 1 [Tang Thuong]               |
-|   PostCard 2 [Tang Thuong]               |
-|   PostCard 3 [Tang Thuong]               |
-+------------------------------------------+
-| Gift History (2/3)  | Leaderboard (1/3)  |
-+------------------------------------------+
-```
+### Tich hop vao `src/pages/Rewards.tsx`
+- Them nut "Export Excel" trong header cua Gift History card
+- Click -> goi `exportGiftsXLSX(gifts)` -> tai file
 
-## Chi Tiet Ky Thuat
+---
 
-### usePosts hook
-- Query `posts` table, join `profiles` bang `author_id = user_id` de lay `display_name`, `avatar_url`
-- Do RLS chi cho phep user SELECT tat ca posts, INSERT posts cua minh -> khong can thay doi RLS
-- Dung `useQuery` voi key `['posts']`, `useMutation` cho create/delete
+## Phan 4: Light Score Badge tren Avatar
 
-### PostCard - Nut Tang Thuong
-- Click nut "Tang Thuong" tren bai viet -> mo GiftDialog voi props:
-  - `defaultReceiverId = post.author_id`
-  - `postId = post.id`
-- GiftDialog da co san `postId` prop tu Dot 1, chi can truyen vao
+### Cap nhat `src/components/layout/AppHeader.tsx`
+- Them hien thi Light Score badge canh user actions (phai cua header)
+- Import `useLightScore` va `LightScoreBadge`
+- Chi hien khi user da dang nhap va co diem > 0
 
-### Thoi gian tuong doi
-- Dung `date-fns` (da cai san) de format: `formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: vi })`
+### Cap nhat `src/components/gifts/Leaderboard.tsx`
+- Da co LightScoreBadge, khong can thay doi
 
-### Thu tu tao file
-1. `src/hooks/usePosts.ts`
-2. `src/components/posts/CreatePost.tsx`
-3. `src/components/posts/PostCard.tsx`
-4. `src/components/posts/PostFeed.tsx`
-5. Cap nhat `src/pages/Rewards.tsx`
+### Cap nhat `src/components/posts/PostCard.tsx`
+- Hien thi LightScoreBadge canh ten tac gia
+- Query light_score cua author (hoac truyen tu PostFeed)
+
+### Cap nhat `src/hooks/usePosts.ts`
+- Join them `light_scores` table de lay diem cua tac gia kem theo post data
+- Them truong `author_light_score` vao `PostWithAuthor` interface
+
+---
+
+## Thu Tu Thuc Hien
+
+1. `src/hooks/useMessages.ts` - Hook tin nhan
+2. `src/components/gifts/GiftMessageThread.tsx` - UI tin nhan
+3. `src/lib/giftReceiptPDF.ts` - Xuat PDF receipt
+4. `src/components/gifts/GiftReceiptButton.tsx` - Nut xuat PDF
+5. `src/lib/giftExcelExport.ts` - Export Excel gifts
+6. Cap nhat `src/pages/Rewards.tsx` - Tich hop messages + PDF + Excel
+7. Cap nhat `src/components/gifts/GiftCelebrationModal.tsx` - Them nut tai PDF
+8. Cap nhat `src/components/layout/AppHeader.tsx` - Light Score badge
+9. Cap nhat `src/hooks/usePosts.ts` + `src/components/posts/PostCard.tsx` - Light Score tren post
+
+## Files Can Tao/Thay Doi
+
+| File | Thay Doi |
+|------|----------|
+| `src/hooks/useMessages.ts` | **Tao moi** - Hook query/mark-read messages |
+| `src/components/gifts/GiftMessageThread.tsx` | **Tao moi** - UI chat tin nhan gift |
+| `src/lib/giftReceiptPDF.ts` | **Tao moi** - Generate PDF receipt cho gift |
+| `src/components/gifts/GiftReceiptButton.tsx` | **Tao moi** - Nut download PDF |
+| `src/lib/giftExcelExport.ts` | **Tao moi** - Export XLSX cho gifts |
+| `src/pages/Rewards.tsx` | **Cap nhat** - Tich hop messages, PDF, Excel export |
+| `src/components/gifts/GiftCelebrationModal.tsx` | **Cap nhat** - Them nut "Tai chung nhan PDF" |
+| `src/components/layout/AppHeader.tsx` | **Cap nhat** - Them Light Score badge |
+| `src/hooks/usePosts.ts` | **Cap nhat** - Join light_scores |
+| `src/components/posts/PostCard.tsx` | **Cap nhat** - Hien thi LightScoreBadge |
 
