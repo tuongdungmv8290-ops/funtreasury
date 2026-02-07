@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon_emoji: string
+          id: string
+          name: string
+          threshold_type: string
+          threshold_value: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon_emoji?: string
+          id?: string
+          name: string
+          threshold_type: string
+          threshold_value?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon_emoji?: string
+          id?: string
+          name?: string
+          threshold_type?: string
+          threshold_value?: number
+        }
+        Relationships: []
+      }
+      address_labels: {
+        Row: {
+          address: string
+          created_at: string
+          created_by: string | null
+          label: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          created_by?: string | null
+          label: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          created_by?: string | null
+          label?: string
+        }
+        Relationships: []
+      }
       api_settings: {
         Row: {
           created_at: string
@@ -281,6 +332,7 @@ export type Database = {
           read: boolean
           title: string
           type: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -290,6 +342,7 @@ export type Database = {
           read?: boolean
           title: string
           type?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -299,6 +352,7 @@ export type Database = {
           read?: boolean
           title?: string
           type?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -669,6 +723,35 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: true
             referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
             referencedColumns: ["id"]
           },
         ]

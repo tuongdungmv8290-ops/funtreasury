@@ -5,6 +5,7 @@ import { useWallets } from '@/hooks/useWallets';
 import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
+import { useAddressLabels } from '@/hooks/useAddressLabels';
 import { formatCurrency, shortenAddress } from '@/lib/formatUtils';
 import {
   ArrowUpRight,
@@ -159,6 +160,7 @@ const Transactions = () => {
   const [monthlyReportOpen, setMonthlyReportOpen] = useState(false);
 
   const { data: wallets } = useWallets();
+  const { getLabel, labelMap } = useAddressLabels();
   const { data: walletSummaries } = useWalletSummary();
   const { data: transactions, isLoading } = useTransactions({
     walletId: walletFilter !== 'all' ? walletFilter : undefined,
@@ -416,7 +418,8 @@ const Transactions = () => {
             description: "Không thể export dữ liệu. Vui lòng thử lại.",
             variant: "destructive",
           });
-        }
+        },
+        labelMap
       );
     } catch (error) {
       console.error('Export error:', error);
@@ -798,29 +801,32 @@ const Transactions = () => {
                           </p>
                         </td>
                         <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground font-mono bg-secondary/50 px-2 py-0.5 rounded">
-                              {shortenAddress(
-                                tx.direction === 'IN' ? tx.from_address : tx.to_address
-                              )}
-                            </span>
-                            <button
-                              onClick={() =>
-                                copyToClipboard(
-                                  tx.direction === 'IN' ? tx.from_address : tx.to_address,
-                                  `addr-${tx.id}`
-                                )
-                              }
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
-                              title="Copy full address"
-                            >
-                              {copiedId === `addr-${tx.id}` ? (
-                                <CheckCircle className="w-3.5 h-3.5 text-inflow" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
-                              )}
-                            </button>
-                          </div>
+                          {(() => {
+                            const addr = tx.direction === 'IN' ? tx.from_address : tx.to_address;
+                            const { label, isLabeled } = getLabel(addr);
+                            return (
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm px-2 py-0.5 rounded ${
+                                  isLabeled 
+                                    ? 'text-treasury-gold font-bold bg-treasury-gold/10' 
+                                    : 'text-muted-foreground font-mono bg-secondary/50'
+                                }`}>
+                                  {label}
+                                </span>
+                                <button
+                                  onClick={() => copyToClipboard(addr, `addr-${tx.id}`)}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
+                                  title="Copy full address"
+                                >
+                                  {copiedId === `addr-${tx.id}` ? (
+                                    <CheckCircle className="w-3.5 h-3.5 text-inflow" />
+                                  ) : (
+                                    <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
+                                  )}
+                                </button>
+                              </div>
+                            );
+                          })()}
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">

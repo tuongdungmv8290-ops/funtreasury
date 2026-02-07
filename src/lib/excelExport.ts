@@ -59,7 +59,8 @@ export const exportTransactionsXLSX = async (
   transactions: Transaction[],
   wallets: Wallet[],
   onSuccess?: (count: number) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
+  addressLabelMap?: Map<string, string>
 ): Promise<void> => {
   try {
     const workbook = new ExcelJS.Workbook();
@@ -78,7 +79,9 @@ export const exportTransactionsXLSX = async (
       { header: 'Token', key: 'token', width: 14 },
       { header: 'Amount', key: 'amount', width: 22 },
       { header: 'USD Value', key: 'usd', width: 18 },
+      { header: 'From Name', key: 'from_name', width: 22 },
       { header: 'From Address', key: 'from', width: 48 },
+      { header: 'To Name', key: 'to_name', width: 22 },
       { header: 'To Address', key: 'to', width: 48 },
       { header: 'Explorer Link', key: 'link', width: 50 },
       { header: 'Tx Hash', key: 'hash', width: 72 },
@@ -115,6 +118,12 @@ export const exportTransactionsXLSX = async (
       return wallet?.name || 'Unknown';
     };
 
+    // Helper to get address label
+    const getAddrLabel = (address: string): string => {
+      if (!addressLabelMap) return '';
+      return addressLabelMap.get(address.toLowerCase()) || '';
+    };
+
     // Add data rows with color coding
     transactions.forEach((tx, index) => {
       const amountSign = tx.direction === 'IN' ? '+' : '-';
@@ -127,7 +136,9 @@ export const exportTransactionsXLSX = async (
         token: tx.token_symbol,
         amount: formattedAmount,
         usd: '$' + tx.usd_value.toFixed(2),
+        from_name: getAddrLabel(tx.from_address),
         from: tx.from_address,
+        to_name: getAddrLabel(tx.to_address),
         to: tx.to_address,
         link: getExplorerLink(tx.tx_hash),
         hash: tx.tx_hash,
@@ -205,7 +216,7 @@ export const exportTransactionsXLSX = async (
     // Add auto filter
     worksheet.autoFilter = {
       from: 'A1',
-      to: `N${transactions.length + 1}`,
+      to: `P${transactions.length + 1}`,
     };
 
     // Generate buffer and download
