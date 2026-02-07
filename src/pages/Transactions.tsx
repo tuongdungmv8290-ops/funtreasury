@@ -6,6 +6,7 @@ import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { useAddressLabels } from '@/hooks/useAddressLabels';
+import { AddressLabelPopover } from '@/components/transactions/AddressLabelPopover';
 import { formatCurrency, shortenAddress } from '@/lib/formatUtils';
 import {
   ArrowUpRight,
@@ -824,6 +825,9 @@ const Transactions = () => {
                                     <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
                                   )}
                                 </button>
+                                {!isViewOnly && (
+                                  <AddressLabelPopover address={addr} currentLabel={isLabeled ? label : undefined} />
+                                )}
                               </div>
                             );
                           })()}

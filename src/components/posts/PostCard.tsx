@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Gift, Trash2, Sparkles } from 'lucide-react';
 import { LightScoreBadge } from '@/components/gifts/LightScoreBadge';
+import { AchievementBadges } from '@/components/gifts/AchievementBadges';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,6 +41,7 @@ export function PostCard({ post, onGift }: PostCardProps) {
               {post.author_light_score > 0 && (
                 <LightScoreBadge score={post.author_light_score} size="sm" />
               )}
+              <AchievementBadges userId={post.author_id} maxShow={3} />
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
           </div>
