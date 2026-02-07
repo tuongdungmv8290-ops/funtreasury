@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gift, Clock, ExternalLink } from 'lucide-react';
+import { Gift, Clock, ExternalLink, FileSpreadsheet, MessageCircle } from 'lucide-react';
 import { GiftDialog } from '@/components/gifts/GiftDialog';
 import { Leaderboard } from '@/components/gifts/Leaderboard';
 import { LightScoreBadge } from '@/components/gifts/LightScoreBadge';
+import { GiftReceiptButton } from '@/components/gifts/GiftReceiptButton';
+import { GiftMessageThread } from '@/components/gifts/GiftMessageThread';
 import { CreatePost } from '@/components/posts/CreatePost';
 import { PostFeed } from '@/components/posts/PostFeed';
 import { useGiftHistory, useLightScore } from '@/hooks/useGifts';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/lib/formatUtils';
+import { exportGiftsXLSX } from '@/lib/giftExcelExport';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 const Rewards = () => {
   const { user } = useAuth();
@@ -19,6 +23,9 @@ const Rewards = () => {
   const [giftReceiverId, setGiftReceiverId] = useState<string | undefined>();
   const { data: gifts, isLoading: giftsLoading } = useGiftHistory();
   const { data: myScore } = useLightScore(user?.id);
+
+  // Message thread state
+  const [messageThread, setMessageThread] = useState<{ userId: string; name: string } | null>(null);
 
   const handlePostGift = (postId: string, authorId: string) => {
     setGiftPostId(postId);
@@ -32,6 +39,23 @@ const Rewards = () => {
       setGiftPostId(undefined);
       setGiftReceiverId(undefined);
     }
+  };
+
+  const handleExportExcel = async () => {
+    if (!gifts || gifts.length === 0) {
+      toast.error('Không có dữ liệu để xuất');
+      return;
+    }
+    try {
+      await exportGiftsXLSX(gifts);
+      toast.success(`Đã xuất ${gifts.length} giao dịch ra Excel!`);
+    } catch {
+      toast.error('Lỗi xuất Excel');
+    }
+  };
+
+  const openMessageThread = (otherUserId: string, otherUserName: string) => {
+    setMessageThread({ userId: otherUserId, name: otherUserName });
   };
 
   return (
@@ -70,11 +94,17 @@ const Rewards = () => {
           {/* Left: Gift History */}
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-muted-foreground" />
                   Lịch sử Tặng Thưởng
                 </CardTitle>
+                {gifts && gifts.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={handleExportExcel} className="gap-2">
+                    <FileSpreadsheet className="w-4 h-4" />
+                    Export Excel
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
                 {giftsLoading ? (
@@ -99,6 +129,9 @@ const Rewards = () => {
                   <div className="space-y-3">
                     {gifts.map((gift) => {
                       const isSender = gift.sender_id === user?.id;
+                      const otherUserId = isSender ? gift.receiver_id : gift.sender_id;
+                      const otherUserName = isSender ? (gift.receiver_name || 'Unknown') : (gift.sender_name || 'Unknown');
+
                       return (
                         <div
                           key={gift.id}
@@ -129,16 +162,28 @@ const Rewards = () => {
                               ~{formatCurrency(gift.usd_value)}
                             </p>
                           </div>
-                          {gift.tx_hash && (
-                            <a
-                              href={`https://bscscan.com/tx/${gift.tx_hash}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="shrink-0"
+                          {/* Action buttons */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            <GiftReceiptButton gift={gift} />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => openMessageThread(otherUserId, otherUserName)}
+                              title="Tin nhắn"
                             >
-                              <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" />
-                            </a>
-                          )}
+                              <MessageCircle className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                            </Button>
+                            {gift.tx_hash && (
+                              <a
+                                href={`https://bscscan.com/tx/${gift.tx_hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                              </a>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -161,6 +206,16 @@ const Rewards = () => {
         defaultReceiverId={giftReceiverId}
         postId={giftPostId}
       />
+
+      {/* Message Thread */}
+      {messageThread && (
+        <GiftMessageThread
+          open={!!messageThread}
+          onClose={() => setMessageThread(null)}
+          otherUserId={messageThread.userId}
+          otherUserName={messageThread.name}
+        />
+      )}
     </div>
   );
 };

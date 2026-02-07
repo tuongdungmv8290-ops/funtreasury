@@ -14,6 +14,7 @@ export interface PostWithAuthor {
   updated_at: string;
   author_name: string;
   author_avatar: string | null;
+  author_light_score: number;
 }
 
 export function usePosts() {
@@ -30,17 +31,19 @@ export function usePosts() {
       if (!posts || posts.length === 0) return [];
 
       const authorIds = [...new Set(posts.map(p => p.author_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .in('user_id', authorIds);
+      const [{ data: profiles }, { data: scores }] = await Promise.all([
+        supabase.from('profiles').select('user_id, display_name, avatar_url').in('user_id', authorIds),
+        supabase.from('light_scores').select('user_id, light_score').in('user_id', authorIds),
+      ]);
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      const scoreMap = new Map(scores?.map(s => [s.user_id, s.light_score]) || []);
 
       return posts.map(p => ({
         ...p,
         author_name: profileMap.get(p.author_id)?.display_name || 'Anonymous',
         author_avatar: profileMap.get(p.author_id)?.avatar_url || null,
+        author_light_score: scoreMap.get(p.author_id) || 0,
       })) as PostWithAuthor[];
     },
   });

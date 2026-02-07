@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, ExternalLink, X, PartyPopper } from 'lucide-react';
+import { Copy, ExternalLink, X, PartyPopper, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { generateGiftReceiptPDF } from '@/lib/giftReceiptPDF';
 import type { GiftData } from '@/hooks/useGifts';
 
 interface GiftCelebrationModalProps {
@@ -149,9 +150,20 @@ export function GiftCelebrationModal({ open, onClose, gift }: GiftCelebrationMod
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-wrap gap-3 justify-center">
             <Button variant="outline" size="sm" onClick={copyInfo} className="gap-2">
               <Copy className="w-4 h-4" /> Copy
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                generateGiftReceiptPDF(gift);
+                toast.success('Đã tải PDF chứng nhận!');
+              }}
+              className="gap-2"
+            >
+              <FileText className="w-4 h-4" /> Tải PDF
             </Button>
             {bscScanUrl && (
               <Button variant="outline" size="sm" asChild className="gap-2">

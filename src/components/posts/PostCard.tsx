@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Gift, Trash2, Sparkles } from 'lucide-react';
+import { LightScoreBadge } from '@/components/gifts/LightScoreBadge';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,7 +35,12 @@ export function PostCard({ post, onGift }: PostCardProps) {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate">{post.author_name}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold truncate">{post.author_name}</p>
+              {post.author_light_score > 0 && (
+                <LightScoreBadge score={post.author_light_score} size="sm" />
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
           </div>
           {isAuthor && (

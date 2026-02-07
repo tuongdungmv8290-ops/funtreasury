@@ -7,12 +7,15 @@ import { NotificationCenter } from './NotificationCenter';
 import { useAuth } from '@/contexts/AuthContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { Separator } from '@/components/ui/separator';
+import { LightScoreBadge } from '@/components/gifts/LightScoreBadge';
+import { useLightScore } from '@/hooks/useGifts';
 
 export function AppHeader() {
   const location = useLocation();
   const { user } = useAuth();
   const { isViewOnly } = useViewMode();
   const { t } = useTranslation();
+  const { data: myScore } = useLightScore(user?.id);
 
   // Page title mapping using translations
   const getPageTitle = () => {
@@ -41,6 +44,10 @@ export function AppHeader() {
 
       {/* Right side actions */}
       <div className="flex items-center gap-2">
+        {/* Light Score Badge */}
+        {user && myScore && myScore.light_score > 0 && (
+          <LightScoreBadge score={myScore.light_score} size="sm" />
+        )}
         <LanguageSwitcher />
         <ThemeToggle />
         
