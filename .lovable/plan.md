@@ -1,81 +1,31 @@
 
 
-# Dot 5 Bo Sung - Label Button + Achievement Badges
+# Tach cot From/To thanh 2 cot rieng biet voi Label Popover
 
-## 1. Nut "Label" tren bang Transactions
+## Hien trang
 
-Hien tai cot From/To da hien thi ten tu `useAddressLabels`, nhung admin chua the dat ten cho dia chi moi ngay tren giao dien. Can them nut nho de admin nhap ten truc tiep.
+Hien tai bang Transactions chi co 1 cot "From/To" (dong 727-729), hien thi `from_address` hoac `to_address` tuy theo direction. Nut Label chi xuat hien cho 1 dia chi.
 
-**Cong viec:**
-- Them nut "Tag" (icon nho) ben canh dia chi trong cot From/To cua `Transactions.tsx`
-- Khi bam: hien Popover nho voi input nhap ten + nut Luu
-- Goi `addLabel.mutate()` tu `useAddressLabels` hook (da co san)
-- Chi hien nut nay khi `isViewOnly === false` (chi admin thay)
-- Sau khi luu, ten se tu dong cap nhat nho invalidateQueries
+## Thay doi
 
-**Files thay doi:** `src/pages/Transactions.tsx`
-
----
-
-## 2. Achievement Badges tren PostCard
-
-Hien thi huy hieu (emoji badges) cua tac gia ngay canh ten tren moi bai dang, giup cong dong thay thanh tich cua nhau.
-
-**Cong viec:**
-- Import `AchievementBadges` component (da co san tu Dot 5) vao `PostCard.tsx`
-- Dat component ngay sau `LightScoreBadge` trong phan header
-- Truyen `post.author_id` vao component
-- Component se tu dong query `user_achievements` va hien thi emoji badges
-
-**Files thay doi:** `src/components/posts/PostCard.tsx`
-
----
-
-## Thu Tu Thuc Hien
-
-| Buoc | Noi Dung | File |
-|------|----------|------|
-| 1 | Them Popover label inline tren Transactions | `Transactions.tsx` |
-| 2 | Them AchievementBadges tren PostCard | `PostCard.tsx` |
-
----
+Tach thanh 2 cot rieng biet **"From"** va **"To"**, moi cot deu co:
+- Hien thi ten (tu `useAddressLabels`) hoac dia chi rut gon
+- Nut Copy (hover)
+- Nut Label Popover cho admin (hover, chi khi `!isViewOnly`)
 
 ## Chi Tiet Ky Thuat
 
-### Transactions.tsx - Label Popover (dong 803-829)
+### File: `src/pages/Transactions.tsx`
 
-```text
-Hien tai:
-  <span>{label}</span>
-  <button copy />
+**1. Header (dong 727-729):** Thay 1 cot "From/To" thanh 2 cot "From" va "To"
 
-Sau khi update:
-  <span>{label}</span>
-  <button copy />
-  {!isViewOnly && (
-    <Popover>
-      <PopoverTrigger>
-        <Tag icon nho />
-      </PopoverTrigger>
-      <PopoverContent>
-        <Input value={newLabel} placeholder="Nhap ten..." />
-        <Button onClick={() => addLabel.mutate({ address: addr, label: newLabel })}>
-          Luu
-        </Button>
-      </PopoverContent>
-    </Popover>
-  )}
-```
+**2. Body (dong 804-833):** Thay 1 block IIFE thanh 2 block tuong tu:
+- Cot From: luon hien `tx.from_address` voi `getLabel()` + Copy + `AddressLabelPopover`
+- Cot To: luon hien `tx.to_address` voi `getLabel()` + Copy + `AddressLabelPopover`
 
-### PostCard.tsx - Achievement Badges (dong 38-43)
+Moi cot se dung cung logic hien tai nhung voi dia chi co dinh (from hoac to), khong con phu thuoc `tx.direction`.
 
-```text
-Hien tai:
-  <p>{post.author_name}</p>
-  {post.author_light_score > 0 && <LightScoreBadge />}
+### Khong can thay doi file khac
+- `AddressLabelPopover` da co san va hoat dong tot
+- `useAddressLabels` hook khong can thay doi
 
-Sau khi update:
-  <p>{post.author_name}</p>
-  {post.author_light_score > 0 && <LightScoreBadge />}
-  <AchievementBadges userId={post.author_id} maxShow={3} />
-```
