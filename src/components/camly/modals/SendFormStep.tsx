@@ -1,11 +1,15 @@
-import { useEffect } from "react";
-import { Wallet, AlertCircle, Loader2 } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { Wallet, AlertCircle, Loader2, Users, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatNumber } from "@/lib/formatNumber";
 import { cn } from "@/lib/utils";
 import { useAddressLabels } from "@/hooks/useAddressLabels";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface SendFormStepProps {
   recipient: string;
@@ -34,6 +38,34 @@ export function SendFormStep({
   wallet, camlyPrice, onNext,
 }: SendFormStepProps) {
   const { getLabel } = useAddressLabels();
+  const [memberOpen, setMemberOpen] = useState(false);
+  const [memberSearch, setMemberSearch] = useState('');
+
+  const { data: members } = useQuery({
+    queryKey: ['profiles-for-send'],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('user_id, display_name, wallet_address, avatar_url').order('created_at', { ascending: true });
+      return data || [];
+    },
+  });
+
+  const filteredMembers = useMemo(() => {
+    if (!members) return [];
+    const withWallet = members.filter(m => m.wallet_address);
+    if (!memberSearch) return withWallet;
+    const q = memberSearch.toLowerCase();
+    return withWallet.filter(m =>
+      m.display_name?.toLowerCase().includes(q) ||
+      m.wallet_address?.toLowerCase().includes(q)
+    );
+  }, [members, memberSearch]);
+
+  const selectMember = (m: { wallet_address: string | null; display_name: string | null }) => {
+    if (m.wallet_address) setRecipient(m.wallet_address);
+    if (m.display_name) setRecipientName(m.display_name);
+    setMemberOpen(false);
+    setMemberSearch('');
+  };
 
   const amountNum = parseFloat(amount) || 0;
   const usdValue = amountNum * camlyPrice;
@@ -102,7 +134,48 @@ export function SendFormStep({
 
       {/* Recipient Address */}
       <div className="space-y-2">
-        <Label htmlFor="recipient">Địa chỉ người nhận</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="recipient">Địa chỉ người nhận</Label>
+          <Popover open={memberOpen} onOpenChange={setMemberOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-xs text-primary h-auto py-1 gap-1">
+                <Users className="w-3 h-3" /> Chọn thành viên <ChevronDown className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-2 max-h-64 overflow-y-auto" align="end">
+              <Input
+                placeholder="Tìm tên hoặc địa chỉ ví..."
+                value={memberSearch}
+                onChange={e => setMemberSearch(e.target.value)}
+                className="h-8 text-xs mb-2"
+              />
+              {filteredMembers.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">Không tìm thấy thành viên có ví</p>
+              ) : (
+                filteredMembers.map(m => (
+                  <button
+                    key={m.user_id}
+                    onClick={() => selectMember(m)}
+                    className="flex items-center gap-2 w-full p-2 rounded-md hover:bg-secondary/60 transition-colors text-left"
+                  >
+                    <Avatar className="w-7 h-7">
+                      <AvatarImage src={m.avatar_url || undefined} />
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                        {(m.display_name || '?').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{m.display_name || 'Chưa đặt tên'}</p>
+                      <p className="text-xs font-mono text-muted-foreground truncate">
+                        {m.wallet_address?.slice(0, 6)}...{m.wallet_address?.slice(-4)}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
         <Input
           id="recipient"
           placeholder="0x..."
