@@ -1,10 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Gift, ExternalLink, Check, CheckCheck } from 'lucide-react';
-import { useMessages, useMarkAsRead } from '@/hooks/useMessages';
+import { Gift, Check, CheckCheck, Send } from 'lucide-react';
+import { useMessages, useMarkAsRead, useSendMessage } from '@/hooks/useMessages';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface GiftMessageThreadProps {
   open: boolean;
@@ -17,7 +19,9 @@ export function GiftMessageThread({ open, onClose, otherUserId, otherUserName }:
   const { user } = useAuth();
   const { data: messages, isLoading } = useMessages(open ? otherUserId : undefined);
   const markAsRead = useMarkAsRead();
+  const sendMessage = useSendMessage(open ? otherUserId : undefined);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [newMessage, setNewMessage] = useState('');
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -100,6 +104,34 @@ export function GiftMessageThread({ open, onClose, otherUserId, otherUserName }:
             </div>
           )}
         </ScrollArea>
+
+        {/* Reply input */}
+        <form
+          className="flex items-center gap-2 pt-2 border-t border-border/50"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!newMessage.trim()) return;
+            sendMessage.mutate(newMessage.trim(), {
+              onSuccess: () => setNewMessage(''),
+            });
+          }}
+        >
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Nhập tin nhắn..."
+            className="flex-1"
+            disabled={sendMessage.isPending}
+          />
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!newMessage.trim() || sendMessage.isPending}
+            className="shrink-0"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </form>
       </DialogContent>
     </Dialog>
   );

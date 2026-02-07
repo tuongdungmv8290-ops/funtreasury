@@ -116,6 +116,28 @@ export function useUnreadCount() {
   });
 }
 
+export function useSendMessage(otherUserId?: string) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (content: string) => {
+      if (!user || !otherUserId) throw new Error('Missing user or recipient');
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          receiver_id: otherUserId,
+          content,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+    },
+  });
+}
+
 export function useMarkAsRead() {
   const queryClient = useQueryClient();
 
