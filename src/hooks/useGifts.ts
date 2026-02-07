@@ -66,6 +66,13 @@ export function useGifts() {
   const queryClient = useQueryClient();
   const [isSending, setIsSending] = useState(false);
 
+  const generateInternalHash = async (data: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(data));
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return 'INT-' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 40);
+  };
+
   const sendGift = useCallback(async (
     receiverId: string,
     receiverAddress: string,
@@ -80,10 +87,7 @@ export function useGifts() {
       return null;
     }
 
-    if (!window.ethereum) {
-      toast.error('Vui lòng cài MetaMask');
-      return null;
-    }
+    const isInternalToken = tokenSymbol === 'FUNM' || (tokenSymbol === 'CAMLY' && receiverAddress === '0x0000000000000000000000000000000000000000');
 
     setIsSending(true);
     try {
@@ -108,35 +112,46 @@ export function useGifts() {
         return null;
       }
 
-      // 2. Execute blockchain transfer
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
       let txHash: string;
 
-      if (tokenSymbol === 'BNB') {
-        // Native BNB transfer
-        const tx = await signer.sendTransaction({
-          to: receiverAddress,
-          value: ethers.parseEther(amount.toString()),
-        });
-        const receipt = await tx.wait();
-        txHash = receipt!.hash;
+      if (isInternalToken) {
+        // Generate internal SHA-256 hash for non-blockchain gifts
+        const hashData = `${user.id}|${receiverId}|${amount}|${tokenSymbol}|${gift.created_at}|${gift.id}`;
+        txHash = await generateInternalHash(hashData);
       } else {
-        // ERC20 transfer
-        const tokenAddress = TOKEN_ADDRESSES[tokenSymbol];
-        if (!tokenAddress || tokenAddress === 'BNB') {
-          toast.error(`Token ${tokenSymbol} chưa được hỗ trợ`);
+        // Execute blockchain transfer
+        if (!window.ethereum) {
+          toast.error('Vui lòng cài MetaMask');
           await supabase.from('gifts').update({ status: 'failed' }).eq('id', gift.id);
           return null;
         }
 
-        const decimals = TOKEN_DECIMALS[tokenSymbol] || 18;
-        const contract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
-        const amountWei = ethers.parseUnits(amount.toString(), decimals);
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
 
-        const tx = await contract.transfer(receiverAddress, amountWei);
-        const receipt = await tx.wait();
-        txHash = receipt!.hash;
+        if (tokenSymbol === 'BNB') {
+          const tx = await signer.sendTransaction({
+            to: receiverAddress,
+            value: ethers.parseEther(amount.toString()),
+          });
+          const receipt = await tx.wait();
+          txHash = receipt!.hash;
+        } else {
+          const tokenAddress = TOKEN_ADDRESSES[tokenSymbol];
+          if (!tokenAddress || tokenAddress === 'BNB') {
+            toast.error(`Token ${tokenSymbol} chưa được hỗ trợ`);
+            await supabase.from('gifts').update({ status: 'failed' }).eq('id', gift.id);
+            return null;
+          }
+
+          const decimals = TOKEN_DECIMALS[tokenSymbol] || 18;
+          const contract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
+          const amountWei = ethers.parseUnits(amount.toString(), decimals);
+
+          const tx = await contract.transfer(receiverAddress, amountWei);
+          const receipt = await tx.wait();
+          txHash = receipt!.hash;
+        }
       }
 
       // 3. Update gift to confirmed with tx hash

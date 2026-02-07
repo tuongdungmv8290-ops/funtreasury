@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Gift, Clock, ExternalLink, FileSpreadsheet, MessageCircle, BarChart3 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Gift, Clock, ExternalLink, FileSpreadsheet, MessageCircle, BarChart3, Search } from 'lucide-react';
 import { GiftDialog } from '@/components/gifts/GiftDialog';
 import { Leaderboard } from '@/components/gifts/Leaderboard';
 import { LightScoreBadge } from '@/components/gifts/LightScoreBadge';
@@ -124,38 +126,108 @@ function GiftHistorySection({ gifts, giftsLoading, userId, onExport, onShowGiftD
   onShowGiftDialog: () => void;
   onMessage: (userId: string, name: string) => void;
 }) {
+  const [search, setSearch] = useState('');
+  const [tokenFilter, setTokenFilter] = useState('all');
+
+  const filteredGifts = useMemo(() => {
+    if (!gifts) return [];
+    let result = gifts;
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(g =>
+        g.sender_name?.toLowerCase().includes(q) ||
+        g.receiver_name?.toLowerCase().includes(q) ||
+        g.tx_hash?.toLowerCase().includes(q)
+      );
+    }
+    if (tokenFilter !== 'all') {
+      result = result.filter(g => g.token_symbol === tokenFilter);
+    }
+    return result;
+  }, [gifts, search, tokenFilter]);
+
+  const tokenOptions = useMemo(() => {
+    if (!gifts) return [];
+    return [...new Set(gifts.map(g => g.token_symbol))];
+  }, [gifts]);
+
+  const handleExportCSV = () => {
+    if (!filteredGifts.length) return;
+    const headers = ['Thời gian', 'Người gửi', 'Người nhận', 'Số lượng', 'Token', 'USD', 'Trạng thái', 'TxHash'];
+    const rows = filteredGifts.map(g => [
+      new Date(g.created_at).toLocaleString('vi-VN'),
+      g.sender_name || '', g.receiver_name || '',
+      g.amount, g.token_symbol, g.usd_value,
+      g.status, g.tx_hash || ''
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `gifts-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success(`Đã xuất ${filteredGifts.length} giao dịch ra CSV!`);
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 flex-wrap gap-2">
             <CardTitle className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-muted-foreground" />
               Lịch sử Tặng Thưởng
             </CardTitle>
-            {gifts && gifts.length > 0 && (
-              <Button variant="outline" size="sm" onClick={onExport} className="gap-2">
-                <FileSpreadsheet className="w-4 h-4" />
-                Export Excel
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {gifts && gifts.length > 0 && (
+                <>
+                  <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1 text-xs">
+                    CSV
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={onExport} className="gap-1 text-xs">
+                    <FileSpreadsheet className="w-3 h-3" />
+                    Excel
+                  </Button>
+                </>
+              )}
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            {/* Search + Filter */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder="Tìm tên, ví, tx hash..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9 text-sm" />
+              </div>
+              {tokenOptions.length > 1 && (
+                <select
+                  value={tokenFilter}
+                  onChange={e => setTokenFilter(e.target.value)}
+                  className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  <option value="all">Tất cả</option>
+                  {tokenOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              )}
+            </div>
+
             {giftsLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
               </div>
-            ) : !gifts || gifts.length === 0 ? (
+            ) : filteredGifts.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Gift className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>Chưa có giao dịch tặng thưởng nào</p>
-                <Button variant="outline" className="mt-4 gap-2" onClick={onShowGiftDialog}>
-                  <Gift className="w-4 h-4" /> Tặng thưởng đầu tiên
-                </Button>
+                <p>{search || tokenFilter !== 'all' ? 'Không tìm thấy kết quả' : 'Chưa có giao dịch tặng thưởng nào'}</p>
+                {!search && tokenFilter === 'all' && (
+                  <Button variant="outline" className="mt-4 gap-2" onClick={onShowGiftDialog}>
+                    <Gift className="w-4 h-4" /> Tặng thưởng đầu tiên
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
-                {gifts.map((gift) => {
+                {filteredGifts.map((gift) => {
                   const isSender = gift.sender_id === userId;
                   const otherUserId = isSender ? gift.receiver_id : gift.sender_id;
                   const otherUserName = isSender ? (gift.receiver_name || 'Unknown') : (gift.sender_name || 'Unknown');
@@ -184,10 +256,13 @@ function GiftHistorySection({ gifts, giftsLoading, userId, onExport, onShowGiftD
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onMessage(otherUserId, otherUserName)} title="Tin nhắn">
                           <MessageCircle className="w-4 h-4 text-muted-foreground hover:text-primary" />
                         </Button>
-                        {gift.tx_hash && (
+                        {gift.tx_hash && !gift.tx_hash.startsWith('INT-') && (
                           <a href={`https://bscscan.com/tx/${gift.tx_hash}`} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" />
                           </a>
+                        )}
+                        {gift.tx_hash?.startsWith('INT-') && (
+                          <Badge variant="secondary" className="text-[10px] px-1.5">INT</Badge>
                         )}
                       </div>
                     </div>
