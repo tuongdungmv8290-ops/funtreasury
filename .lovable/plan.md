@@ -1,173 +1,133 @@
 
 
-# Dot 5 - FUN Treasury Upgrade Plan
+# Nang cap "Gui CAMLY" - Luu ten nguoi nhan + Xac nhan + Lich su
 
 ## Tong Quan
 
-Dot 5 tap trung vao 5 muc tieu: (1) Map address thanh ten nguoi dung tren dashboard Giao Dich, (2) Gift Analytics charts, (3) He thong Achievement/Huy hieu, (4) Tim kiem tin nhan, va (5) Notification realtime cho bang notifications.
+Nang cap modal "Gui CAMLY" (`CamlySendModal`) de:
+1. Them o nhap **ten nguoi nhan** (Recipient Name) - tu dong luu vao `address_labels`
+2. Hien thi **man hinh xac nhan** truoc khi gui: "Tu [Ten nguoi gui] -> Den [Ten nguoi nhan]", so luong, gia tri USD
+3. Sau khi gui thanh cong, **luu lich su gui** vao database va hien thi day du thong tin trong `CamlyTransactionHistory`
 
 ---
 
-## 1. Address-to-Name Mapping tren Dashboard Giao Dich (YEU CAU TU ADMIN)
+## 1. Them truong "Ten nguoi nhan" trong CamlySendModal
 
-Hien tai cot From/To chi hien thi dia chi vi rut gon (0x609a...519d). Can tu dong map dia chi sang ten de hien thi, vd: "FUN TREASURY" thay vi "0x609a...".
-
-**Nguon du lieu mapping:**
-- Bang `wallets`: da co 5 Treasury wallets voi name + address
-- Bang `profiles`: user profiles co `user_id` nhung chua co truong `wallet_address`
-- Can tao bang `address_labels` moi de admin co the gan ten bat ky cho bat ky dia chi nao (vd: "Binance Hot Wallet", "Team Member A")
+Them input "Ten nguoi nhan" ngay duoi truong "Dia chi nguoi nhan". Khi gui thanh cong, tu dong luu ten nay vao bang `address_labels` (da co san tu Dot 5) de lan sau tu dong hien ten.
 
 **Cong viec:**
-- Tao bang `address_labels` (address TEXT PRIMARY KEY, label TEXT, created_by UUID)
-- Tao hook `useAddressLabels` de load tat ca labels + wallets name vao 1 map
-- Cap nhat ham hien thi From/To trong `Transactions.tsx`: neu address co trong map thi hien thi ten (vd: "FUN TREASURY") voi mau vang gold, neu khong thi hien dia chi rut gon nhu cu
-- Them nut "Label" nho de admin co the dat ten cho dia chi ngay tren bang giao dich
-- Cap nhat CSV/Excel export de them cot "From Name" va "To Name"
+- Them state `recipientName` trong `CamlySendModal.tsx`
+- Them input "Ten nguoi nhan (tuy chon)" phia duoi input dia chi
+- Dung `useAddressLabels` hook da co: khi user nhap dia chi, auto-fill ten neu da co trong map
+- Khi gui thanh cong va co ten: goi `addLabel.mutate({ address, label: recipientName })`
 
 ---
 
-## 2. Gift Analytics Dashboard
+## 2. Man hinh xac nhan truoc khi gui
 
-Trang Rewards hien chi co Leaderboard. Can them bieu do tong quan xu huong tang/nhan theo thoi gian.
+Sau khi user nhan "Gui CAMLY", hien thi man hinh xac nhan thay vi gui ngay. Man hinh nay gom:
+- **Tu**: Ten nguoi gui (dia chi vi rut gon) 
+- **Den**: Ten nguoi nhan (hoac dia chi rut gon neu khong nhap ten)
+- **So luong**: X CAMLY (~ $Y)
+- **Phi gas**: uoc tinh BNB
+- Nut "Xac nhan gui" va "Quay lai"
 
 **Cong viec:**
-- Tao component `GiftAnalyticsCharts.tsx` dung Recharts (da cai san)
-- 3 bieu do: (a) Gift volume theo tuan/thang (BarChart), (b) Top tokens duoc tang (PieChart), (c) Dong gift theo thoi gian (AreaChart)
-- Query aggregate tu bang `gifts` voi status = 'confirmed'
-- Tich hop vao trang `Rewards.tsx` nhu 1 tab moi "Analytics"
+- Them state `step` ('form' | 'confirm' | 'success') trong `CamlySendModal.tsx`
+- Step 'form': giao dien hien tai (nhap dia chi, ten, so luong)
+- Step 'confirm': hien thi bang tom tat giao dich de user xac nhan
+- Step 'success': hien thi ket qua thanh cong voi tx hash va link BscScan
 
 ---
 
-## 3. He thong Achievement / Huy hieu
+## 3. Luu lich su gui vao database
 
-Tu dong trao huy hieu dua tren Light Score va hoat dong, tao dong luc cho cong dong.
+Tao bang `camly_transfers` de luu lich su gui CAMLY truc tiep tu vi (khong phu thuoc sync-transactions).
 
 **Cong viec:**
-- Tao bang `achievements` (id, name, description, icon_emoji, threshold_type, threshold_value)
-- Tao bang `user_achievements` (user_id, achievement_id, earned_at)
-- Seed data: 5-7 achievements mac dinh (vd: "First Gift" khi gift_count_sent >= 1, "Generous Heart" khi total_given_usd >= 100, "Light Bearer" khi light_score >= 50)
-- Trigger: khi `light_scores` duoc cap nhat -> kiem tra va tu dong INSERT achievement moi
-- UI: Hien thi huy hieu tren profile card va PostCard
+- Tao bang `camly_transfers` (id, sender_address, recipient_address, recipient_name, amount, usd_value, tx_hash, status, created_at)
+- RLS: authenticated users co the INSERT, ai cung co the SELECT
+- Sau khi gui thanh cong: INSERT vao bang nay
+- Cap nhat `CamlyTransactionHistory.tsx`: query them tu `camly_transfers` de hien thi ten nguoi nhan
 
 ---
 
-## 4. Tim kiem & Loc tin nhan
+## 4. Hien thi ten nguoi nhan trong lich su giao dich
 
-GiftMessageThread hien thi tat ca tin nhan. Khi so luong lon, can tim kiem de tra cuu nhanh.
-
-**Cong viec:**
-- Them search input phia tren danh sach tin nhan trong `GiftMessageThread.tsx`
-- Filter client-side theo `content.includes(searchTerm)`
-- Them highlight ket qua tim kiem
-
----
-
-## 5. Notification realtime voi user_id
-
-Hien tai bang `notifications` khong co cot `user_id`, nghia la tat ca notification la global. Can them `user_id` de moi nguoi chi thay notification cua minh.
+Cap nhat `CamlyTransactionHistory.tsx` de hien thi ten nguoi nhan/gui thay vi chi hien "Gui CAMLY" / "Nhan CAMLY".
 
 **Cong viec:**
-- Them cot `user_id UUID` vao bang `notifications`
-- Cap nhat RLS: user chi doc notification cua minh (user_id = auth.uid())
-- Cap nhat trigger gift -> notification: INSERT voi user_id = receiver_id
-- Cap nhat `useNotifications` hook: filter theo user_id
+- Dung `useAddressLabels` hook de map dia chi -> ten
+- Hien thi: "Gui den **[Ten nguoi nhan]**" hoac "Nhan tu **[Ten nguoi gui]**" voi ten mau vang gold
+- Neu khong co ten: hien dia chi rut gon nhu cu
 
 ---
 
 ## Thu Tu Thuc Hien
 
-| Buoc | Noi Dung | Do Kho | Files Chinh |
-|------|----------|--------|-------------|
-| 1 | Address-to-Name Mapping | 2/5 | Migration (`address_labels`), `useAddressLabels.ts`, `Transactions.tsx`, `excelExport.ts` |
-| 2 | Notification user_id | 2/5 | Migration (alter `notifications`), `useNotifications.ts` |
-| 3 | Gift Analytics Dashboard | 2/5 | `GiftAnalyticsCharts.tsx`, `Rewards.tsx` |
-| 4 | Tim kiem tin nhan | 1/5 | `GiftMessageThread.tsx` |
-| 5 | Achievement / Huy hieu | 3/5 | Migration (2 bang + trigger), `useAchievements.ts`, UI components |
+| Buoc | Noi Dung | Files |
+|------|----------|-------|
+| 1 | Tao bang `camly_transfers` | Migration SQL |
+| 2 | Them input ten + auto-fill + confirmation step | `CamlySendModal.tsx` |
+| 3 | Luu lich su + luu label khi gui thanh cong | `CamlySendModal.tsx` |
+| 4 | Hien thi ten trong lich su | `CamlyTransactionHistory.tsx` |
 
 ---
 
 ## Chi Tiet Ky Thuat
 
-### 1. Bang address_labels
+### Bang camly_transfers
 
 ```text
-CREATE TABLE address_labels (
-  address TEXT PRIMARY KEY,
-  label TEXT NOT NULL,
-  created_by UUID REFERENCES auth.users(id),
+CREATE TABLE camly_transfers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_address TEXT NOT NULL,
+  recipient_address TEXT NOT NULL,
+  recipient_name TEXT,
+  amount NUMERIC NOT NULL,
+  usd_value NUMERIC DEFAULT 0,
+  tx_hash TEXT,
+  status TEXT DEFAULT 'confirmed',
   created_at TIMESTAMPTZ DEFAULT now()
 );
--- RLS: admin can CRUD, anyone can SELECT
--- Pre-seed: INSERT tu wallets table (5 Treasury wallets)
+
+-- RLS
+ALTER TABLE camly_transfers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view transfers" ON camly_transfers FOR SELECT USING (true);
+CREATE POLICY "Authenticated can insert" ON camly_transfers FOR INSERT TO authenticated WITH CHECK (true);
 ```
 
-### useAddressLabels hook
+### CamlySendModal - 3 steps
 
 ```text
-useAddressLabels():
-  - Query address_labels + wallets
-  - Return Map<address_lowercase, label>
-  - getLabel(address): return map.get(address.toLowerCase()) || shortenAddress(address)
+Step 'form':
+  - Input: Dia chi nguoi nhan (0x...)
+  - Input: Ten nguoi nhan (auto-fill tu address_labels)
+  - Input: So luong CAMLY + MAX button
+  - Button: "Tiep tuc" -> chuyen sang step 'confirm'
+
+Step 'confirm':
+  - Card: Tu [sender_address] -> Den [recipientName || shortenAddress]
+  - So luong: X CAMLY (~ $Y)
+  - Gas: ~Z BNB
+  - Button: "Xac nhan gui" -> goi sendCamly + luu DB
+  - Button: "Quay lai" -> ve step 'form'
+
+Step 'success':
+  - Icon check xanh
+  - "Da gui thanh cong X CAMLY den [recipientName]"
+  - Link BscScan
+  - Button: "Dong"
 ```
 
-### Transactions.tsx cap nhat From/To
+### CamlyTransactionHistory cap nhat
 
 ```text
-Hien tai (dong 800-824):
-  shortenAddress(tx.direction === 'IN' ? tx.from_address : tx.to_address)
-
-Sau khi update:
-  const label = getLabel(address)
-  Neu label !== shortenAddress -> hien thi voi class "text-treasury-gold font-bold"
-  Neu la dia chi thuong -> hien thi nhu cu voi font-mono
-```
-
-### 2. Notification user_id
-
-```text
-ALTER TABLE notifications ADD COLUMN user_id UUID;
--- Cap nhat RLS SELECT: (user_id IS NULL) OR (auth.uid() = user_id)
--- Cap nhat trigger: INSERT voi user_id = NEW.receiver_id
-```
-
-### 3. GiftAnalyticsCharts
-
-```text
-- Query gifts grouped by week: SELECT date_trunc('week', created_at), SUM(usd_value)
-- PieChart: GROUP BY token_symbol
-- Dat trong tab "Analytics" cua Rewards.tsx
-```
-
-### 4. Tim kiem tin nhan
-
-```text
-GiftMessageThread:
-  const [search, setSearch] = useState('')
-  const filtered = messages.filter(m => 
-    m.content.toLowerCase().includes(search.toLowerCase())
-  )
-```
-
-### 5. Achievement tables + trigger
-
-```text
-CREATE TABLE achievements (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  icon_emoji TEXT DEFAULT '',
-  threshold_type TEXT NOT NULL, -- 'gift_count_sent', 'total_given_usd', 'light_score'
-  threshold_value NUMERIC NOT NULL DEFAULT 0
-);
-
-CREATE TABLE user_achievements (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL,
-  achievement_id UUID REFERENCES achievements(id),
-  earned_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(user_id, achievement_id)
-);
-
--- Trigger on light_scores UPDATE: check all achievements, insert missing ones
+- Import useAddressLabels
+- Voi moi tx:
+  const counterparty = tx.direction === 'IN' ? tx.from_address : tx.to_address
+  const { label, isLabeled } = getLabel(counterparty)
+  Hien thi: "Gui den [label]" hoac "Nhan tu [label]"
+  Neu isLabeled: class "text-yellow-500 font-semibold"
 ```
 
