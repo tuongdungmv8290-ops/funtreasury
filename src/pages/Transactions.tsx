@@ -725,7 +725,10 @@ const Transactions = () => {
                         </div>
                       </th>
                       <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
-                        From/To
+                        From
+                      </th>
+                      <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
+                        To
                       </th>
                       <th className="text-left py-3 px-4 font-body text-xs font-bold text-treasury-dark uppercase tracking-wider">
                         Tx Hash
@@ -803,8 +806,7 @@ const Transactions = () => {
                         </td>
                         <td className="py-3 px-4">
                           {(() => {
-                            const addr = tx.direction === 'IN' ? tx.from_address : tx.to_address;
-                            const { label, isLabeled } = getLabel(addr);
+                            const { label, isLabeled } = getLabel(tx.from_address);
                             return (
                               <div className="flex items-center gap-2">
                                 <span className={`text-sm px-2 py-0.5 rounded ${
@@ -815,18 +817,48 @@ const Transactions = () => {
                                   {label}
                                 </span>
                                 <button
-                                  onClick={() => copyToClipboard(addr, `addr-${tx.id}`)}
+                                  onClick={() => copyToClipboard(tx.from_address, `from-${tx.id}`)}
                                   className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
                                   title="Copy full address"
                                 >
-                                  {copiedId === `addr-${tx.id}` ? (
+                                  {copiedId === `from-${tx.id}` ? (
                                     <CheckCircle className="w-3.5 h-3.5 text-inflow" />
                                   ) : (
                                     <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
                                   )}
                                 </button>
                                 {!isViewOnly && (
-                                  <AddressLabelPopover address={addr} currentLabel={isLabeled ? label : undefined} />
+                                  <AddressLabelPopover address={tx.from_address} currentLabel={isLabeled ? label : undefined} />
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </td>
+                        <td className="py-3 px-4">
+                          {(() => {
+                            const { label, isLabeled } = getLabel(tx.to_address);
+                            return (
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm px-2 py-0.5 rounded ${
+                                  isLabeled 
+                                    ? 'text-treasury-gold font-bold bg-treasury-gold/10' 
+                                    : 'text-muted-foreground font-mono bg-secondary/50'
+                                }`}>
+                                  {label}
+                                </span>
+                                <button
+                                  onClick={() => copyToClipboard(tx.to_address, `to-${tx.id}`)}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
+                                  title="Copy full address"
+                                >
+                                  {copiedId === `to-${tx.id}` ? (
+                                    <CheckCircle className="w-3.5 h-3.5 text-inflow" />
+                                  ) : (
+                                    <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-treasury-gold" />
+                                  )}
+                                </button>
+                                {!isViewOnly && (
+                                  <AddressLabelPopover address={tx.to_address} currentLabel={isLabeled ? label : undefined} />
                                 )}
                               </div>
                             );
