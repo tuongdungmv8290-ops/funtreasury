@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +17,27 @@ export interface MessageWithProfile {
 
 export function useMessages(otherUserId?: string) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!user || !otherUserId) return;
+
+    const channel = supabase
+      .channel(`messages-${[user.id, otherUserId].sort().join('-')}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'messages' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['messages', user.id, otherUserId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, otherUserId, queryClient]);
 
   return useQuery({
     queryKey: ['messages', user?.id, otherUserId],
@@ -51,6 +73,32 @@ export function useMessages(otherUserId?: string) {
 
 export function useUnreadCount() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Realtime subscription for unread count
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`unread-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['unread-messages', user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   return useQuery({
     queryKey: ['unread-messages', user?.id],
