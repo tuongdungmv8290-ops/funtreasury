@@ -54,7 +54,7 @@ const Rewards = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-1 tracking-wide">
-              FUN <span className="gold-text">Rewards</span>
+              FUN <span className="gold-shimmer text-4xl md:text-5xl">Rewards</span>
             </h1>
             <p className="font-body text-sm md:text-base text-muted-foreground">
               Tặng thưởng token cho bạn bè • Bảng xếp hạng • Light Score
