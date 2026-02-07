@@ -18,7 +18,7 @@ const AnhSangHeroSection = () => {
         </div>
 
         {/* Title */}
-        <h1 className="font-heading text-4xl md:text-5xl font-bold text-foreground mb-4">
+        <h1 className="font-heading text-4xl md:text-5xl font-bold text-primary mb-4 drop-shadow-[0_2px_4px_rgba(201,162,39,0.4)]">
           ÁNH SÁNG
         </h1>
 

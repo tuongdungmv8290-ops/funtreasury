@@ -53,7 +53,7 @@ const Rewards = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-1 tracking-wide">
+            <h1 className="font-heading text-3xl md:text-4xl font-bold text-primary mb-1 tracking-wide drop-shadow-[0_2px_4px_rgba(201,162,39,0.4)]">
               Tặng Thưởng
             </h1>
             <p className="font-body text-sm md:text-base text-muted-foreground">
