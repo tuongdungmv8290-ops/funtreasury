@@ -97,8 +97,9 @@ export function MemberDirectory() {
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
       setEditAvatarUrl(urlData.publicUrl + '?t=' + Date.now());
       toast.success('Đã upload ảnh!');
-    } catch {
-      toast.error('Upload thất bại');
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      toast.error('Upload thất bại: ' + (err instanceof Error ? err.message : 'Lỗi không xác định'));
     } finally {
       setIsUploading(false);
     }
@@ -241,8 +242,9 @@ export function MemberDirectory() {
                                       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
                                       setEditAvatarUrl(urlData.publicUrl + '?t=' + Date.now());
                                       toast.success('Đã dán ảnh thành công!');
-                                    } catch {
-                                      toast.error('Dán ảnh thất bại');
+                                    } catch (err) {
+                                      console.error('Paste avatar upload error:', err);
+                                      toast.error('Dán ảnh thất bại: ' + (err instanceof Error ? err.message : 'Lỗi không xác định'));
                                     } finally {
                                       setIsUploading(false);
                                     }
