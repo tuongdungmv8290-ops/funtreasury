@@ -78,8 +78,7 @@ export function RewardsWalletCard() {
         .select('*')
         .eq('wallet_id', wallet.id)
         .in('token_symbol', CORE_TOKENS)
-        .order('timestamp', { ascending: false })
-        .limit(20);
+        .order('timestamp', { ascending: false });
       if (error) throw error;
       return data || [];
     },
@@ -109,7 +108,7 @@ export function RewardsWalletCard() {
               <Wallet className="w-5 h-5 text-treasury-gold" />
             </div>
             <div>
-              <h3 className="text-lg font-heading font-semibold text-foreground">{wallet.name}</h3>
+              <h3 className="text-lg font-heading font-semibold text-foreground">FUN TREASURY (FUN PLAY)</h3>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xs text-muted-foreground font-mono bg-secondary/60 px-2 py-0.5 rounded">{shortenAddress(wallet.address)}</span>
                 <button onClick={copyAddress} className="text-muted-foreground hover:text-treasury-gold transition-colors">
