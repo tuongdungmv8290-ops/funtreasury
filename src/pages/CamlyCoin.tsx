@@ -2,6 +2,7 @@ import { PhilosophyComparison } from "@/components/camly/PhilosophyComparison";
 import { TokenomicsSection } from "@/components/camly/TokenomicsSection";
 import { CamlyStorySection } from "@/components/camly/CamlyStorySection";
 import { GoldQuoteCard } from "@/components/camly/GoldQuoteCard";
+import { RewardsWalletCard } from "@/components/rewards/RewardsWalletCard";
 
 export default function CamlyCoin() {
   return (
@@ -26,6 +27,15 @@ export default function CamlyCoin() {
 
       {/* Philosophy Comparison */}
       <PhilosophyComparison />
+
+      {/* Rewards Wallet - Transaction History */}
+      <div className="my-12">
+        <div className="mb-4">
+          <h2 className="text-2xl font-heading font-bold gold-text">Lịch sử giao dịch ví Rewards</h2>
+          <p className="text-sm text-muted-foreground mt-1">Hoạt động của Ví Phần thưởng CAMLY</p>
+        </div>
+        <RewardsWalletCard />
+      </div>
 
       {/* Tokenomics */}
       <TokenomicsSection />
