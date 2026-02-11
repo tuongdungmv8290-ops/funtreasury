@@ -13,6 +13,7 @@ import { GiftReceiptButton } from '@/components/gifts/GiftReceiptButton';
 import { GiftMessageThread } from '@/components/gifts/GiftMessageThread';
 import { GiftAnalyticsCharts } from '@/components/gifts/GiftAnalyticsCharts';
 import { AchievementBadges } from '@/components/gifts/AchievementBadges';
+import { RewardsWalletCard } from '@/components/rewards/RewardsWalletCard';
 
 import { CreatePost } from '@/components/posts/CreatePost';
 import { PostFeed } from '@/components/posts/PostFeed';
@@ -99,7 +100,8 @@ const Rewards = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="history">
+          <TabsContent value="history" className="space-y-6">
+            <RewardsWalletCard />
             <GiftHistorySection
               gifts={gifts}
               giftsLoading={giftsLoading}
