@@ -1,45 +1,35 @@
 
 
-## Them vi moi va hien thi trong Lich su Tang Thuong
+## Xoa vi cu va chi hien thi vi Rewards trong Trang Thuong
 
-### 1. Them vi vao database
+### Van de hien tai
+`CamlyWalletPanel` tren trang Tang Thuong hien dang ket noi voi MetaMask va hien thi bat ky vi nao duoc ket noi (vi du `0xca31...a301`). Can thay doi de mac dinh hien thi vi Rewards `0xa4967da72d012151950627483285c3042957DA5d` va co nut chinh sua de ket noi vi khac.
 
-Them dia chi `0xa4967da72d012151950627483285c3042957DA5d` vao bang `wallets` voi ten phu hop (vi du: "FUN REWARDS WALLET") tren chain BNB.
+### Giai phap
 
-### 2. Sync du lieu token va giao dich
+**File: `src/components/camly/CamlyWalletPanel.tsx`**
 
-- Goi edge function `get-token-balances` de lay so du tat ca token cua vi moi tu blockchain (CAMLY, BNB, USDT, USDC, BTCB...)
-- Goi edge function `sync-transactions` de lay lich su giao dich cua vi moi tu Moralis/Etherscan
-- Tat ca token va giao dich se duoc luu vao database giong cac vi FUN TREASURY hien co
+1. Them hang so `REWARDS_ADDRESS = '0xa4967da72d012151950627483285c3042957DA5d'`
+2. Them state `useDefaultWallet` mac dinh `true`
+3. Khi chua ket noi MetaMask: hien thi dia chi Rewards mac dinh (voi copy, BscScan link, nut "Chinh sua vi")
+4. Nut "Chinh sua vi" (icon Pencil) -> goi `wallet.connectWallet()` de ket noi MetaMask
+5. Khi da ket noi MetaMask: hien thi vi MetaMask + nut ngat ket noi (quay ve vi mac dinh)
+6. `CamlyTransactionHistory` nhan `connectedAddress` la dia chi Rewards khi chua ket noi MetaMask (de luon hien thi lich su giao dich)
+7. Phan "So du cua ban", Swap, SwapHistory chi hien khi ket noi MetaMask (giu nguyen logic hien tai)
 
-### 3. Hien thi trong trang Tang Thuong
-
-**Them muc rieng trong phan "Lich su Tang Thuong":**
-- Tao mot section/card rieng biet hien thi tat ca token cua vi `0xa496...DA5d`
-- Hien thi so du tung token (CAMLY, BNB, USDT, USDC, BTCB) voi gia tri USD chinh xac
-- Hien thi lich su giao dich IN/OUT cua vi nay, tuong tu nhu `CamlyTransactionHistory` nhung cho tat ca token
-- Section nay nam phia tren hoac trong tab "Lich su" cua trang Rewards
+### Ket qua
+- Mac dinh: hien thi vi `0xa496...DA5d` voi lich su giao dich CAMLY
+- Bam "Chinh sua vi": ket noi MetaMask de chuyen sang vi khac
+- Bam "Ngat ket noi": quay ve vi Rewards mac dinh
+- Khong con hien thi vi `0xca31...a301` nua (tru khi user chu dong ket noi lai vi do qua MetaMask)
 
 ### Chi tiet ky thuat
 
-**Database migration:**
-- INSERT vao bang `wallets`: `(name: 'FUN REWARDS', address: '0xa4967da72d012151950627483285c3042957DA5d', chain: 'BNB')`
-
-**File thay doi:**
-
-1. **`src/pages/Rewards.tsx`** - Them component `RewardsWalletSection` hien thi token balances va giao dich cua vi rewards rieng biet trong tab "Lich su"
-
-2. **`src/hooks/useWallets.ts`** - Dam bao vi moi duoc hien thi dung voi tat ca core tokens (CAMLY, BNB, USDT, USDC, BTCB)
-
-3. **Tao `src/components/rewards/RewardsWalletCard.tsx`** - Component moi hien thi:
-   - Ten vi va dia chi (rut gon + copy + link BscScan)
-   - Bang token balances voi logo, so luong, gia tri USD
-   - Lich su giao dich gan day cua vi (IN/OUT) voi link BscScan
-
-4. **`src/hooks/useTransactions.ts`** - Mo rong `VALID_TOKEN_SYMBOLS` them BNB, USDC, BTCB de hien thi day du giao dich cho vi rewards
-
-**Luong hoat dong:**
-- Khi trang Rewards load, query `wallets` table theo dia chi `0xa496...` de lay wallet_id
-- Dung wallet_id do de query `tokens` (so du) va `transactions` (lich su)
-- Hien thi trong card rieng biet voi giao dien tuong tu WalletCard tren trang chinh
+**Thay doi trong `CamlyWalletPanel.tsx`:**
+- Import them `Pencil` tu lucide-react
+- Them `REWARDS_ADDRESS` constant
+- Them `useDefaultWallet` state
+- Sua phan hien thi dia chi vi: khi `!wallet.isConnected` thi hien thi `REWARDS_ADDRESS` thay vi nut "Ket noi vi MetaMask"
+- Them nut Pencil ben canh dia chi de trigger `connectWallet()`
+- Truyen `displayAddress` (Rewards hoac MetaMask) vao `CamlyTransactionHistory`
 
