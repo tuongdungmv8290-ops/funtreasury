@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Gift, Clock, ExternalLink, FileSpreadsheet, MessageCircle, BarChart3, Search, Users } from 'lucide-react';
+import { Gift, Clock, ExternalLink, FileSpreadsheet, MessageCircle, BarChart3, Search } from 'lucide-react';
 import { CamlyWalletPanel } from '@/components/camly/CamlyWalletPanel';
 import { GiftDialog } from '@/components/gifts/GiftDialog';
 import { Leaderboard } from '@/components/gifts/Leaderboard';
@@ -13,7 +13,7 @@ import { GiftReceiptButton } from '@/components/gifts/GiftReceiptButton';
 import { GiftMessageThread } from '@/components/gifts/GiftMessageThread';
 import { GiftAnalyticsCharts } from '@/components/gifts/GiftAnalyticsCharts';
 import { AchievementBadges } from '@/components/gifts/AchievementBadges';
-import { MemberDirectory } from '@/components/gifts/MemberDirectory';
+
 import { CreatePost } from '@/components/posts/CreatePost';
 import { PostFeed } from '@/components/posts/PostFeed';
 import { useGiftHistory, useLightScore } from '@/hooks/useGifts';
@@ -94,9 +94,6 @@ const Rewards = () => {
             <TabsTrigger value="history" className="gap-2">
               <Clock className="w-4 h-4" /> Lịch sử
             </TabsTrigger>
-            <TabsTrigger value="members" className="gap-2">
-              <Users className="w-4 h-4" /> Thành viên
-            </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="w-4 h-4" /> Analytics
             </TabsTrigger>
@@ -113,9 +110,6 @@ const Rewards = () => {
             />
           </TabsContent>
 
-          <TabsContent value="members">
-            <MemberDirectory />
-          </TabsContent>
 
           <TabsContent value="analytics">
             <GiftAnalyticsCharts />
