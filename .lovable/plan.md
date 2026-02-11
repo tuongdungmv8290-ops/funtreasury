@@ -1,45 +1,45 @@
 
 
-## Cập nhật chính xác số tiền USDT và xoá mục Thành viên
+## Them vi moi va hien thi trong Lich su Tang Thuong
 
-### 1. Xoá tab "Thành viên" khỏi trang Tặng Thưởng
+### 1. Them vi vao database
 
-**File: `src/pages/Rewards.tsx`**
-- Xoá `TabsTrigger` cho "Thành viên" (dòng 97-99)
-- Xoá `TabsContent` cho "members" (dòng 116-118)
-- Xoá import `MemberDirectory` (dòng 16)
-- Xoá import `Users` icon (dòng 7)
+Them dia chi `0xa4967da72d012151950627483285c3042957DA5d` vao bang `wallets` voi ten phu hop (vi du: "FUN REWARDS WALLET") tren chain BNB.
 
-Tab "Thành viên" se bi xoa hoan toan. Trang Tặng Thưởng chi con 2 tab: "Lịch sử" va "Analytics".
+### 2. Sync du lieu token va giao dich
 
-### 2. Dam bao so tien USDT chinh xac cho tat ca vi
+- Goi edge function `get-token-balances` de lay so du tat ca token cua vi moi tu blockchain (CAMLY, BNB, USDT, USDC, BTCB...)
+- Goi edge function `sync-transactions` de lay lich su giao dich cua vi moi tu Moralis/Etherscan
+- Tat ca token va giao dich se duoc luu vao database giong cac vi FUN TREASURY hien co
 
-Hien tai he thong da co `useRealtimePrices` lay gia tu CoinGecko va CAMLY API. Gia hien tai:
-- CAMLY: $0.00001683 (tu API)
-- BTC/BTCB: ~$97,000+
-- BNB: ~$600+
-- USDT/USDC: $1
+### 3. Hien thi trong trang Tang Thuong
 
-He thong dang hoat dong dung. Tuy nhien, co mot van de tiem an:
-- Hook `useWallets` co FALLBACK_PRICES co dinh (BTC: $100,000, BNB: $700) duoc dung khi API chua load xong
-- USDC ($22,000 balance) chua duoc them vao `CORE_TOKENS` filter trong `useWallets` - can kiem tra
-
-**File: `src/hooks/useWallets.ts`**
-- Dam bao `CORE_TOKENS` bao gom 'USDC' (da co)
-- Dam bao `useRealtimePrices` tra ve gia cho tat ca token
-
-**File: `src/hooks/useRealtimePrices.ts`**
-- Kiem tra FALLBACK_PRICES da day du (da co BTC, BNB, USDT, USDC, CAMLY)
-
-Ket luan: He thong dinh gia da chinh xac. Neu so tien hien thi sai, nguyen nhan co the la:
-- API CoinGecko bi rate-limit va dung gia fallback
-- Token balance trong database chua duoc sync moi nhat
-
-Se trigger sync lai du lieu balance va dam bao hien thi chinh xac.
+**Them muc rieng trong phan "Lich su Tang Thuong":**
+- Tao mot section/card rieng biet hien thi tat ca token cua vi `0xa496...DA5d`
+- Hien thi so du tung token (CAMLY, BNB, USDT, USDC, BTCB) voi gia tri USD chinh xac
+- Hien thi lich su giao dich IN/OUT cua vi nay, tuong tu nhu `CamlyTransactionHistory` nhung cho tat ca token
+- Section nay nam phia tren hoac trong tab "Lich su" cua trang Rewards
 
 ### Chi tiet ky thuat
 
-**Files thay doi:**
-1. `src/pages/Rewards.tsx` - Xoa tab Thanh vien, import MemberDirectory va Users icon
-2. Kiem tra va dam bao tinh chinh xac cua gia token trong `useRealtimePrices.ts` va `useWallets.ts`
+**Database migration:**
+- INSERT vao bang `wallets`: `(name: 'FUN REWARDS', address: '0xa4967da72d012151950627483285c3042957DA5d', chain: 'BNB')`
+
+**File thay doi:**
+
+1. **`src/pages/Rewards.tsx`** - Them component `RewardsWalletSection` hien thi token balances va giao dich cua vi rewards rieng biet trong tab "Lich su"
+
+2. **`src/hooks/useWallets.ts`** - Dam bao vi moi duoc hien thi dung voi tat ca core tokens (CAMLY, BNB, USDT, USDC, BTCB)
+
+3. **Tao `src/components/rewards/RewardsWalletCard.tsx`** - Component moi hien thi:
+   - Ten vi va dia chi (rut gon + copy + link BscScan)
+   - Bang token balances voi logo, so luong, gia tri USD
+   - Lich su giao dich gan day cua vi (IN/OUT) voi link BscScan
+
+4. **`src/hooks/useTransactions.ts`** - Mo rong `VALID_TOKEN_SYMBOLS` them BNB, USDC, BTCB de hien thi day du giao dich cho vi rewards
+
+**Luong hoat dong:**
+- Khi trang Rewards load, query `wallets` table theo dia chi `0xa496...` de lay wallet_id
+- Dung wallet_id do de query `tokens` (so du) va `transactions` (lich su)
+- Hien thi trong card rieng biet voi giao dien tuong tu WalletCard tren trang chinh
 
