@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut, LineChart, Info } from "lucide-react";
+import { Send, Download, Wallet, TrendingUp, TrendingDown, Loader2, Copy, Check, ExternalLink, LogOut, LineChart, Info, Pencil } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -20,10 +20,13 @@ import { SwapHistory } from "./SwapHistory";
 import { CamlySendModal } from "./modals/CamlySendModal";
 import { CamlyReceiveModal } from "./modals/CamlyReceiveModal";
 
+const REWARDS_ADDRESS = '0xa4967da72d012151950627483285c3042957DA5d';
+
 export function CamlyWalletPanel() {
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [useDefaultWallet, setUseDefaultWallet] = useState(true);
 
   const { data: priceData, isLoading: priceLoading } = useCamlyPrice();
   const { data: cryptoPrices } = useCryptoPrices();
@@ -36,13 +39,27 @@ export function CamlyWalletPanel() {
 
   const userBalanceUSD = wallet.camlyBalance * price;
 
+  // Display address: rewards wallet by default, or MetaMask wallet if connected
+  const displayAddress = (!useDefaultWallet && wallet.isConnected) ? wallet.address : REWARDS_ADDRESS;
+
   const handleCopyAddress = () => {
-    if (wallet.address) {
-      navigator.clipboard.writeText(wallet.address);
+    const addrToCopy = displayAddress;
+    if (addrToCopy) {
+      navigator.clipboard.writeText(addrToCopy);
       setCopied(true);
       toast.success("Đã sao chép địa chỉ ví!");
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleEditWallet = async () => {
+    await wallet.connectWallet();
+    setUseDefaultWallet(false);
+  };
+
+  const handleDisconnect = () => {
+    wallet.disconnectWallet();
+    setUseDefaultWallet(true);
   };
 
   return (
@@ -119,58 +136,61 @@ export function CamlyWalletPanel() {
               </div>
             </div>
 
-            {/* Connect Wallet Button */}
+            {/* Wallet Address Display */}
             <div className="mt-6 w-full max-w-sm">
-              {!wallet.isConnected ? (
+              <div className="flex items-center justify-center gap-2 bg-primary/10 rounded-xl px-4 py-3">
+                <div className="w-3 h-3 rounded-full bg-inflow animate-pulse" />
+                <span className="text-sm font-mono text-primary">
+                  {displayAddress?.slice(0, 6)}...{displayAddress?.slice(-4)}
+                </span>
                 <Button
-                  onClick={wallet.connectWallet}
-                  disabled={wallet.isConnecting}
-                  className="w-full gap-2 h-12"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleCopyAddress}
                 >
-                  {wallet.isConnecting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                  {copied ? (
+                    <Check className="w-4 h-4 text-inflow" />
                   ) : (
-                    <Wallet className="w-5 h-5" />
+                    <Copy className="w-4 h-4 text-muted-foreground hover:text-primary" />
                   )}
-                  Kết nối ví MetaMask
                 </Button>
-              ) : (
-                <div className="flex items-center justify-center gap-2 bg-primary/10 rounded-xl px-4 py-3">
-                  <div className="w-3 h-3 rounded-full bg-inflow animate-pulse" />
-                  <span className="text-sm font-mono text-primary">
-                    {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
-                  </span>
+                <a
+                  href={`https://bscscan.com/address/${displayAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                  </Button>
+                </a>
+                {(!wallet.isConnected || useDefaultWallet) ? (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={handleCopyAddress}
+                    onClick={handleEditWallet}
+                    disabled={wallet.isConnecting}
+                    title="Chỉnh sửa ví"
                   >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-inflow" />
+                    {wallet.isConnecting ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                     ) : (
-                      <Copy className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                      <Pencil className="w-4 h-4 text-muted-foreground hover:text-primary" />
                     )}
                   </Button>
-                  <a
-                    href={`https://bscscan.com/address/${wallet.address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" />
-                    </Button>
-                  </a>
+                ) : (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={wallet.disconnectWallet}
+                    onClick={handleDisconnect}
+                    title="Ngắt kết nối"
                   >
                     <LogOut className="w-4 h-4 text-muted-foreground hover:text-outflow" />
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -273,7 +293,7 @@ export function CamlyWalletPanel() {
             </div>
             <CamlyTransactionHistory 
               limit={5} 
-              connectedAddress={wallet.isConnected ? wallet.address : null}
+              connectedAddress={displayAddress}
             />
           </div>
         </CardContent>
