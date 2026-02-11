@@ -14,7 +14,7 @@ import camlyLogo from "@/assets/camly-coin-gold-logo.png";
 
 import { CamlyPriceChart } from "./CamlyPriceChart";
 import { CamlyDetailSection } from "./CamlyDetailSection";
-import { CamlyTransactionHistory } from "./CamlyTransactionHistory";
+
 import { UniversalSwap } from "./UniversalSwap";
 import { SwapHistory } from "./SwapHistory";
 import { CamlySendModal } from "./modals/CamlySendModal";
@@ -285,17 +285,6 @@ export function CamlyWalletPanel() {
             </>
           )}
 
-          {/* Transaction History */}
-          <Separator />
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-foreground">Lịch sử giao dịch CAMLY</h3>
-            </div>
-            <CamlyTransactionHistory 
-              limit={5} 
-              connectedAddress={displayAddress}
-            />
-          </div>
         </CardContent>
       </Card>
 
