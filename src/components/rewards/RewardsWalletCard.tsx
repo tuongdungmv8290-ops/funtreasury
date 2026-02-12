@@ -31,6 +31,41 @@ function TokenLogo({ symbol, size = 22 }: { symbol: string; size?: number }) {
   return <img src={logoUrl} alt={symbol} className="rounded-full object-cover" style={{ width: size, height: size }} onError={() => setHasError(true)} loading="lazy" />;
 }
 
+function useRewardsWallet() {
+  const prices = useRealtimePrices();
+
+  const { data: wallet, isLoading: walletLoading } = useQuery({
+    queryKey: ['rewards-wallet'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('id, name, address')
+        .ilike('address', REWARDS_ADDRESS)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: transactions, isLoading: txLoading } = useQuery({
+    queryKey: ['rewards-wallet-transactions', wallet?.id],
+    queryFn: async () => {
+      if (!wallet?.id) return [];
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('wallet_id', wallet.id)
+        .in('token_symbol', CORE_TOKENS)
+        .order('timestamp', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!wallet?.id,
+  });
+
+  return { wallet, walletLoading, transactions, txLoading, prices };
+}
+
 export function RewardsWalletCard() {
   const [copied, setCopied] = useState(false);
   const prices = useRealtimePrices();
@@ -65,22 +100,6 @@ export function RewardsWalletCard() {
           usd_value: Number(t.balance) * (prices[t.symbol] || 0),
         }))
         .sort((a, b) => b.usd_value - a.usd_value);
-    },
-    enabled: !!wallet?.id,
-  });
-
-  const { data: transactions, isLoading: txLoading } = useQuery({
-    queryKey: ['rewards-wallet-transactions', wallet?.id],
-    queryFn: async () => {
-      if (!wallet?.id) return [];
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('wallet_id', wallet.id)
-        .in('token_symbol', CORE_TOKENS)
-        .order('timestamp', { ascending: false });
-      if (error) throw error;
-      return data || [];
     },
     enabled: !!wallet?.id,
   });
@@ -126,8 +145,7 @@ export function RewardsWalletCard() {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Token Balances */}
+      <CardContent>
         {tokens && tokens.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {tokens.map(token => (
@@ -144,48 +162,63 @@ export function RewardsWalletCard() {
             ))}
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
 
-        {/* Transaction History */}
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">Giao dịch gần đây</p>
-          {txLoading ? (
-            <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
-          ) : !transactions || transactions.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">Chưa có giao dịch</p>
-          ) : (
-            <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
-              {transactions.map(tx => {
-                const isIn = tx.direction === 'IN';
-                return (
-                  <div key={tx.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/50 transition-colors">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isIn ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                      {isIn ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <TokenLogo symbol={tx.token_symbol} size={16} />
-                        <span className="text-sm font-medium">{isIn ? 'Nhận' : 'Gửi'} {tx.token_symbol}</span>
-                        <Badge variant="secondary" className="text-[10px] px-1.5">{isIn ? 'IN' : 'OUT'}</Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{new Date(tx.timestamp).toLocaleString('vi-VN')}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className={`font-mono font-bold text-sm ${isIn ? 'text-green-500' : 'text-red-500'}`}>
-                        {isIn ? '+' : '-'}{Number(tx.amount).toLocaleString()} {tx.token_symbol}
-                      </p>
-                      <p className="text-xs text-muted-foreground">~{formatCurrency(Number(tx.usd_value))}</p>
-                    </div>
-                    {tx.tx_hash && (
-                      <a href={`https://bscscan.com/tx/${tx.tx_hash}`} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                        <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
-                      </a>
-                    )}
+export function WalletTransactionList() {
+  const { wallet, walletLoading, transactions, txLoading } = useRewardsWallet();
+
+  if (walletLoading) return <Skeleton className="h-40 w-full" />;
+  if (!wallet) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Wallet className="w-5 h-5 text-treasury-gold" />
+          Tất cả giao dịch ví FUN TREASURY
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {txLoading ? (
+          <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
+        ) : !transactions || transactions.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">Chưa có giao dịch</p>
+        ) : (
+          <div className="space-y-1.5">
+            {transactions.map(tx => {
+              const isIn = tx.direction === 'IN';
+              return (
+                <div key={tx.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/50 transition-colors">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isIn ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                    {isIn ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <TokenLogo symbol={tx.token_symbol} size={16} />
+                      <span className="text-sm font-medium">{isIn ? 'Nhận' : 'Gửi'} {tx.token_symbol}</span>
+                      <Badge variant="secondary" className="text-[10px] px-1.5">{isIn ? 'IN' : 'OUT'}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{new Date(tx.timestamp).toLocaleString('vi-VN')}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={`font-mono font-bold text-sm ${isIn ? 'text-green-500' : 'text-red-500'}`}>
+                      {isIn ? '+' : '-'}{Number(tx.amount).toLocaleString()} {tx.token_symbol}
+                    </p>
+                    <p className="text-xs text-muted-foreground">~{formatCurrency(Number(tx.usd_value))}</p>
+                  </div>
+                  {tx.tx_hash && (
+                    <a href={`https://bscscan.com/tx/${tx.tx_hash}`} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                      <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
