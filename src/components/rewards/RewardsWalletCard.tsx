@@ -6,6 +6,7 @@ import { Wallet, Copy, CheckCircle, ExternalLink, ArrowDownLeft, ArrowUpRight } 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtimePrices } from '@/hooks/useRealtimePrices';
+import { useAddressLabels } from '@/hooks/useAddressLabels';
 import { formatCurrency, shortenAddress } from '@/lib/formatUtils';
 import camlyLogo from '@/assets/camly-logo.jpeg';
 
@@ -55,7 +56,6 @@ function useRewardsWallet() {
         .from('transactions')
         .select('*')
         .eq('wallet_id', wallet.id)
-        .in('token_symbol', CORE_TOKENS)
         .order('timestamp', { ascending: false });
       if (error) throw error;
       return data || [];
@@ -169,6 +169,7 @@ export function RewardsWalletCard() {
 
 export function WalletTransactionList() {
   const { wallet, walletLoading, transactions, txLoading } = useRewardsWallet();
+  const { getLabel } = useAddressLabels();
 
   if (walletLoading) return <Skeleton className="h-40 w-full" />;
   if (!wallet) return null;
@@ -190,8 +191,10 @@ export function WalletTransactionList() {
           <div className="space-y-1.5">
             {transactions.map(tx => {
               const isIn = tx.direction === 'IN';
+              const counterpartyAddress = isIn ? tx.from_address : tx.to_address;
+              const counterpartyInfo = getLabel(counterpartyAddress);
               return (
-                <div key={tx.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/50 transition-colors">
+                <div key={tx.id} className="group flex items-center gap-3 p-2.5 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/50 transition-colors">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isIn ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                     {isIn ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                   </div>
@@ -202,6 +205,12 @@ export function WalletTransactionList() {
                       <Badge variant="secondary" className="text-[10px] px-1.5">{isIn ? 'IN' : 'OUT'}</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">{new Date(tx.timestamp).toLocaleString('vi-VN')}</p>
+                    <p className="text-xs mt-0.5">
+                      <span className="text-muted-foreground">{isIn ? 'Từ: ' : 'Đến: '}</span>
+                      <span className={counterpartyInfo.isLabeled ? 'font-bold text-treasury-gold' : 'text-muted-foreground font-mono'}>
+                        {counterpartyInfo.label}
+                      </span>
+                    </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className={`font-mono font-bold text-sm ${isIn ? 'text-green-500' : 'text-red-500'}`}>
