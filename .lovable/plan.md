@@ -1,33 +1,20 @@
 
 
-## Hien thi dia chi gui/nhan va ten vi trong danh sach giao dich
+## Cap nhat du lieu giao dich vi FUN TREASURY (FUN PLAY)
 
-### Thay doi
+### Van de hien tai
+Database chi co **6 giao dich** cho vi `0xa496...DA5d`. UI dang hien thi dung tat ca 6 giao dich nay. Neu tren blockchain co 16 giao dich, thi 10 giao dich con lai chua duoc dong bo (sync) tu BNB Chain vao database.
 
-**File: `src/components/rewards/RewardsWalletCard.tsx`**
+### Giai phap
+Goi lai Edge Function `sync-transactions` de dong bo tat ca giao dich tu blockchain vao database. Sau khi sync xong, UI se tu dong hien thi day du tat ca giao dich.
 
-1. **Tieu de vi**: Giu ten "FUN TREASURY (FUN PLAY)" (da dung)
+### Cac buoc thuc hien
 
-2. **Import them `useAddressLabels`** tu `src/hooks/useAddressLabels.ts` de phan giai dia chi thanh ten
+1. **Kiem tra va goi `sync-transactions` Edge Function** cho vi FUN TREASURY de dong bo du lieu moi nhat tu BNB Chain
+2. **Xac nhan** so luong giao dich trong database sau khi sync
+3. **Neu can**, cap nhat logic sync de dam bao lay het lich su giao dich (khong bi gioi han so trang hoac so luong)
 
-3. **Trong `WalletTransactionList`**:
-   - Goi `useAddressLabels()` de lay ham `getLabel`
-   - Voi moi giao dich, hien thi:
-     - **Gui (OUT)**: "Gui den: [ten vi nhan hoac dia chi rut gon]"
-     - **Nhan (IN)**: "Nhan tu: [ten vi gui hoac dia chi rut gon]"
-   - Su dung `getLabel(tx.from_address)` va `getLabel(tx.to_address)` de hien thi ten neu co trong bang `wallets` hoac `address_labels`
-   - Ten vi duoc highlight bang mau vang (gold) neu da duoc gan nhan
-
-4. **Bo loc token**: Xoa `.in('token_symbol', CORE_TOKENS)` trong query de hien thi tat ca giao dich (khong chi 5 token chinh)
-
-### Ket qua
-- Moi giao dich se hien thi ro: gui tu vi nao, nhan vao vi nao
-- Neu vi da duoc dat ten (trong he thong) thi hien thi ten thay cho dia chi
-- Neu chua co ten thi hien thi dia chi rut gon (0x1234...5678)
-
-### Chi tiet ky thuat
-- `useAddressLabels()` tra ve ham `getLabel(address)` -> `{ label: string, isLabeled: boolean }`
-- `isLabeled = true`: hien thi ten voi mau vang dam
-- `isLabeled = false`: hien thi dia chi rut gon voi mau xam
-- Them dong "Tu: ..." hoac "Den: ..." ngay duoi dong thoi gian trong moi item giao dich
+### Luu y
+- Code hien thi (UI) dang hoat dong dung - khong can limit, hien thi tat ca giao dich co trong database
+- Van de nam o phia **du lieu chua duoc dong bo**, khong phai loi hien thi
 
