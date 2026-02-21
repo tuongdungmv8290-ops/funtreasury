@@ -1,36 +1,35 @@
 
 
-## Cập nhật tài khoản Admin FUN TREASURY
+## Trang Quản lý Admin - FUN TREASURY
 
 ### Tổng quan
-Xoá admin cũ, thêm 2 admin mới, giữ admin hiện tại.
+Tạo trang `/admin` riêng biệt để quản lý tài khoản admin, tách khỏi trang Settings hiện tại. Trang mới sẽ hiển thị danh sách admin với thông tin chi tiết và cho phép thêm/xoá admin trực tiếp.
 
-### Thay đổi chi tiết
+### Tính năng chính
 
-**1. Xoá quyền admin của tài khoản cũ**
-- Xoá role `admin` của `admin@treasury.fun.rich` (user_id: `6fa88b51...`)
-- Tài khoản vẫn tồn tại nhưng không còn quyền quản trị
-
-**2. Tạo tài khoản mới: funtreasury.rich@gmail.com**
-- Đăng ký tài khoản mới qua hệ thống xác thực
-- Cấp quyền `admin` sau khi tạo thành công
-
-**3. Cấp admin cho tài khoản có sẵn: tuongdung.mv8290@gmail.com (NGỌC GIÀU)**
-- Tài khoản đã tồn tại (user_id: `ac243e4b...`)
-- Thêm role `admin` vào bảng `user_roles`
-
-**4. Giữ nguyên admin hiện tại**
-- `lekhanhi772@gmail.com` - vẫn là admin
-
-### Kết quả sau khi hoàn thành
-Hệ thống sẽ có 3 admin:
-1. `lekhanhi772@gmail.com` (giữ nguyên)
-2. `funtreasury.rich@gmail.com` (mới tạo)
-3. `tuongdung.mv8290@gmail.com` / NGỌC GIÀU (nâng cấp từ user)
+1. **Danh sách Admin hiện tại** - Bảng hiển thị tất cả admin với email, tên hiển thị, avatar, ngày tạo, và User ID
+2. **Thêm Admin mới** - Form nhập User ID hoặc Email để cấp quyền admin
+3. **Xoá quyền Admin** - Nút xoá với xác nhận (AlertDialog), không cho phép xoá chính mình
+4. **Tổng quan nhanh** - Cards thống kê: tổng số admin, tổng user, admin mới nhất
 
 ### Chi tiết kỹ thuật
-- Xoá record admin trong bảng `user_roles` cho user_id `6fa88b51...`
-- Insert role admin cho user_id `ac243e4b...` (tuongdung.mv8290)
-- Tạo user mới qua Edge Function dùng Supabase Admin API, sau đó insert role admin
-- Mật khẩu sẽ được thiết lập theo yêu cầu của cha
+
+**File mới:**
+- `src/pages/AdminManagement.tsx` - Trang chính với bảng admin, form thêm/xoá, stats cards
+
+**File cần sửa:**
+- `src/App.tsx` - Thêm route `/admin` (protected)
+- `src/components/layout/TreasurySidebar.tsx` - Thêm menu item "Quản lý Admin" với icon Shield (chỉ hiện cho admin)
+
+**Logic hoạt động:**
+- Query bảng `user_roles` (role = 'admin') kết hợp `profiles` để lấy thông tin chi tiết
+- Thêm admin: Insert vào `user_roles` với role = 'admin'
+- Xoá admin: Delete từ `user_roles` theo user_id + role = 'admin'
+- Chỉ admin mới thấy menu item và truy cập được trang
+- Ẩn trang khỏi view-only mode
+
+**Bảo mật:**
+- RLS policies hiện tại đã đủ: chỉ admin mới có quyền ALL trên `user_roles`
+- Không cần tạo thêm migration
+- Sử dụng `has_role` function có sẵn để kiểm tra quyền
 
