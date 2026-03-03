@@ -36,15 +36,16 @@ export interface TransactionFilters {
 // List of valid tokens to show in transaction history - CAMLY, USDT, BTCB
 const VALID_TOKEN_SYMBOLS = ['CAMLY', 'USDT', 'BTCB'];
 
-// Minimum USDT amount to show (filter dust spam)
+// Minimum amounts to filter dust/spam
 const MIN_USDT_AMOUNT = 1;
+const MIN_BTCB_AMOUNT = 0.001;
 
 // Detect spam/scam token symbols (Unicode tricks, special characters)
 function isValidTokenSymbol(symbol: string): boolean {
   if (!symbol) return false;
   const upperSymbol = symbol.toUpperCase().trim();
   
-  // Only allow CAMLY and USDT
+  // Only allow CAMLY, USDT, and BTCB
   return VALID_TOKEN_SYMBOLS.includes(upperSymbol);
 }
 
@@ -55,6 +56,11 @@ function isValidTransaction(tx: { token_symbol: string; amount: number }): boole
   
   // Filter dust USDT (< 1 USDT)
   if (symbol === 'USDT' && amount < MIN_USDT_AMOUNT) {
+    return false;
+  }
+  
+  // Filter dust BTCB (< 0.001 BTCB)
+  if (symbol === 'BTCB' && amount < MIN_BTCB_AMOUNT) {
     return false;
   }
   
