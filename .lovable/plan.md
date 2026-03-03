@@ -1,35 +1,26 @@
 
 
-## Trang Quản lý Admin - FUN TREASURY
+## Kế hoạch xoá tài khoản không hoạt động
 
-### Tổng quan
-Tạo trang `/admin` riêng biệt để quản lý tài khoản admin, tách khỏi trang Settings hiện tại. Trang mới sẽ hiển thị danh sách admin với thông tin chi tiết và cho phép thêm/xoá admin trực tiếp.
+### Tình trạng hiện tại
+- **Tổng cộng: 61 tài khoản** trong hệ thống
+- **Giữ lại 3 tài khoản admin:**
+  1. `lekhanhi772@gmail.com`
+  2. `funtreasury.rich@gmail.com`
+  3. `tuongdung.mv8290@gmail.com`
+- **Sẽ xoá: 58 tài khoản** không cần thiết (bao gồm `admin@treasury.fun.rich` cũ)
 
-### Tính năng chính
+### Cách thực hiện
 
-1. **Danh sách Admin hiện tại** - Bảng hiển thị tất cả admin với email, tên hiển thị, avatar, ngày tạo, và User ID
-2. **Thêm Admin mới** - Form nhập User ID hoặc Email để cấp quyền admin
-3. **Xoá quyền Admin** - Nút xoá với xác nhận (AlertDialog), không cho phép xoá chính mình
-4. **Tổng quan nhanh** - Cards thống kê: tổng số admin, tổng user, admin mới nhất
+Vì không thể xoá user từ bảng `auth.users` bằng SQL thông thường, cần tạo **Edge Function tạm thời** sử dụng `service_role` key để xoá:
 
-### Chi tiết kỹ thuật
+1. **Tạo edge function `cleanup-users`** - Lấy danh sách tất cả user, lọc ra 3 tài khoản cần giữ, xoá phần còn lại bằng Supabase Admin API (`auth.admin.deleteUser()`)
+2. **Gọi function để thực thi** - Xoá 58 tài khoản
+3. **Dọn dẹp** - Xoá các dữ liệu liên quan (profiles, user_roles của tài khoản bị xoá sẽ tự động cascade)
+4. **Xoá edge function tạm** - Giữ sạch codebase
 
-**File mới:**
-- `src/pages/AdminManagement.tsx` - Trang chính với bảng admin, form thêm/xoá, stats cards
-
-**File cần sửa:**
-- `src/App.tsx` - Thêm route `/admin` (protected)
-- `src/components/layout/TreasurySidebar.tsx` - Thêm menu item "Quản lý Admin" với icon Shield (chỉ hiện cho admin)
-
-**Logic hoạt động:**
-- Query bảng `user_roles` (role = 'admin') kết hợp `profiles` để lấy thông tin chi tiết
-- Thêm admin: Insert vào `user_roles` với role = 'admin'
-- Xoá admin: Delete từ `user_roles` theo user_id + role = 'admin'
-- Chỉ admin mới thấy menu item và truy cập được trang
-- Ẩn trang khỏi view-only mode
-
-**Bảo mật:**
-- RLS policies hiện tại đã đủ: chỉ admin mới có quyền ALL trên `user_roles`
-- Không cần tạo thêm migration
-- Sử dụng `has_role` function có sẵn để kiểm tra quyền
+### Lưu ý quan trọng
+- Dữ liệu liên kết (profiles, user_roles) sẽ tự động bị xoá nhờ `ON DELETE CASCADE`
+- Hành động này **không thể hoàn tác** - các tài khoản bị xoá sẽ phải đăng ký lại
+- Tài khoản đang đăng nhập sẽ bị đăng xuất ngay lập tức
 
