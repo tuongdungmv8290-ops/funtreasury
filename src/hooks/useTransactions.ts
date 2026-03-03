@@ -33,8 +33,8 @@ export interface TransactionFilters {
   days?: number;
 }
 
-// List of valid tokens to show in transaction history - CHỈ CAMLY và USDT
-const VALID_TOKEN_SYMBOLS = ['CAMLY', 'USDT'];
+// List of valid tokens to show in transaction history - CAMLY, USDT, BTCB
+const VALID_TOKEN_SYMBOLS = ['CAMLY', 'USDT', 'BTCB'];
 
 // Minimum USDT amount to show (filter dust spam)
 const MIN_USDT_AMOUNT = 1;
