@@ -34,7 +34,7 @@ export interface TransactionFilters {
 }
 
 // List of valid tokens to show in transaction history - CAMLY, USDT, BTCB
-const VALID_TOKEN_SYMBOLS = ['CAMLY', 'USDT', 'BTCB'];
+const VALID_TOKEN_SYMBOLS = ['CAMLY', 'USDT', 'BTCB', 'BTC'];
 
 // Minimum amounts to filter dust/spam
 const MIN_USDT_AMOUNT = 1;
