@@ -286,7 +286,15 @@ serve(async (req) => {
         const walletTokens: TokenBalance[] = [];
 
         if (wallet.chain === 'BTC') {
-          const btcBalance = await fetchBitcoinBalance(wallet.address);
+          // Fetch existing BTC balance from DB to preserve if needed
+          const { data: existingToken } = await supabase
+            .from('tokens')
+            .select('balance')
+            .eq('wallet_id', wallet.id)
+            .eq('symbol', 'BTC')
+            .maybeSingle();
+          
+          const btcBalance = await fetchBitcoinBalance(wallet.address, existingToken?.balance ?? undefined);
           const btcPrice = await getTokenPrice('BTC', prices);
           walletTokens.push({
             symbol: 'BTC',
