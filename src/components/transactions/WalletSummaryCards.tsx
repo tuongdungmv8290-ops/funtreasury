@@ -335,7 +335,7 @@ export function WalletSummaryCards() {
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
                           <AlertCircle className="w-3 h-3" />
-                          <span className="font-body">BTC transactions sync chưa được hỗ trợ</span>
+                          <span className="font-body">Lịch sử BTC đang được đồng bộ tự động từ blockchain</span>
                         </div>
                       </div>
                     ) : (
