@@ -127,24 +127,35 @@ function getMoralisChain(chain: string): string {
   return chainMap[chain] || '0x38';
 }
 
-// Fetch Bitcoin balance using Blockchain.info API
-async function fetchBitcoinBalance(address: string): Promise<number> {
+// Fetch Bitcoin balance using Blockstream API, with fallback to existing DB value
+async function fetchBitcoinBalance(address: string, existingBalance?: number): Promise<number> {
   try {
-    const url = `https://blockchain.info/q/addressbalance/${address}`;
+    const url = `https://blockstream.info/api/address/${address}`;
     const response = await fetch(url);
     
     if (!response.ok) {
-      console.log(`Bitcoin API error for ${address}: ${response.status}`);
-      return 0;
+      console.log(`Blockstream API error for ${address}: ${response.status}`);
+      // If API fails, keep existing balance
+      return existingBalance ?? 0;
     }
     
-    const satoshis = await response.text();
-    const btcBalance = parseInt(satoshis) / 100000000;
-    console.log(`Bitcoin balance for ${address}: ${btcBalance} BTC`);
+    const data = await response.json();
+    const funded = (data.chain_stats?.funded_txo_sum || 0) + (data.mempool_stats?.funded_txo_sum || 0);
+    const spent = (data.chain_stats?.spent_txo_sum || 0) + (data.mempool_stats?.spent_txo_sum || 0);
+    const btcBalance = (funded - spent) / 100000000;
+    console.log(`Blockstream balance for ${address}: ${btcBalance} BTC`);
+    
+    // If on-chain shows 0 but we have a manually-set balance, preserve it
+    // (MetaMask/wallet apps may show pending or unconfirmed balance)
+    if (btcBalance === 0 && existingBalance && existingBalance > 0) {
+      console.log(`Preserving existing balance ${existingBalance} BTC (on-chain shows 0, likely pending/unconfirmed)`);
+      return existingBalance;
+    }
+    
     return btcBalance;
   } catch (error) {
     console.error(`Error fetching Bitcoin balance:`, error);
-    return 0;
+    return existingBalance ?? 0;
   }
 }
 
