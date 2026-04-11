@@ -352,11 +352,26 @@ serve(async (req) => {
       'BNB': 710,
       'USDT': 1,
       'USDC': 1,
-      'BTCB': 97000,  // BTC price in USD
+      'BTCB': 97000,
+      'BTC': 97000,
     };
 
     // 3. Sync each wallet
     for (const wallet of wallets as WalletData[]) {
+      // Handle BTC mainnet wallets separately
+      if (wallet.chain === 'BTC') {
+        console.log(`Syncing BTC wallet: ${wallet.name} (${wallet.address})`);
+        try {
+          const btcNewTxCount = await syncBtcWallet(wallet, supabase, wallets as WalletData[], tokenPrices, forceFullSync);
+          totalNewTransactions += btcNewTxCount;
+          syncResults.push({ wallet: wallet.name, newTxCount: btcNewTxCount, duplicatesRemoved: 0, source: 'Blockstream' });
+        } catch (btcError) {
+          console.error(`Error syncing BTC wallet ${wallet.name}:`, btcError);
+          syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0, error: btcError instanceof Error ? btcError.message : 'Unknown error' });
+        }
+        continue;
+      }
+
       if (!wallet.address || !wallet.address.startsWith('0x')) {
         console.log(`Skipping wallet ${wallet.name}: invalid address`);
         syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0, error: 'Invalid address' });
@@ -760,11 +775,11 @@ serve(async (req) => {
       console.log('Deleted dust USDT transactions (< 1 USDT)');
     }
     
-    // Delete non-CAMLY/USDT/BTCB tokens
+    // Delete non-CAMLY/USDT/BTCB/BTC tokens
     const { error: spamError } = await supabase
       .from('transactions')
       .delete()
-      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB")');
+      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB","BTC")');
     
     if (!spamError) {
       console.log('Deleted spam token transactions');
