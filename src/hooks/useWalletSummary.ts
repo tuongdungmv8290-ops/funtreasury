@@ -124,16 +124,20 @@ export function useWalletSummary() {
         const walletBalances = balanceMap.get(wallet.id);
         const tokens: RawTokenData[] = [];
 
-        // For BTC wallets without transactions, show balance only
+        // For BTC wallets, show token when there is a balance record OR any BTC transaction history
         if (wallet.chain === 'BTC') {
-          const btcBalance = walletBalances?.get('BTC');
-          if (btcBalance && btcBalance > 0) {
+          const txData = walletMap?.get('BTC');
+          const hasTransactionHistory = Boolean(txData && (txData.in.count > 0 || txData.out.count > 0));
+          const hasBalanceRecord = walletBalances?.has('BTC') ?? false;
+          const btcBalance = walletBalances?.get('BTC') ?? 0;
+
+          if (hasTransactionHistory || hasBalanceRecord) {
             tokens.push({
               token_symbol: 'BTC',
-              inflow_amount: 0,
-              inflow_count: 0,
-              outflow_amount: 0,
-              outflow_count: 0,
+              inflow_amount: txData?.in.amount ?? 0,
+              inflow_count: txData?.in.count ?? 0,
+              outflow_amount: txData?.out.amount ?? 0,
+              outflow_count: txData?.out.count ?? 0,
               current_balance: btcBalance,
             });
           }
