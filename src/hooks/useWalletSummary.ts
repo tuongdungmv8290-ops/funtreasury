@@ -46,6 +46,7 @@ interface RawTokenData {
 interface RawWalletSummary {
   wallet_id: string;
   wallet_name: string;
+  wallet_address: string;
   wallet_chain: string;
   tokens: RawTokenData[];
 }
