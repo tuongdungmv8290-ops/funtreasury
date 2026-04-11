@@ -131,6 +131,215 @@ function convertBSCScanToERC20(bscTx: BSCScanTransfer): ERC20Transfer {
   };
 }
 
+// ============== BTC MAINNET SYNC ==============
+interface BlockstreamTx {
+  txid: string;
+  status: {
+    confirmed: boolean;
+    block_height?: number;
+    block_time?: number;
+  };
+  vin: Array<{
+    prevout: {
+      scriptpubkey_address?: string;
+      value: number;
+    };
+  }>;
+  vout: Array<{
+    scriptpubkey_address?: string;
+    value: number;
+  }>;
+  fee: number;
+}
+
+async function fetchBtcTransactions(address: string): Promise<BlockstreamTx[]> {
+  const allTxs: BlockstreamTx[] = [];
+  let lastTxid: string | null = null;
+  const MAX_PAGES = 10;
+  
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const url = lastTxid
+      ? `https://blockstream.info/api/address/${address}/txs/chain/${lastTxid}`
+      : `https://blockstream.info/api/address/${address}/txs`;
+    
+    console.log(`Fetching BTC txs page ${page + 1} for ${address.substring(0, 10)}...`);
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Blockstream API error: ${response.status}`);
+      break;
+    }
+    
+    const txs: BlockstreamTx[] = await response.json();
+    if (!txs || txs.length === 0) break;
+    
+    allTxs.push(...txs);
+    
+    if (txs.length < 25) break; // Last page
+    lastTxid = txs[txs.length - 1].txid;
+    
+    // Rate limit
+    await new Promise(r => setTimeout(r, 500));
+  }
+  
+  return allTxs;
+}
+
+async function syncBtcWallet(
+  wallet: WalletData,
+  supabase: ReturnType<typeof createClient>,
+  allWallets: WalletData[],
+  tokenPrices: Record<string, number>,
+  forceFullSync: boolean
+): Promise<number> {
+  const address = wallet.address;
+  const btcTxs = await fetchBtcTransactions(address);
+  console.log(`Found ${btcTxs.length} BTC transactions for ${wallet.name}`);
+  
+  if (btcTxs.length === 0) return 0;
+  
+  let newTxCount = 0;
+  const btcPrice = tokenPrices['BTC'] || 97000;
+  
+  for (const tx of btcTxs) {
+    if (!tx.status.confirmed) continue;
+    
+    // Calculate how much this address received and sent
+    const inputFromUs = tx.vin
+      .filter(v => v.prevout?.scriptpubkey_address === address)
+      .reduce((sum, v) => sum + v.prevout.value, 0);
+    
+    const outputToUs = tx.vout
+      .filter(v => v.scriptpubkey_address === address)
+      .reduce((sum, v) => sum + v.value, 0);
+    
+    // Determine direction and amount in BTC (satoshis -> BTC)
+    let direction: 'IN' | 'OUT';
+    let amountSat: number;
+    let fromAddr = '';
+    let toAddr = '';
+    
+    if (inputFromUs > 0) {
+      // We spent inputs - this is an OUT transaction
+      direction = 'OUT';
+      // Amount sent to others = total our inputs - what came back to us - fee
+      amountSat = inputFromUs - outputToUs;
+      // Find primary recipient (largest non-self output)
+      const otherOutputs = tx.vout.filter(v => v.scriptpubkey_address !== address);
+      toAddr = otherOutputs.length > 0 
+        ? otherOutputs.sort((a, b) => b.value - a.value)[0].scriptpubkey_address || ''
+        : address;
+      fromAddr = address;
+    } else {
+      // We only received - this is an IN transaction
+      direction = 'IN';
+      amountSat = outputToUs;
+      // Find primary sender
+      fromAddr = tx.vin[0]?.prevout?.scriptpubkey_address || 'unknown';
+      toAddr = address;
+    }
+    
+    const amountBtc = amountSat / 100_000_000;
+    if (amountBtc <= 0) continue;
+    
+    const usdValue = amountBtc * btcPrice;
+    const feeBtc = tx.fee / 100_000_000;
+    
+    // Check for existing record
+    const { data: existing } = await supabase
+      .from('transactions')
+      .select('id')
+      .eq('tx_hash', tx.txid)
+      .eq('wallet_id', wallet.id)
+      .maybeSingle();
+    
+    if (!existing) {
+      const { error: insertError } = await supabase
+        .from('transactions')
+        .insert({
+          wallet_id: wallet.id,
+          tx_hash: tx.txid,
+          block_number: tx.status.block_height || 0,
+          timestamp: tx.status.block_time 
+            ? new Date(tx.status.block_time * 1000).toISOString()
+            : new Date().toISOString(),
+          from_address: fromAddr,
+          to_address: toAddr,
+          direction,
+          token_address: null,
+          token_symbol: 'BTC',
+          amount: amountBtc,
+          usd_value: usdValue,
+          gas_fee: feeBtc,
+          status: 'success',
+        });
+      
+      if (insertError) {
+        console.error(`Error inserting BTC tx ${tx.txid}:`, insertError);
+      } else {
+        newTxCount++;
+        console.log(`Inserted BTC tx: ${direction} ${amountBtc.toFixed(8)} BTC ($${usdValue.toFixed(2)})`);
+      }
+    }
+    
+    // Dual-entry for counterparty BTC wallets
+    const counterpartyAddr = direction === 'OUT' ? toAddr : fromAddr;
+    const counterpartyWallet = allWallets.find(w => 
+      w.address.toLowerCase() === counterpartyAddr?.toLowerCase() && w.id !== wallet.id
+    );
+    
+    if (counterpartyWallet) {
+      const { data: existingDual } = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('tx_hash', tx.txid)
+        .eq('wallet_id', counterpartyWallet.id)
+        .maybeSingle();
+      
+      if (!existingDual) {
+        const { error: dualError } = await supabase
+          .from('transactions')
+          .insert({
+            wallet_id: counterpartyWallet.id,
+            tx_hash: tx.txid,
+            block_number: tx.status.block_height || 0,
+            timestamp: tx.status.block_time 
+              ? new Date(tx.status.block_time * 1000).toISOString()
+              : new Date().toISOString(),
+            from_address: fromAddr,
+            to_address: toAddr,
+            direction: direction === 'OUT' ? 'IN' : 'OUT',
+            token_address: null,
+            token_symbol: 'BTC',
+            amount: amountBtc,
+            usd_value: usdValue,
+            gas_fee: feeBtc,
+            status: 'success',
+          });
+        
+        if (!dualError) {
+          newTxCount++;
+          console.log(`  ↳ BTC dual-entry for ${counterpartyWallet.name}: ${direction === 'OUT' ? 'IN' : 'OUT'} ${amountBtc.toFixed(8)} BTC`);
+        }
+      }
+    }
+  }
+  
+  // Update sync state for BTC wallet
+  await supabase
+    .from('sync_state')
+    .upsert({
+      wallet_id: wallet.id,
+      last_sync_at: new Date().toISOString(),
+      sync_status: 'idle',
+      last_block_synced: btcTxs[0]?.status.block_height || 0,
+    }, { onConflict: 'wallet_id' });
+  
+  console.log(`BTC sync complete for ${wallet.name}: ${newTxCount} new transactions`);
+  return newTxCount;
+}
+// ============== END BTC MAINNET SYNC ==============
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -352,11 +561,26 @@ serve(async (req) => {
       'BNB': 710,
       'USDT': 1,
       'USDC': 1,
-      'BTCB': 97000,  // BTC price in USD
+      'BTCB': 97000,
+      'BTC': 97000,
     };
 
     // 3. Sync each wallet
     for (const wallet of wallets as WalletData[]) {
+      // Handle BTC mainnet wallets separately
+      if (wallet.chain === 'BTC') {
+        console.log(`Syncing BTC wallet: ${wallet.name} (${wallet.address})`);
+        try {
+          const btcNewTxCount = await syncBtcWallet(wallet, supabase, wallets as WalletData[], tokenPrices, forceFullSync);
+          totalNewTransactions += btcNewTxCount;
+          syncResults.push({ wallet: wallet.name, newTxCount: btcNewTxCount, duplicatesRemoved: 0, source: 'Blockstream' });
+        } catch (btcError) {
+          console.error(`Error syncing BTC wallet ${wallet.name}:`, btcError);
+          syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0, error: btcError instanceof Error ? btcError.message : 'Unknown error' });
+        }
+        continue;
+      }
+
       if (!wallet.address || !wallet.address.startsWith('0x')) {
         console.log(`Skipping wallet ${wallet.name}: invalid address`);
         syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0, error: 'Invalid address' });
@@ -760,11 +984,11 @@ serve(async (req) => {
       console.log('Deleted dust USDT transactions (< 1 USDT)');
     }
     
-    // Delete non-CAMLY/USDT/BTCB tokens
+    // Delete non-CAMLY/USDT/BTCB/BTC tokens
     const { error: spamError } = await supabase
       .from('transactions')
       .delete()
-      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB")');
+      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB","BTC")');
     
     if (!spamError) {
       console.log('Deleted spam token transactions');

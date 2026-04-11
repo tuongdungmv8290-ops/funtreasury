@@ -120,8 +120,11 @@ const shortenAddressCSV = (address: string): string => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-// Get BSCScan explorer link for tx hash
-const getExplorerLink = (txHash: string): string => {
+// Get explorer link for tx hash based on token
+const getExplorerLink = (txHash: string, tokenSymbol?: string): string => {
+  if (tokenSymbol === 'BTC') {
+    return `https://mempool.space/tx/${txHash}`;
+  }
   return `https://bscscan.com/tx/${txHash}`;
 };
 
@@ -870,11 +873,11 @@ const Transactions = () => {
                               {shortenAddress(tx.tx_hash)}
                             </span>
                             <a
-                              href={getExplorerLink(tx.tx_hash)}
+                              href={getExplorerLink(tx.tx_hash, tx.token_symbol)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="p-1 hover:bg-treasury-gold/10 rounded transition-colors"
-                              title="View on BscScan"
+                              title={tx.token_symbol === 'BTC' ? 'View on Mempool.space' : 'View on BscScan'}
                             >
                               <ExternalLink className="w-3.5 h-3.5 text-treasury-gold hover:text-treasury-gold-dark" />
                             </a>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
-import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle, RefreshCw, History, Copy, ExternalLink } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, RefreshCw, History, Copy, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -255,47 +255,43 @@ export function WalletSummaryCards() {
               </div>
               
               {/* Sync Dropdown */}
-              {wallet.wallet_chain !== 'BTC' && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={syncingWalletId === wallet.wallet_id}
-                      className="h-8 px-2 hover:bg-treasury-gold/20 text-treasury-gold"
-                    >
-                      <RefreshCw className={cn(
-                        "w-4 h-4",
-                        syncingWalletId === wallet.wallet_id && "animate-spin"
-                      )} />
-                      <span className="ml-1 text-xs hidden sm:inline">Sync</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem 
-                      onClick={() => handleSyncWallet(wallet.wallet_id, wallet.wallet_name, false)}
-                      className="cursor-pointer"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Sync mới
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleSyncWallet(wallet.wallet_id, wallet.wallet_name, true)}
-                      className="cursor-pointer text-orange-600 dark:text-orange-400"
-                    >
-                      <History className="w-4 h-4 mr-2" />
-                      Full Resync
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={syncingWalletId === wallet.wallet_id}
+                    className="h-8 px-2 hover:bg-treasury-gold/20 text-treasury-gold"
+                  >
+                    <RefreshCw className={cn(
+                      "w-4 h-4",
+                      syncingWalletId === wallet.wallet_id && "animate-spin"
+                    )} />
+                    <span className="ml-1 text-xs hidden sm:inline">Sync</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem 
+                    onClick={() => handleSyncWallet(wallet.wallet_id, wallet.wallet_name, false)}
+                    className="cursor-pointer"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Sync mới
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => handleSyncWallet(wallet.wallet_id, wallet.wallet_name, true)}
+                    className="cursor-pointer text-orange-600 dark:text-orange-400"
+                  >
+                    <History className="w-4 h-4 mr-2" />
+                    Full Resync
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Token Details */}
             <div className="space-y-4">
             {wallet.tokens.map((token) => {
-                const isBtcWallet = wallet.wallet_chain === 'BTC';
-                
                 return (
                   <div key={token.token_symbol} className="space-y-3">
                     {/* Token Header with Logo */}
@@ -311,6 +307,12 @@ export function WalletSummaryCards() {
                             : "text-emerald-600 dark:text-emerald-400"
                         )}>
                           {token.token_symbol}
+                          {token.token_symbol === 'BTC' && wallet.wallet_chain === 'BTC' && (
+                            <span className="ml-1.5 text-[10px] font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded-full">Bitcoin</span>
+                          )}
+                          {token.token_symbol === 'BTCB' && (
+                            <span className="ml-1.5 text-[10px] font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-1.5 py-0.5 rounded-full">BNB Chain</span>
+                          )}
                         </span>
                         <span className="font-body text-xs text-muted-foreground">
                           {TOKEN_NAMES[token.token_symbol] || token.token_symbol}
@@ -318,92 +320,70 @@ export function WalletSummaryCards() {
                       </div>
                     </div>
                     
-                    {/* BTC wallet - show balance only */}
-                    {isBtcWallet ? (
-                      <div className="space-y-2">
-                        <div className="bg-orange-50 dark:bg-orange-950/30 rounded-lg p-3">
-                          <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400 mb-1">
-                            <Wallet className="w-3 h-3" />
-                            <span className="font-body text-xs font-medium">Current Balance</span>
-                          </div>
-                          <div className="font-mono font-bold text-lg text-orange-700 dark:text-orange-300">
-                            {formatNumber(token.current_balance ?? 0, { minDecimals: 4, maxDecimals: 6 })} BTC
-                          </div>
-                          <div className="font-mono text-sm text-orange-600/80 dark:text-orange-400/80">
-                            {formatUSD(token.current_balance_usd ?? 0)}
-                          </div>
+                    {/* All wallets show 3 columns: Inflow, Outflow, Balance */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-sm">
+                      {/* Inflow */}
+                      <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-2 sm:p-3">
+                        <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 mb-2">
+                          <ArrowDownLeft className="w-4 h-4" />
+                          <span className="font-body text-sm font-semibold uppercase tracking-widest">INFLOW</span>
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
-                          <AlertCircle className="w-3 h-3" />
-                          <span className="font-body">Lịch sử BTC đang được đồng bộ tự động từ blockchain</span>
+                        <div className={cn(
+                          "font-mono font-bold text-base",
+                          token.inflow_amount === 0 
+                            ? "text-muted-foreground/60" 
+                            : "text-emerald-700 dark:text-emerald-300"
+                        )}>
+                          {formatCompactAmount(token.inflow_amount ?? 0, token.token_symbol)}
                         </div>
-                      </div>
-                    ) : (
-                      /* EVM wallets - show 3 columns: Inflow, Outflow, Balance */
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-sm">
-                        {/* Inflow */}
-                        <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-2 sm:p-3">
-                          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 mb-2">
-                            <ArrowDownLeft className="w-4 h-4" />
-                            <span className="font-body text-sm font-semibold uppercase tracking-widest">INFLOW</span>
-                          </div>
-                          <div className={cn(
-                            "font-mono font-bold text-base",
-                            token.inflow_amount === 0 
-                              ? "text-muted-foreground/60" 
-                              : "text-emerald-700 dark:text-emerald-300"
-                          )}>
-                            {formatCompactAmount(token.inflow_amount ?? 0, token.token_symbol)}
-                          </div>
-                          <div className={cn(
-                            "font-mono text-sm font-medium",
-                            token.inflow_amount === 0 
-                              ? "text-muted-foreground/50" 
-                              : "text-emerald-600/80 dark:text-emerald-400/80"
-                          )}>
-                            {formatUSD(token.inflow_usd ?? 0)}
-                          </div>
-                        </div>
-
-                        {/* Outflow */}
-                        <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-2 sm:p-3">
-                          <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400 mb-2">
-                            <ArrowUpRight className="w-4 h-4" />
-                            <span className="font-body text-sm font-semibold uppercase tracking-widest">OUTFLOW</span>
-                          </div>
-                          <div className={cn(
-                            "font-mono font-bold text-base",
-                            token.outflow_amount === 0 
-                              ? "text-muted-foreground/60" 
-                              : "text-red-700 dark:text-red-300"
-                          )}>
-                            {formatCompactAmount(token.outflow_amount ?? 0, token.token_symbol)}
-                          </div>
-                          <div className={cn(
-                            "font-mono text-sm font-medium",
-                            token.outflow_amount === 0 
-                              ? "text-muted-foreground/50" 
-                              : "text-red-600/80 dark:text-red-400/80"
-                          )}>
-                            {formatUSD(token.outflow_usd ?? 0)}
-                          </div>
-                        </div>
-
-                        {/* Current Balance */}
-                        <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-2 sm:p-3">
-                          <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 mb-2">
-                            <Wallet className="w-4 h-4" />
-                            <span className="font-body text-sm font-semibold uppercase tracking-widest">BALANCE</span>
-                          </div>
-                          <div className="font-mono font-bold text-base text-purple-700 dark:text-purple-300">
-                            {formatCompactAmount(token.current_balance ?? 0, token.token_symbol)}
-                          </div>
-                          <div className="font-mono text-sm font-medium text-purple-600/80 dark:text-purple-400/80">
-                            {formatUSD(token.current_balance_usd ?? 0)}
-                          </div>
+                        <div className={cn(
+                          "font-mono text-sm font-medium",
+                          token.inflow_amount === 0 
+                            ? "text-muted-foreground/50" 
+                            : "text-emerald-600/80 dark:text-emerald-400/80"
+                        )}>
+                          {formatUSD(token.inflow_usd ?? 0)}
                         </div>
                       </div>
-                    )}
+
+                      {/* Outflow */}
+                      <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-2 sm:p-3">
+                        <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400 mb-2">
+                          <ArrowUpRight className="w-4 h-4" />
+                          <span className="font-body text-sm font-semibold uppercase tracking-widest">OUTFLOW</span>
+                        </div>
+                        <div className={cn(
+                          "font-mono font-bold text-base",
+                          token.outflow_amount === 0 
+                            ? "text-muted-foreground/60" 
+                            : "text-red-700 dark:text-red-300"
+                        )}>
+                          {formatCompactAmount(token.outflow_amount ?? 0, token.token_symbol)}
+                        </div>
+                        <div className={cn(
+                          "font-mono text-sm font-medium",
+                          token.outflow_amount === 0 
+                            ? "text-muted-foreground/50" 
+                            : "text-red-600/80 dark:text-red-400/80"
+                        )}>
+                          {formatUSD(token.outflow_usd ?? 0)}
+                        </div>
+                      </div>
+
+                      {/* Current Balance */}
+                      <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-2 sm:p-3">
+                        <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 mb-2">
+                          <Wallet className="w-4 h-4" />
+                          <span className="font-body text-sm font-semibold uppercase tracking-widest">BALANCE</span>
+                        </div>
+                        <div className="font-mono font-bold text-base text-purple-700 dark:text-purple-300">
+                          {formatCompactAmount(token.current_balance ?? 0, token.token_symbol)}
+                        </div>
+                        <div className="font-mono text-sm font-medium text-purple-600/80 dark:text-purple-400/80">
+                          {formatUSD(token.current_balance_usd ?? 0)}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
