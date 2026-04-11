@@ -21,6 +21,7 @@ export interface WalletTokenSummary {
 export interface WalletSummary {
   wallet_id: string;
   wallet_name: string;
+  wallet_address: string;
   wallet_chain: string;
   tokens: WalletTokenSummary[];
   total_inflow_usd: number;
