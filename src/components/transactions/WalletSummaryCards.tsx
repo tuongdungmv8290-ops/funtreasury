@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
-import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle, RefreshCw, History, Copy, ExternalLink } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, RefreshCw, History, Copy, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
