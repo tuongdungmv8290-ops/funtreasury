@@ -194,6 +194,7 @@ export function useWalletSummary() {
         return {
           wallet_id: wallet.id,
           wallet_name: wallet.name,
+          wallet_address: wallet.address,
           wallet_chain: wallet.chain,
           tokens,
         };
@@ -239,6 +240,7 @@ export function useWalletSummary() {
       return {
         wallet_id: wallet.wallet_id,
         wallet_name: wallet.wallet_name,
+        wallet_address: wallet.wallet_address,
         wallet_chain: wallet.wallet_chain,
         tokens,
         total_inflow_usd: totalInflowUsd,
