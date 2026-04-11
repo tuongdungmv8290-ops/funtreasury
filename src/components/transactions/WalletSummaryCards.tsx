@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { formatNumber, formatUSD } from '@/lib/formatNumber';
-import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle, RefreshCw, History } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, Bitcoin, AlertCircle, RefreshCw, History, Copy, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -213,17 +213,45 @@ export function WalletSummaryCards() {
           >
             {/* Wallet Header */}
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-treasury-gold/20">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-treasury-gold/20 flex items-center justify-center">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-treasury-gold/20 flex items-center justify-center shrink-0">
                   {wallet.wallet_chain === 'BTC' ? (
                     <Bitcoin className="w-4 h-4 text-orange-500" />
                   ) : (
                     <Wallet className="w-4 h-4 text-treasury-gold" />
                   )}
                 </div>
-                <h3 className="font-heading font-bold tracking-wide text-foreground">
-                  {CHAIN_ICONS[wallet.wallet_chain] || ''} {wallet.wallet_name}
-                </h3>
+                <div className="min-w-0">
+                  <h3 className="font-heading font-bold tracking-wide text-foreground">
+                    {CHAIN_ICONS[wallet.wallet_chain] || ''} {wallet.wallet_name}
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="font-mono text-xs text-muted-foreground truncate">
+                      {wallet.wallet_address.slice(0, 8)}...{wallet.wallet_address.slice(-6)}
+                    </span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(wallet.wallet_address);
+                        toast.success('Đã copy địa chỉ ví');
+                      }}
+                      className="text-muted-foreground hover:text-treasury-gold transition-colors shrink-0"
+                      title="Copy địa chỉ"
+                    >
+                      <Copy className="w-3 h-3" />
+                    </button>
+                    <a
+                      href={wallet.wallet_chain === 'BTC' 
+                        ? `https://mempool.space/address/${wallet.wallet_address}`
+                        : `https://bscscan.com/address/${wallet.wallet_address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-treasury-gold transition-colors shrink-0"
+                      title="Xem trên explorer"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
               </div>
               
               {/* Sync Dropdown */}
