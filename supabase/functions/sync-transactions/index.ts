@@ -1082,7 +1082,7 @@ serve(async (req) => {
     const { error: spamError } = await supabase
       .from('transactions')
       .delete()
-      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB","BTC")');
+      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB","BTC","BNB")');
     
     if (!spamError) {
       console.log('Deleted spam token transactions');
