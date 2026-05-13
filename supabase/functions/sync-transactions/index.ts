@@ -116,6 +116,42 @@ function getEtherscanChainId(chain: string): number {
   return chainIds[chain] || 56;
 }
 
+// Fetch native (BNB/ETH) transfers from Etherscan V2
+interface BSCScanNativeTx {
+  hash: string;
+  blockNumber: string;
+  timeStamp: string;
+  from: string;
+  to: string;
+  value: string;
+  isError: string;
+  txreceipt_status: string;
+  gasUsed?: string;
+  gasPrice?: string;
+}
+
+async function fetchNativeFromEtherscanV2(
+  address: string,
+  apiKey: string,
+  chainId: number = 56
+): Promise<BSCScanNativeTx[]> {
+  const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=3000&sort=desc&apikey=${apiKey}`;
+  console.log(`Calling Etherscan V2 NATIVE API (chainid=${chainId}) for address: ${address.substring(0, 10)}...`);
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.status === '1' && Array.isArray(data.result)) {
+      console.log(`Etherscan V2 returned ${data.result.length} native transfers`);
+      return data.result;
+    }
+    console.log(`Etherscan V2 native returned status: ${data.status}, message: ${data.message}`);
+    return [];
+  } catch (error) {
+    console.error('Etherscan V2 native API error:', error);
+    return [];
+  }
+}
+
 // Convert BSCScan transfer to ERC20Transfer format
 function convertBSCScanToERC20(bscTx: BSCScanTransfer): ERC20Transfer {
   return {
@@ -679,9 +715,66 @@ serve(async (req) => {
 
         console.log(`Total ERC20 transfers for ${wallet.name}: ${erc20Transfers.length} (source: ${usedSource})`);
 
+        // ============== NATIVE BNB/ETH SYNC via Etherscan V2 ==============
+        let nativeNewTxCount = 0;
+        if (etherscanApiKey) {
+          try {
+            const chainId = getEtherscanChainId(wallet.chain);
+            const nativeSym = getNativeSymbol(wallet.chain);
+            const nativeTxs = await fetchNativeFromEtherscanV2(wallet.address, etherscanApiKey, chainId);
+            const nativePrice = tokenPrices[nativeSym] || 0;
+            const MIN_NATIVE_AMOUNT = 0.0001; // dust filter
+            for (const ntx of nativeTxs) {
+              if (ntx.isError === '1' || ntx.txreceipt_status === '0') continue;
+              const valWei = ntx.value || '0';
+              const amount = parseFloat(valWei) / 1e18;
+              if (!(amount > MIN_NATIVE_AMOUNT)) continue;
+              const direction = ntx.to?.toLowerCase() === wallet.address.toLowerCase() ? 'IN' : 'OUT';
+              const usdValue = amount * nativePrice;
+              const gasFee = ntx.gasUsed && ntx.gasPrice
+                ? (parseFloat(ntx.gasUsed) * parseFloat(ntx.gasPrice)) / 1e18
+                : 0;
+              const { data: existingNative } = await supabase
+                .from('transactions')
+                .select('id')
+                .eq('tx_hash', ntx.hash)
+                .eq('wallet_id', wallet.id)
+                .eq('token_symbol', nativeSym)
+                .maybeSingle();
+              if (!existingNative) {
+                const { error: nativeInsertErr } = await supabase
+                  .from('transactions')
+                  .insert({
+                    wallet_id: wallet.id,
+                    tx_hash: ntx.hash,
+                    block_number: parseInt(ntx.blockNumber) || 0,
+                    timestamp: new Date(parseInt(ntx.timeStamp) * 1000).toISOString(),
+                    from_address: ntx.from || '',
+                    to_address: ntx.to || '',
+                    direction,
+                    token_address: null,
+                    token_symbol: nativeSym,
+                    amount,
+                    usd_value: usdValue,
+                    gas_fee: gasFee,
+                    status: 'success',
+                  });
+                if (!nativeInsertErr) {
+                  nativeNewTxCount++;
+                }
+              }
+            }
+            console.log(`Native ${getNativeSymbol(wallet.chain)} sync for ${wallet.name}: ${nativeNewTxCount} new`);
+          } catch (nativeErr) {
+            console.error(`Native sync error for ${wallet.name}:`, nativeErr);
+          }
+        }
+        // ============== END NATIVE SYNC ==============
+
         if (erc20Transfers.length === 0) {
-          console.log(`No transfers found for ${wallet.name}`);
-          syncResults.push({ wallet: wallet.name, newTxCount: 0, duplicatesRemoved: 0, source: usedSource });
+          console.log(`No ERC20 transfers found for ${wallet.name}`);
+          totalNewTransactions += nativeNewTxCount;
+          syncResults.push({ wallet: wallet.name, newTxCount: nativeNewTxCount, duplicatesRemoved: 0, source: usedSource });
           continue;
         }
 
@@ -829,9 +922,10 @@ serve(async (req) => {
           // ============== END DUAL-ENTRY LOGIC ==============
         }
 
-        console.log(`Added ${newTxCount} new transactions for ${wallet.name}`);
-        syncResults.push({ wallet: wallet.name, newTxCount, duplicatesRemoved: 0, source: usedSource });
-        totalNewTransactions += newTxCount;
+        const totalForWallet = newTxCount + nativeNewTxCount;
+        console.log(`Added ${totalForWallet} new transactions for ${wallet.name} (ERC20: ${newTxCount}, Native: ${nativeNewTxCount})`);
+        syncResults.push({ wallet: wallet.name, newTxCount: totalForWallet, duplicatesRemoved: 0, source: usedSource });
+        totalNewTransactions += totalForWallet;
 
         // 5. Update sync state
         const maxBlockNumber = Math.max(
@@ -988,7 +1082,7 @@ serve(async (req) => {
     const { error: spamError } = await supabase
       .from('transactions')
       .delete()
-      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB","BTC")');
+      .not('token_symbol', 'in', '("CAMLY","USDT","BTCB","BTC","BNB")');
     
     if (!spamError) {
       console.log('Deleted spam token transactions');
