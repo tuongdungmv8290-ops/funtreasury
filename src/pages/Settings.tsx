@@ -1561,6 +1561,9 @@ const Settings = () => {
             
             {/* WalletConnect - Visible to all, disabled for View Only */}
             <WalletConnect viewOnly={isViewOnly} />
+
+            {/* Address Label Manager - Admin only */}
+            {!isViewOnly && <AddressLabelManager />}
           </div>
         </div>
       </main>
