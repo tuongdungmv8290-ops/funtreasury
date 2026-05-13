@@ -152,6 +152,52 @@ async function fetchNativeFromEtherscanV2(
   }
 }
 
+// Fetch native (BNB/ETH) transfers from Moralis (paginated, supports BSC on free plan)
+async function fetchNativeFromMoralis(
+  address: string,
+  apiKey: string,
+  moralisChain: string,
+  maxPages: number = 10
+): Promise<BSCScanNativeTx[]> {
+  const out: BSCScanNativeTx[] = [];
+  let cursor: string | null = null;
+  for (let i = 0; i < maxPages; i++) {
+    const cursorParam = cursor ? `&cursor=${encodeURIComponent(cursor)}` : '';
+    const url = `https://deep-index.moralis.io/api/v2.2/${address}?chain=${moralisChain}&limit=100${cursorParam}`;
+    try {
+      const res = await fetch(url, { headers: { 'X-API-Key': apiKey, accept: 'application/json' } });
+      if (!res.ok) {
+        console.error('Moralis native API error', res.status, await res.text().catch(() => ''));
+        break;
+      }
+      const data = await res.json();
+      const result = Array.isArray(data.result) ? data.result : [];
+      console.log(`Moralis native page ${i + 1}: ${result.length} txs`);
+      for (const t of result) {
+        out.push({
+          hash: t.hash,
+          blockNumber: String(t.block_number ?? '0'),
+          timeStamp: String(Math.floor(new Date(t.block_timestamp).getTime() / 1000)),
+          from: t.from_address || '',
+          to: t.to_address || '',
+          value: String(t.value ?? '0'),
+          isError: t.receipt_status === '0' ? '1' : '0',
+          txreceipt_status: String(t.receipt_status ?? '1'),
+          gasUsed: t.receipt_gas_used,
+          gasPrice: t.gas_price,
+        });
+      }
+      cursor = data.cursor || null;
+      if (!cursor || result.length === 0) break;
+    } catch (e) {
+      console.error('Moralis native fetch error', e);
+      break;
+    }
+  }
+  console.log(`Moralis native total fetched: ${out.length}`);
+  return out;
+}
+
 // Convert BSCScan transfer to ERC20Transfer format
 function convertBSCScanToERC20(bscTx: BSCScanTransfer): ERC20Transfer {
   return {
