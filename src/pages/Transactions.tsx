@@ -654,7 +654,7 @@ const Transactions = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="🔍 Search by hash, token, address..."
+                placeholder="🔍 Tìm theo tên người nhận, ví, token, hash, địa chỉ..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 bg-white border-treasury-gold/30 focus:border-treasury-gold focus:ring-treasury-gold/20"
