@@ -31,6 +31,10 @@ export interface TransactionFilters {
   tokenSymbol?: string;
   search?: string;
   days?: number;
+  /** Map of lowercased address -> human-readable label, used to widen `search` */
+  labelMap?: Map<string, string>;
+  /** Lowercased recipient address to filter by */
+  recipientAddress?: string;
 }
 
 // List of valid tokens to show in transaction history - CAMLY, USDT, BTCB
