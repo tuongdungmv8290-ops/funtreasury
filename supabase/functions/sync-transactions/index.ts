@@ -922,9 +922,10 @@ serve(async (req) => {
           // ============== END DUAL-ENTRY LOGIC ==============
         }
 
-        console.log(`Added ${newTxCount} new transactions for ${wallet.name}`);
-        syncResults.push({ wallet: wallet.name, newTxCount, duplicatesRemoved: 0, source: usedSource });
-        totalNewTransactions += newTxCount;
+        const totalForWallet = newTxCount + nativeNewTxCount;
+        console.log(`Added ${totalForWallet} new transactions for ${wallet.name} (ERC20: ${newTxCount}, Native: ${nativeNewTxCount})`);
+        syncResults.push({ wallet: wallet.name, newTxCount: totalForWallet, duplicatesRemoved: 0, source: usedSource });
+        totalNewTransactions += totalForWallet;
 
         // 5. Update sync state
         const maxBlockNumber = Math.max(
