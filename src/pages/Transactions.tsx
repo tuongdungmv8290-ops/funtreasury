@@ -6,6 +6,7 @@ import { useUpdateTxMetadata } from '@/hooks/useTxMetadata';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { useWalletSummary } from '@/hooks/useWalletSummary';
 import { useAddressLabels } from '@/hooks/useAddressLabels';
+import { useSyncRewardLabels } from '@/hooks/useSyncRewardLabels';
 import { AddressLabelPopover } from '@/components/transactions/AddressLabelPopover';
 import { formatCurrency, shortenAddress } from '@/lib/formatUtils';
 import {
@@ -72,14 +73,14 @@ const formatDateCSV = (date: Date): string => {
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 };
 
-// Format date for display
+// Format date for display - VN style: "HH:mm  DD/MM/YYYY"
 const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}  ${day}/${month}/${year}`;
 };
 
 // Format USD value for CSV - raw number for Excel calculations
@@ -163,6 +164,7 @@ const Transactions = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [monthlyReportOpen, setMonthlyReportOpen] = useState(false);
 
+  useSyncRewardLabels();
   const { data: wallets } = useWallets();
   const { getLabel, labelMap } = useAddressLabels();
   const { data: walletSummaries } = useWalletSummary();
