@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
@@ -9,6 +9,7 @@ import { useAddressLabels } from '@/hooks/useAddressLabels';
 import { useSyncRewardLabels } from '@/hooks/useSyncRewardLabels';
 import { AddressLabelPopover } from '@/components/transactions/AddressLabelPopover';
 import { formatCurrency, shortenAddress } from '@/lib/formatUtils';
+import { isFunTreasuryAddress, getFunRichLink, FUN_RICH_TREASURY_URL } from '@/lib/funTreasury';
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -156,6 +157,7 @@ const Transactions = () => {
   const [walletFilter, setWalletFilter] = useState<string>('all');
   const [directionFilter, setDirectionFilter] = useState<string>('all');
   const [tokenFilter, setTokenFilter] = useState<string>('all');
+  const [recipientFilter, setRecipientFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -172,8 +174,19 @@ const Transactions = () => {
     walletId: walletFilter !== 'all' ? walletFilter : undefined,
     direction: directionFilter !== 'all' ? (directionFilter as 'IN' | 'OUT') : undefined,
     tokenSymbol: tokenFilter !== 'all' ? tokenFilter : undefined,
-    search: search || undefined,
+    recipientAddress: recipientFilter !== 'all' ? recipientFilter : undefined,
   });
+
+  // Auto-trigger background sync (debounced 60s) so all wallets have latest tx
+  useEffect(() => {
+    const KEY = 'last-tx-sync';
+    const last = Number(localStorage.getItem(KEY) || 0);
+    if (Date.now() - last < 60_000) return;
+    localStorage.setItem(KEY, String(Date.now()));
+    supabase.functions.invoke('sync-transactions').catch(() => {
+      /* silent */
+    });
+  }, []);
   
   const updateMetadata = useUpdateTxMetadata();
   const [savingTxId, setSavingTxId] = useState<string | null>(null);
@@ -202,13 +215,46 @@ const Transactions = () => {
     return Array.from(tokenSet);
   }, [transactions]);
 
-  // Sort transactions
+  // Unique recipient list (to_address) with friendly labels for the dropdown
+  const recipients = useMemo(() => {
+    if (!transactions) return [];
+    const seen = new Map<string, { address: string; label: string; isLabeled: boolean }>();
+    transactions.forEach((tx) => {
+      const addr = tx.to_address?.toLowerCase();
+      if (!addr || seen.has(addr)) return;
+      const { label, isLabeled } = getLabel(tx.to_address);
+      seen.set(addr, { address: addr, label, isLabeled });
+    });
+    return Array.from(seen.values()).sort((a, b) => {
+      // Labeled first, then alphabetical
+      if (a.isLabeled !== b.isLabeled) return a.isLabeled ? -1 : 1;
+      return a.label.localeCompare(b.label);
+    });
+  }, [transactions, labelMap]);
+
+  // Apply client-side name search + sort
   const sortedTransactions = useMemo(() => {
     if (!transactions) return [];
-    
-    return [...transactions].sort((a, b) => {
+
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? transactions.filter((tx) => {
+          const fromLabel = labelMap.get(tx.from_address.toLowerCase()) || '';
+          const toLabel = labelMap.get(tx.to_address.toLowerCase()) || '';
+          return (
+            tx.tx_hash.toLowerCase().includes(q) ||
+            tx.from_address.toLowerCase().includes(q) ||
+            tx.to_address.toLowerCase().includes(q) ||
+            tx.token_symbol.toLowerCase().includes(q) ||
+            fromLabel.toLowerCase().includes(q) ||
+            toLabel.toLowerCase().includes(q)
+          );
+        })
+      : transactions;
+
+    return [...filtered].sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortField) {
         case 'timestamp':
           comparison = a.timestamp.getTime() - b.timestamp.getTime();
@@ -226,10 +272,10 @@ const Transactions = () => {
           comparison = a.direction.localeCompare(b.direction);
           break;
       }
-      
+
       return sortOrder === 'asc' ? comparison : -comparison;
     });
-  }, [transactions, sortField, sortOrder]);
+  }, [transactions, search, labelMap, sortField, sortOrder]);
 
   const paginatedTransactions = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -608,7 +654,7 @@ const Transactions = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="🔍 Search by hash, token, address..."
+                placeholder="🔍 Tìm theo tên người nhận, ví, token, hash, địa chỉ..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 bg-white border-treasury-gold/30 focus:border-treasury-gold focus:ring-treasury-gold/20"
@@ -649,6 +695,22 @@ const Transactions = () => {
                   {tokens.map((token) => (
                     <SelectItem key={token} value={token}>
                       {token}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={recipientFilter} onValueChange={setRecipientFilter}>
+                <SelectTrigger className="w-[200px] bg-white border-treasury-gold/30 hover:border-treasury-gold transition-colors">
+                  <SelectValue placeholder="Tất cả người nhận" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-border shadow-lg max-h-[320px]">
+                  <SelectItem value="all">Tất cả người nhận</SelectItem>
+                  {recipients.map((r) => (
+                    <SelectItem key={r.address} value={r.address}>
+                      <span className={r.isLabeled ? 'font-semibold text-treasury-gold' : 'font-mono text-xs'}>
+                        {r.label}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -812,15 +874,32 @@ const Transactions = () => {
                         <td className="py-3 px-4">
                           {(() => {
                             const { label, isLabeled } = getLabel(tx.from_address);
+                            const isFun = isFunTreasuryAddress(tx.from_address);
+                            const labelEl = (
+                              <span className={`text-sm px-2 py-0.5 rounded inline-flex items-center gap-1 ${
+                                isLabeled
+                                  ? 'text-treasury-gold font-bold bg-treasury-gold/10'
+                                  : 'text-muted-foreground font-mono bg-secondary/50'
+                              }`}>
+                                {label}
+                                {isFun && <ExternalLink className="w-3 h-3 opacity-70" />}
+                              </span>
+                            );
                             return (
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm px-2 py-0.5 rounded ${
-                                  isLabeled 
-                                    ? 'text-treasury-gold font-bold bg-treasury-gold/10' 
-                                    : 'text-muted-foreground font-mono bg-secondary/50'
-                                }`}>
-                                  {label}
-                                </span>
+                                {isFun ? (
+                                  <a
+                                    href={FUN_RICH_TREASURY_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Mở FUN.RICH / FUN TREASURY"
+                                    className="hover:opacity-80 transition-opacity"
+                                  >
+                                    {labelEl}
+                                  </a>
+                                ) : (
+                                  labelEl
+                                )}
                                 <button
                                   onClick={() => copyToClipboard(tx.from_address, `from-${tx.id}`)}
                                   className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
@@ -842,15 +921,32 @@ const Transactions = () => {
                         <td className="py-3 px-4">
                           {(() => {
                             const { label, isLabeled } = getLabel(tx.to_address);
+                            const isFun = isFunTreasuryAddress(tx.to_address);
+                            const labelEl = (
+                              <span className={`text-sm px-2 py-0.5 rounded inline-flex items-center gap-1 ${
+                                isLabeled
+                                  ? 'text-treasury-gold font-bold bg-treasury-gold/10'
+                                  : 'text-muted-foreground font-mono bg-secondary/50'
+                              }`}>
+                                {label}
+                                {isFun && <ExternalLink className="w-3 h-3 opacity-70" />}
+                              </span>
+                            );
                             return (
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm px-2 py-0.5 rounded ${
-                                  isLabeled 
-                                    ? 'text-treasury-gold font-bold bg-treasury-gold/10' 
-                                    : 'text-muted-foreground font-mono bg-secondary/50'
-                                }`}>
-                                  {label}
-                                </span>
+                                {isFun ? (
+                                  <a
+                                    href={FUN_RICH_TREASURY_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Mở FUN.RICH / FUN TREASURY"
+                                    className="hover:opacity-80 transition-opacity"
+                                  >
+                                    {labelEl}
+                                  </a>
+                                ) : (
+                                  labelEl
+                                )}
                                 <button
                                   onClick={() => copyToClipboard(tx.to_address, `to-${tx.id}`)}
                                   className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
@@ -883,6 +979,17 @@ const Transactions = () => {
                             >
                               <ExternalLink className="w-3.5 h-3.5 text-treasury-gold hover:text-treasury-gold-dark" />
                             </a>
+                            {getFunRichLink(tx) && (
+                              <a
+                                href={FUN_RICH_TREASURY_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-1.5 py-0.5 rounded bg-treasury-gold/10 hover:bg-treasury-gold/20 text-[10px] font-bold text-treasury-gold transition-colors"
+                                title="Mở trên FUN.RICH / FUN TREASURY"
+                              >
+                                FUN.RICH ↗
+                              </a>
+                            )}
                             <button
                               onClick={() => copyToClipboard(tx.tx_hash, `hash-${tx.id}`)}
                               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"

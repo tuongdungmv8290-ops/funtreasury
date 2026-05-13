@@ -31,6 +31,10 @@ export interface TransactionFilters {
   tokenSymbol?: string;
   search?: string;
   days?: number;
+  /** Map of lowercased address -> human-readable label, used to widen `search` */
+  labelMap?: Map<string, string>;
+  /** Lowercased recipient address to filter by */
+  recipientAddress?: string;
 }
 
 // List of valid tokens to show in transaction history - CAMLY, USDT, BTCB
@@ -132,7 +136,13 @@ export function useTransactions(filters?: TransactionFilters) {
           } : undefined,
         }));
 
-      // Client-side search filter
+      // Client-side recipient filter
+      if (filters?.recipientAddress) {
+        const r = filters.recipientAddress.toLowerCase();
+        transactions = transactions.filter(tx => tx.to_address.toLowerCase() === r);
+      }
+
+      // Client-side search filter (hash/address/token; name matching is done in the page)
       if (filters?.search) {
         const searchLower = filters.search.toLowerCase();
         transactions = transactions.filter(tx =>
