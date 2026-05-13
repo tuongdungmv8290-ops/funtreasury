@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
@@ -9,6 +9,7 @@ import { useAddressLabels } from '@/hooks/useAddressLabels';
 import { useSyncRewardLabels } from '@/hooks/useSyncRewardLabels';
 import { AddressLabelPopover } from '@/components/transactions/AddressLabelPopover';
 import { formatCurrency, shortenAddress } from '@/lib/formatUtils';
+import { isFunTreasuryAddress, getFunRichLink, FUN_RICH_TREASURY_URL } from '@/lib/funTreasury';
 import {
   ArrowUpRight,
   ArrowDownLeft,
