@@ -700,6 +700,22 @@ const Transactions = () => {
                 </SelectContent>
               </Select>
 
+              <Select value={recipientFilter} onValueChange={setRecipientFilter}>
+                <SelectTrigger className="w-[200px] bg-white border-treasury-gold/30 hover:border-treasury-gold transition-colors">
+                  <SelectValue placeholder="Tất cả người nhận" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-border shadow-lg max-h-[320px]">
+                  <SelectItem value="all">Tất cả người nhận</SelectItem>
+                  {recipients.map((r) => (
+                    <SelectItem key={r.address} value={r.address}>
+                      <span className={r.isLabeled ? 'font-semibold text-treasury-gold' : 'font-mono text-xs'}>
+                        {r.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
                 <SelectTrigger className="w-[110px] bg-white border-treasury-gold/30 hover:border-treasury-gold transition-colors">
                   <SelectValue />
