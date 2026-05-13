@@ -64,6 +64,11 @@ function isValidTransaction(tx: { token_symbol: string; amount: number }): boole
   if (symbol === 'BTCB' && amount < MIN_BTCB_AMOUNT) {
     return false;
   }
+
+  // Filter dust BNB (< 0.0001 BNB)
+  if (symbol === 'BNB' && amount < MIN_BNB_AMOUNT) {
+    return false;
+  }
   
   // Keep all CAMLY with amount > 0
   return amount > 0;
