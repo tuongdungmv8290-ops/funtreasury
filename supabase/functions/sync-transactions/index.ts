@@ -761,59 +761,64 @@ serve(async (req) => {
 
         console.log(`Total ERC20 transfers for ${wallet.name}: ${erc20Transfers.length} (source: ${usedSource})`);
 
-        // ============== NATIVE BNB/ETH SYNC via Etherscan V2 ==============
+        // ============== NATIVE BNB/ETH SYNC (Moralis primary, Etherscan V2 fallback) ==============
         let nativeNewTxCount = 0;
-        if (etherscanApiKey) {
-          try {
-            const chainId = getEtherscanChainId(wallet.chain);
-            const nativeSym = getNativeSymbol(wallet.chain);
-            const nativeTxs = await fetchNativeFromEtherscanV2(wallet.address, etherscanApiKey, chainId);
-            const nativePrice = tokenPrices[nativeSym] || 0;
-            const MIN_NATIVE_AMOUNT = 0.0001; // dust filter
-            for (const ntx of nativeTxs) {
-              if (ntx.isError === '1' || ntx.txreceipt_status === '0') continue;
-              const valWei = ntx.value || '0';
-              const amount = parseFloat(valWei) / 1e18;
-              if (!(amount > MIN_NATIVE_AMOUNT)) continue;
-              const direction = ntx.to?.toLowerCase() === wallet.address.toLowerCase() ? 'IN' : 'OUT';
-              const usdValue = amount * nativePrice;
-              const gasFee = ntx.gasUsed && ntx.gasPrice
-                ? (parseFloat(ntx.gasUsed) * parseFloat(ntx.gasPrice)) / 1e18
-                : 0;
-              const { data: existingNative } = await supabase
+        try {
+          const chainId = getEtherscanChainId(wallet.chain);
+          const nativeSym = getNativeSymbol(wallet.chain);
+          const moralisChainNative = getMoralisChain(wallet.chain);
+          let nativeTxs: BSCScanNativeTx[] = [];
+          if (moralisApiKey) {
+            nativeTxs = await fetchNativeFromMoralis(wallet.address, moralisApiKey, moralisChainNative, 15);
+          }
+          if (nativeTxs.length === 0 && etherscanApiKey) {
+            nativeTxs = await fetchNativeFromEtherscanV2(wallet.address, etherscanApiKey, chainId);
+          }
+          const nativePrice = tokenPrices[nativeSym] || 0;
+          const MIN_NATIVE_AMOUNT = 0.0001;
+          for (const ntx of nativeTxs) {
+            if (ntx.isError === '1' || ntx.txreceipt_status === '0') continue;
+            const valWei = ntx.value || '0';
+            const amount = parseFloat(valWei) / 1e18;
+            if (!(amount > MIN_NATIVE_AMOUNT)) continue;
+            const direction = ntx.to?.toLowerCase() === wallet.address.toLowerCase() ? 'IN' : 'OUT';
+            const usdValue = amount * nativePrice;
+            const gasFee = ntx.gasUsed && ntx.gasPrice
+              ? (parseFloat(ntx.gasUsed) * parseFloat(ntx.gasPrice)) / 1e18
+              : 0;
+            const { data: existingNative } = await supabase
+              .from('transactions')
+              .select('id')
+              .eq('tx_hash', ntx.hash)
+              .eq('wallet_id', wallet.id)
+              .eq('token_symbol', nativeSym)
+              .maybeSingle();
+            if (!existingNative) {
+              const { error: nativeInsertErr } = await supabase
                 .from('transactions')
-                .select('id')
-                .eq('tx_hash', ntx.hash)
-                .eq('wallet_id', wallet.id)
-                .eq('token_symbol', nativeSym)
-                .maybeSingle();
-              if (!existingNative) {
-                const { error: nativeInsertErr } = await supabase
-                  .from('transactions')
-                  .insert({
-                    wallet_id: wallet.id,
-                    tx_hash: ntx.hash,
-                    block_number: parseInt(ntx.blockNumber) || 0,
-                    timestamp: new Date(parseInt(ntx.timeStamp) * 1000).toISOString(),
-                    from_address: ntx.from || '',
-                    to_address: ntx.to || '',
-                    direction,
-                    token_address: null,
-                    token_symbol: nativeSym,
-                    amount,
-                    usd_value: usdValue,
-                    gas_fee: gasFee,
-                    status: 'success',
-                  });
-                if (!nativeInsertErr) {
-                  nativeNewTxCount++;
-                }
+                .insert({
+                  wallet_id: wallet.id,
+                  tx_hash: ntx.hash,
+                  block_number: parseInt(ntx.blockNumber) || 0,
+                  timestamp: new Date(parseInt(ntx.timeStamp) * 1000).toISOString(),
+                  from_address: ntx.from || '',
+                  to_address: ntx.to || '',
+                  direction,
+                  token_address: null,
+                  token_symbol: nativeSym,
+                  amount,
+                  usd_value: usdValue,
+                  gas_fee: gasFee,
+                  status: 'success',
+                });
+              if (!nativeInsertErr) {
+                nativeNewTxCount++;
               }
             }
-            console.log(`Native ${getNativeSymbol(wallet.chain)} sync for ${wallet.name}: ${nativeNewTxCount} new`);
-          } catch (nativeErr) {
-            console.error(`Native sync error for ${wallet.name}:`, nativeErr);
           }
+          console.log(`Native ${nativeSym} sync for ${wallet.name}: ${nativeNewTxCount} new`);
+        } catch (nativeErr) {
+          console.error(`Native sync error for ${wallet.name}:`, nativeErr);
         }
         // ============== END NATIVE SYNC ==============
 
