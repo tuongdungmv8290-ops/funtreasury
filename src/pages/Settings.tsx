@@ -25,6 +25,7 @@ import { useViewMode } from '@/contexts/ViewModeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { AddressLabelManager } from '@/components/settings/AddressLabelManager';
 
 
 // Chain display names
