@@ -157,6 +157,7 @@ const Transactions = () => {
   const [walletFilter, setWalletFilter] = useState<string>('all');
   const [directionFilter, setDirectionFilter] = useState<string>('all');
   const [tokenFilter, setTokenFilter] = useState<string>('all');
+  const [recipientFilter, setRecipientFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -173,8 +174,19 @@ const Transactions = () => {
     walletId: walletFilter !== 'all' ? walletFilter : undefined,
     direction: directionFilter !== 'all' ? (directionFilter as 'IN' | 'OUT') : undefined,
     tokenSymbol: tokenFilter !== 'all' ? tokenFilter : undefined,
-    search: search || undefined,
+    recipientAddress: recipientFilter !== 'all' ? recipientFilter : undefined,
   });
+
+  // Auto-trigger background sync (debounced 60s) so all wallets have latest tx
+  useEffect(() => {
+    const KEY = 'last-tx-sync';
+    const last = Number(localStorage.getItem(KEY) || 0);
+    if (Date.now() - last < 60_000) return;
+    localStorage.setItem(KEY, String(Date.now()));
+    supabase.functions.invoke('sync-transactions').catch(() => {
+      /* silent */
+    });
+  }, []);
   
   const updateMetadata = useUpdateTxMetadata();
   const [savingTxId, setSavingTxId] = useState<string | null>(null);
