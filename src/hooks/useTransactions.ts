@@ -39,6 +39,7 @@ const VALID_TOKEN_SYMBOLS = ['CAMLY', 'USDT', 'BTCB', 'BTC', 'BNB'];
 // Minimum amounts to filter dust/spam
 const MIN_USDT_AMOUNT = 1;
 const MIN_BTCB_AMOUNT = 0.001;
+const MIN_BNB_AMOUNT = 0.0001;
 
 // Detect spam/scam token symbols (Unicode tricks, special characters)
 function isValidTokenSymbol(symbol: string): boolean {
