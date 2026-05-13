@@ -979,6 +979,17 @@ const Transactions = () => {
                             >
                               <ExternalLink className="w-3.5 h-3.5 text-treasury-gold hover:text-treasury-gold-dark" />
                             </a>
+                            {getFunRichLink(tx) && (
+                              <a
+                                href={FUN_RICH_TREASURY_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-1.5 py-0.5 rounded bg-treasury-gold/10 hover:bg-treasury-gold/20 text-[10px] font-bold text-treasury-gold transition-colors"
+                                title="Mở trên FUN.RICH / FUN TREASURY"
+                              >
+                                FUN.RICH ↗
+                              </a>
+                            )}
                             <button
                               onClick={() => copyToClipboard(tx.tx_hash, `hash-${tx.id}`)}
                               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
