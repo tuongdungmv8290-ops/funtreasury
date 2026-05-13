@@ -215,13 +215,46 @@ const Transactions = () => {
     return Array.from(tokenSet);
   }, [transactions]);
 
-  // Sort transactions
+  // Unique recipient list (to_address) with friendly labels for the dropdown
+  const recipients = useMemo(() => {
+    if (!transactions) return [];
+    const seen = new Map<string, { address: string; label: string; isLabeled: boolean }>();
+    transactions.forEach((tx) => {
+      const addr = tx.to_address?.toLowerCase();
+      if (!addr || seen.has(addr)) return;
+      const { label, isLabeled } = getLabel(tx.to_address);
+      seen.set(addr, { address: addr, label, isLabeled });
+    });
+    return Array.from(seen.values()).sort((a, b) => {
+      // Labeled first, then alphabetical
+      if (a.isLabeled !== b.isLabeled) return a.isLabeled ? -1 : 1;
+      return a.label.localeCompare(b.label);
+    });
+  }, [transactions, labelMap]);
+
+  // Apply client-side name search + sort
   const sortedTransactions = useMemo(() => {
     if (!transactions) return [];
-    
-    return [...transactions].sort((a, b) => {
+
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? transactions.filter((tx) => {
+          const fromLabel = labelMap.get(tx.from_address.toLowerCase()) || '';
+          const toLabel = labelMap.get(tx.to_address.toLowerCase()) || '';
+          return (
+            tx.tx_hash.toLowerCase().includes(q) ||
+            tx.from_address.toLowerCase().includes(q) ||
+            tx.to_address.toLowerCase().includes(q) ||
+            tx.token_symbol.toLowerCase().includes(q) ||
+            fromLabel.toLowerCase().includes(q) ||
+            toLabel.toLowerCase().includes(q)
+          );
+        })
+      : transactions;
+
+    return [...filtered].sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortField) {
         case 'timestamp':
           comparison = a.timestamp.getTime() - b.timestamp.getTime();
@@ -239,10 +272,10 @@ const Transactions = () => {
           comparison = a.direction.localeCompare(b.direction);
           break;
       }
-      
+
       return sortOrder === 'asc' ? comparison : -comparison;
     });
-  }, [transactions, sortField, sortOrder]);
+  }, [transactions, search, labelMap, sortField, sortOrder]);
 
   const paginatedTransactions = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
