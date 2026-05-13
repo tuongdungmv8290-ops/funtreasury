@@ -1,41 +1,59 @@
-# Bộ lọc theo tên người nhận + Liên kết FUN.RICH
+## Mục tiêu
 
-## 1. Mở rộng ô tìm kiếm để hỗ trợ TÊN người nhận/gửi
-**File:** `src/hooks/useTransactions.ts`
-- Thêm tham số `labelMap?: Record<string,string>` vào `TransactionFilters` (hoặc filter ngay tại UI).
-- Khi `filters.search` có giá trị, ngoài hash/address/token sẽ match thêm `label` của `from_address` và `to_address` (FUN TREASURY, Hồ Thị Hương, v.v.).
+Trên trang `/transactions`, mọi giao dịch của ví FUN TREASURY (cả 500.000 CAMLY lẫn 0.03 BNB đi kèm) phải hiển thị **tên người nhận thật** (ví dụ "Hoàng Điệp FunRich", "Phương Anh") **giống hệt** trang fun.rich/funtreasury — tự động, không cần admin gõ ghi chú cho từng dòng.
 
-**File:** `src/pages/Transactions.tsx`
-- Cập nhật placeholder ô search: "🔍 Tìm theo tên người nhận, ví, token, hash..."
-- Truyền `labelMap` từ `useAddressLabels()` vào filter (hoặc lọc client-side trong `sortedTransactions` bằng `getLabel(...).label.toLowerCase().includes(search)`).
+Hiện tại đã có:
+- Cột From / To đã render label nếu địa chỉ có trong `address_labels` hoặc `wallets`.
+- Hook `useSyncRewardLabels` đang cố upsert nhãn nhưng bị **RLS chặn** (yêu cầu `auth.uid() = created_by` cho non-admin, và chỉ admin mới ghi được toàn cục) → đa số người dùng (kể cả guest) không thể seed nhãn → bảng vẫn hiện địa chỉ ngắn `0xd90c...fef3`.
+- Cặp BNB 0.03 đã được sync nhưng không có liên kết nào tới `gifts/camly_transfers` (chỉ CAMLY có) → kể cả khi nhãn cho recipient có sẵn, BNB tx vẫn hiện đúng nếu `to_address` khớp; vấn đề là **chưa có nhãn nào được seed**.
 
-## 2. Thêm Select "Người nhận" (Recipient filter)
-**File:** `src/pages/Transactions.tsx`
-- Thêm state `recipientFilter` (default `'all'`).
-- Build danh sách recipients duy nhất từ `transactions` → mỗi entry `{ address, label }` (lấy từ `getLabel`), sort A-Z, ưu tiên các địa chỉ đã có label.
-- Render `<Select>` mới cạnh các select hiện tại, hiển thị tên (label) thay vì address rút gọn.
-- Khi chọn: lọc `sortedTransactions` theo `tx.to_address === recipientFilter` (và direction OUT mặc định nếu là FUN TREASURY).
+## Giải pháp
 
-## 3. Liên kết hàng giao dịch tới FUN.RICH/FUNTREASURY
-**File:** `src/pages/Transactions.tsx`
-- Thêm helper `getFunRichLink(tx)` trả về:
-  - `https://fun.rich/funtreasury` cho mọi giao dịch có `from_address` hoặc `to_address` là 1 trong 7 ví FUN TREASURY chính thức (BNB: `0xa4967...`, `0x6092...`, `0x35c5...`, `0xc7260...`; BTC: `bc1q8t7e...`, `bc1qp37d...`, `bc1qe4eh...`).
-  - null cho các tx khác.
-- Trong cột **From/To**: khi label = "FUN TREASURY" hoặc liên quan ví chính thức, biến tên thành `<a href={getFunRichLink(tx)} target="_blank">` với icon `ExternalLink` nhỏ vàng bên cạnh.
-- Trong cột **Tx Hash**: thêm icon thứ 2 (logo FUN nhỏ hoặc `↗`) link tới `https://fun.rich/funtreasury` khi tx liên quan ví FUN TREASURY, song song với link explorer.
+Tạo **edge function** `sync-reward-labels` chạy bằng service role để bypass RLS, tổng hợp toàn bộ nguồn tên rồi upsert vào `address_labels`. Trang `/transactions` tự gọi function này (debounce) mỗi khi mở.
 
-## 4. Đảm bảo "tất cả các ví hiện có" được sync đầy đủ
-**File:** `supabase/functions/sync-transactions/index.ts` (đã sync 7 ví)
-- Trigger 1 lần `supabase.functions.invoke('sync-transactions')` khi vào trang để cập nhật mới nhất (debounce 60s qua `localStorage` key `last-tx-sync`).
-- Toast nhỏ "Đang đồng bộ giao dịch mới..." khi sync chạy nền.
+### 1. Edge function mới: `supabase/functions/sync-reward-labels/index.ts`
 
-## Kỹ thuật chi tiết
-- Constant `FUN_TREASURY_WALLETS: Set<string>` (lowercase) đặt ở `src/lib/funTreasury.ts` mới để tái dùng.
-- Recipient filter dùng `useMemo` để tránh re-compute mỗi render.
-- Search vẫn giữ nguyên server filters (wallet/direction/token); name match hoàn toàn client-side trên kết quả đã trả về.
-- Không thay đổi schema DB.
+Public (`verify_jwt = false`), dùng `SUPABASE_SERVICE_ROLE_KEY`.
+
+Logic:
+1. Đọc `camly_transfers` (recipient_address, recipient_name) → map address → name.
+2. Đọc `gifts` (status='confirmed') → join `profiles` (user_id, display_name, wallet_address) → map wallet_address → display_name.
+3. Đọc `profiles` có wallet_address + display_name (kể cả không liên quan gifts) → fallback.
+4. Đọc `address_labels` hiện có → bỏ qua địa chỉ đã có nhãn (không ghi đè nhãn admin đặt tay).
+5. Bulk upsert `address_labels` (address lowercase, label, created_by=null).
+6. Trả về `{ inserted, skipped }`.
+
+Cũng đăng ký block trong `supabase/config.toml`:
+```
+[functions.sync-reward-labels]
+verify_jwt = false
+```
+
+### 2. Cập nhật `src/hooks/useSyncRewardLabels.ts`
+
+Thay vì client-side upsert (bị RLS chặn), gọi edge function:
+```ts
+await supabase.functions.invoke('sync-reward-labels');
+queryClient.invalidateQueries({ queryKey: ['address-labels'] });
+```
+Giữ debounce 1 lần/phiên qua `useRef` + `localStorage` key `last-reward-label-sync` (TTL 5 phút) để tránh gọi liên tục.
+
+### 3. Không thay đổi UI
+
+Cột From/To, badge `FUN.RICH ↗`, cột Tx Hash đã hiển thị đúng. Sau khi nhãn được seed bởi function trên, các dòng 500.000 CAMLY và 0.03 BNB cùng `to_address` sẽ tự hiện tên (ví dụ "Hoàng Điệp FunRich") mà không cần đụng vào component.
+
+### 4. (Tùy chọn nhỏ) Cải thiện độ ưu tiên trong `useAddressLabels.ts`
+
+Thứ tự áp dụng nhãn (đã đúng): wallets → address_labels (override). Không cần đổi.
 
 ## Files thay đổi
-- `src/lib/funTreasury.ts` (mới) - danh sách ví + helper `getFunRichLink`
-- `src/hooks/useTransactions.ts` - mở rộng search match label
-- `src/pages/Transactions.tsx` - select Recipient + cột link FUN.RICH + auto-sync khi mount
+
+- **Mới**: `supabase/functions/sync-reward-labels/index.ts`
+- **Sửa**: `supabase/config.toml` (thêm block function mới)
+- **Sửa**: `src/hooks/useSyncRewardLabels.ts` (chuyển sang gọi edge function)
+
+Không sửa `Transactions.tsx`, `funTreasury.ts`, hay schema DB.
+
+## Kết quả mong đợi
+
+Mở `/transactions` → sau ~1–2 giây (function chạy nền) → toàn bộ giao dịch của các ví FUN TREASURY hiển thị tên người nhận giống fun.rich, badge `FUN.RICH ↗` link tới `https://fun.rich/funtreasury`. Không cần admin ghi chú thủ công.

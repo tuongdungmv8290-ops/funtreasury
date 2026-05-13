@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.get-nft-data]
 verify_jwt = false
+
+[functions.sync-reward-labels]
+verify_jwt = false
