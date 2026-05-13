@@ -116,6 +116,42 @@ function getEtherscanChainId(chain: string): number {
   return chainIds[chain] || 56;
 }
 
+// Fetch native (BNB/ETH) transfers from Etherscan V2
+interface BSCScanNativeTx {
+  hash: string;
+  blockNumber: string;
+  timeStamp: string;
+  from: string;
+  to: string;
+  value: string;
+  isError: string;
+  txreceipt_status: string;
+  gasUsed?: string;
+  gasPrice?: string;
+}
+
+async function fetchNativeFromEtherscanV2(
+  address: string,
+  apiKey: string,
+  chainId: number = 56
+): Promise<BSCScanNativeTx[]> {
+  const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=3000&sort=desc&apikey=${apiKey}`;
+  console.log(`Calling Etherscan V2 NATIVE API (chainid=${chainId}) for address: ${address.substring(0, 10)}...`);
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.status === '1' && Array.isArray(data.result)) {
+      console.log(`Etherscan V2 returned ${data.result.length} native transfers`);
+      return data.result;
+    }
+    console.log(`Etherscan V2 native returned status: ${data.status}, message: ${data.message}`);
+    return [];
+  } catch (error) {
+    console.error('Etherscan V2 native API error:', error);
+    return [];
+  }
+}
+
 // Convert BSCScan transfer to ERC20Transfer format
 function convertBSCScanToERC20(bscTx: BSCScanTransfer): ERC20Transfer {
   return {
