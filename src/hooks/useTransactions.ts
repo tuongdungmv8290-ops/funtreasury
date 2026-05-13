@@ -142,22 +142,15 @@ export function useTransactions(filters?: TransactionFilters) {
         transactions = transactions.filter(tx => tx.to_address.toLowerCase() === r);
       }
 
-      // Client-side search filter (also matches address labels / recipient names)
+      // Client-side search filter (hash/address/token; name matching is done in the page)
       if (filters?.search) {
         const searchLower = filters.search.toLowerCase();
-        const lm = filters.labelMap;
-        transactions = transactions.filter(tx => {
-          const fromLabel = lm?.get(tx.from_address.toLowerCase()) || '';
-          const toLabel = lm?.get(tx.to_address.toLowerCase()) || '';
-          return (
-            tx.tx_hash.toLowerCase().includes(searchLower) ||
-            tx.from_address.toLowerCase().includes(searchLower) ||
-            tx.to_address.toLowerCase().includes(searchLower) ||
-            tx.token_symbol.toLowerCase().includes(searchLower) ||
-            fromLabel.toLowerCase().includes(searchLower) ||
-            toLabel.toLowerCase().includes(searchLower)
-          );
-        });
+        transactions = transactions.filter(tx =>
+          tx.tx_hash.toLowerCase().includes(searchLower) ||
+          tx.from_address.toLowerCase().includes(searchLower) ||
+          tx.to_address.toLowerCase().includes(searchLower) ||
+          tx.token_symbol.toLowerCase().includes(searchLower)
+        );
       }
 
       return transactions;
