@@ -136,15 +136,28 @@ export function useTransactions(filters?: TransactionFilters) {
           } : undefined,
         }));
 
-      // Client-side search filter
+      // Client-side recipient filter
+      if (filters?.recipientAddress) {
+        const r = filters.recipientAddress.toLowerCase();
+        transactions = transactions.filter(tx => tx.to_address.toLowerCase() === r);
+      }
+
+      // Client-side search filter (also matches address labels / recipient names)
       if (filters?.search) {
         const searchLower = filters.search.toLowerCase();
-        transactions = transactions.filter(tx =>
-          tx.tx_hash.toLowerCase().includes(searchLower) ||
-          tx.from_address.toLowerCase().includes(searchLower) ||
-          tx.to_address.toLowerCase().includes(searchLower) ||
-          tx.token_symbol.toLowerCase().includes(searchLower)
-        );
+        const lm = filters.labelMap;
+        transactions = transactions.filter(tx => {
+          const fromLabel = lm?.get(tx.from_address.toLowerCase()) || '';
+          const toLabel = lm?.get(tx.to_address.toLowerCase()) || '';
+          return (
+            tx.tx_hash.toLowerCase().includes(searchLower) ||
+            tx.from_address.toLowerCase().includes(searchLower) ||
+            tx.to_address.toLowerCase().includes(searchLower) ||
+            tx.token_symbol.toLowerCase().includes(searchLower) ||
+            fromLabel.toLowerCase().includes(searchLower) ||
+            toLabel.toLowerCase().includes(searchLower)
+          );
+        });
       }
 
       return transactions;
