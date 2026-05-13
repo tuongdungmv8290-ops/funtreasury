@@ -874,15 +874,32 @@ const Transactions = () => {
                         <td className="py-3 px-4">
                           {(() => {
                             const { label, isLabeled } = getLabel(tx.from_address);
+                            const isFun = isFunTreasuryAddress(tx.from_address);
+                            const labelEl = (
+                              <span className={`text-sm px-2 py-0.5 rounded inline-flex items-center gap-1 ${
+                                isLabeled
+                                  ? 'text-treasury-gold font-bold bg-treasury-gold/10'
+                                  : 'text-muted-foreground font-mono bg-secondary/50'
+                              }`}>
+                                {label}
+                                {isFun && <ExternalLink className="w-3 h-3 opacity-70" />}
+                              </span>
+                            );
                             return (
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm px-2 py-0.5 rounded ${
-                                  isLabeled 
-                                    ? 'text-treasury-gold font-bold bg-treasury-gold/10' 
-                                    : 'text-muted-foreground font-mono bg-secondary/50'
-                                }`}>
-                                  {label}
-                                </span>
+                                {isFun ? (
+                                  <a
+                                    href={FUN_RICH_TREASURY_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Mở FUN.RICH / FUN TREASURY"
+                                    className="hover:opacity-80 transition-opacity"
+                                  >
+                                    {labelEl}
+                                  </a>
+                                ) : (
+                                  labelEl
+                                )}
                                 <button
                                   onClick={() => copyToClipboard(tx.from_address, `from-${tx.id}`)}
                                   className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
@@ -904,15 +921,32 @@ const Transactions = () => {
                         <td className="py-3 px-4">
                           {(() => {
                             const { label, isLabeled } = getLabel(tx.to_address);
+                            const isFun = isFunTreasuryAddress(tx.to_address);
+                            const labelEl = (
+                              <span className={`text-sm px-2 py-0.5 rounded inline-flex items-center gap-1 ${
+                                isLabeled
+                                  ? 'text-treasury-gold font-bold bg-treasury-gold/10'
+                                  : 'text-muted-foreground font-mono bg-secondary/50'
+                              }`}>
+                                {label}
+                                {isFun && <ExternalLink className="w-3 h-3 opacity-70" />}
+                              </span>
+                            );
                             return (
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm px-2 py-0.5 rounded ${
-                                  isLabeled 
-                                    ? 'text-treasury-gold font-bold bg-treasury-gold/10' 
-                                    : 'text-muted-foreground font-mono bg-secondary/50'
-                                }`}>
-                                  {label}
-                                </span>
+                                {isFun ? (
+                                  <a
+                                    href={FUN_RICH_TREASURY_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Mở FUN.RICH / FUN TREASURY"
+                                    className="hover:opacity-80 transition-opacity"
+                                  >
+                                    {labelEl}
+                                  </a>
+                                ) : (
+                                  labelEl
+                                )}
                                 <button
                                   onClick={() => copyToClipboard(tx.to_address, `to-${tx.id}`)}
                                   className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-secondary rounded"
