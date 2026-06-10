@@ -184,10 +184,6 @@ export function AddressLabelManager() {
           {autoSync.isPending ? 'Đang scrape…' : 'Cập nhật từ fun.rich'}
         </Button>
       </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          Dán nội dung từ <span className="font-mono">fun.rich/funtreasury</span> (HTML/JSON/text) → hệ thống tự trích tên ↔ địa chỉ.
-        </p>
-      </div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
