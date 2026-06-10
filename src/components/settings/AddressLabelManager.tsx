@@ -286,13 +286,21 @@ export function AddressLabelManager() {
               {editing === l.address ? (
                 <>
                   <Input
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && updateLabel.mutate({ address: l.address, label: editValue })}
+                    value={editLabel}
+                    onChange={(e) => setEditLabel(e.target.value)}
+                    placeholder="Tên"
                     className="h-8 text-sm flex-1"
                     autoFocus
                   />
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateLabel.mutate({ address: l.address, label: editValue })}>
+                  <Input
+                    value={editAddress}
+                    onChange={(e) => setEditAddress(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && updateLabel.mutate({ oldAddress: l.address, address: editAddress, label: editLabel })}
+                    placeholder="0x… hoặc bc1…"
+                    className="h-8 text-xs font-mono flex-1 max-w-[260px]"
+                  />
+                  <Button size="icon" variant="ghost" className="h-7 w-7" disabled={updateLabel.isPending}
+                    onClick={() => updateLabel.mutate({ oldAddress: l.address, address: editAddress, label: editLabel })}>
                     <Check className="w-4 h-4 text-green-500" />
                   </Button>
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(null)}>
@@ -309,7 +317,7 @@ export function AddressLabelManager() {
                     size="icon"
                     variant="ghost"
                     className="h-7 w-7 opacity-0 group-hover:opacity-100"
-                    onClick={() => { setEditing(l.address); setEditValue(l.label); }}
+                    onClick={() => { setEditing(l.address); setEditLabel(l.label); setEditAddress(l.address); }}
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
