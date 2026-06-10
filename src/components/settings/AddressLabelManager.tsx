@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Save, ClipboardPaste, Search, Sparkles, Pencil, X, Check } from 'lucide-react';
+import { Trash2, Save, ClipboardPaste, Search, Sparkles, Pencil, X, Check, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ADDR_RE = /(0x[a-fA-F0-9]{40}|bc1[a-z0-9]{20,})/g;
@@ -150,12 +150,40 @@ export function AddressLabelManager() {
     onError: (e: any) => toast.error(e.message || 'Lỗi'),
   });
 
+  const autoSync = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('scrape-funrich-labels');
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data as { scraped: number; inserted: number; skipped_existing: number };
+    },
+    onSuccess: (d) => {
+      toast.success(`🌐 fun.rich: tìm ${d.scraped} ví, thêm mới ${d.inserted}, bỏ qua ${d.skipped_existing} đã có`);
+      qc.invalidateQueries({ queryKey: ['address-labels'] });
+    },
+    onError: (e: any) => toast.error(e.message || 'Sync thất bại'),
+  });
+
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-6">
-      <div>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
         <h3 className="text-xl font-bold text-treasury-gold flex items-center gap-2">
           <Sparkles className="w-5 h-5" /> Quản lý nhãn ví (Address Labels)
         </h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Dán nội dung từ <span className="font-mono">fun.rich/funtreasury</span> (HTML/JSON/text) → hệ thống tự trích tên ↔ địa chỉ.
+        </p>
+        </div>
+        <Button
+          onClick={() => autoSync.mutate()}
+          disabled={autoSync.isPending}
+          className="bg-treasury-gold/10 text-treasury-gold border border-treasury-gold/30 hover:bg-treasury-gold/20"
+        >
+          <Globe className="w-4 h-4 mr-2" />
+          {autoSync.isPending ? 'Đang scrape…' : 'Cập nhật từ fun.rich'}
+        </Button>
+      </div>
         <p className="text-sm text-muted-foreground mt-1">
           Dán nội dung từ <span className="font-mono">fun.rich/funtreasury</span> (HTML/JSON/text) → hệ thống tự trích tên ↔ địa chỉ.
         </p>
