@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.sync-reward-labels]
 verify_jwt = false
+
+[functions.scrape-funrich-labels]
+verify_jwt = false
