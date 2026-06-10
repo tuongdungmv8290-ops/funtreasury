@@ -18,7 +18,7 @@ import {
   FileText, Settings, Users, Wallet, Tag, Globe, Send, Moon, LogOut, Copy,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useTheme } from '@/components/ThemeProvider';
+import { useTheme } from 'next-themes';
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
