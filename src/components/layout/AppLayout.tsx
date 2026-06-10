@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { TreasurySidebar } from './TreasurySidebar';
 import { AppHeader } from './AppHeader';
 import { ViewOnlyWatermark } from '@/components/ViewOnlyWatermark';
+import { CommandPalette } from '@/components/CommandPalette';
 
 export function AppLayout() {
   return (
@@ -15,6 +16,7 @@ export function AppLayout() {
           <main className="flex-1">
             <Outlet />
           </main>
+          <CommandPalette />
         </SidebarInset>
       </div>
     </SidebarProvider>
