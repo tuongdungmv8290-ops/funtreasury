@@ -66,8 +66,9 @@ export function AddressLabelManager() {
   const [raw, setRaw] = useState('');
   const [pairs, setPairs] = useState<Pair[]>([]);
   const [search, setSearch] = useState('');
-  const [editing, setEditing] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
+  const [editing, setEditing] = useState<string | null>(null); // old address
+  const [editLabel, setEditLabel] = useState('');
+  const [editAddress, setEditAddress] = useState('');
 
   const { data: labels = [] } = useQuery({
     queryKey: ['address-labels'],
@@ -123,12 +124,29 @@ export function AddressLabelManager() {
   });
 
   const updateLabel = useMutation({
-    mutationFn: async ({ address, label }: { address: string; label: string }) => {
-      const { error } = await supabase.from('address_labels').upsert(
-        { address: address.toLowerCase(), label },
-        { onConflict: 'address' }
-      );
-      if (error) throw error;
+    mutationFn: async ({ oldAddress, address, label }: { oldAddress: string; address: string; label: string }) => {
+      const newAddr = address.trim().toLowerCase();
+      const oldAddr = oldAddress.toLowerCase();
+      const cleanLabel = label.trim();
+      if (!cleanLabel) throw new Error('Tên không được để trống');
+      if (!ADDR_RE_ONE.test(newAddr)) throw new Error('Địa chỉ không hợp lệ (0x… hoặc bc1…)');
+
+      if (newAddr === oldAddr) {
+        const { error } = await supabase.from('address_labels').upsert(
+          { address: newAddr, label: cleanLabel },
+          { onConflict: 'address' }
+        );
+        if (error) throw error;
+      } else {
+        // Check new address doesn't collide
+        const { data: existing } = await supabase
+          .from('address_labels').select('address').eq('address', newAddr).maybeSingle();
+        if (existing) throw new Error('Địa chỉ mới đã có nhãn — xoá nhãn cũ trước');
+        const { error: delErr } = await supabase.from('address_labels').delete().eq('address', oldAddr);
+        if (delErr) throw delErr;
+        const { error: insErr } = await supabase.from('address_labels').insert({ address: newAddr, label: cleanLabel });
+        if (insErr) throw insErr;
+      }
     },
     onSuccess: () => {
       toast.success('Đã cập nhật');
