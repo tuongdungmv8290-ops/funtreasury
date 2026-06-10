@@ -1,59 +1,49 @@
-## Mục tiêu
+## Phần A — Nâng cấp chỉnh sửa nhãn (cho phép sửa CẢ tên và địa chỉ)
 
-Trên trang `/transactions`, mọi giao dịch của ví FUN TREASURY (cả 500.000 CAMLY lẫn 0.03 BNB đi kèm) phải hiển thị **tên người nhận thật** (ví dụ "Hoàng Điệp FunRich", "Phương Anh") **giống hệt** trang fun.rich/funtreasury — tự động, không cần admin gõ ghi chú cho từng dòng.
+Hiện tại nút bút chì chỉ cho sửa **tên**. Nâng cấp để sửa được cả địa chỉ ví.
 
-Hiện tại đã có:
-- Cột From / To đã render label nếu địa chỉ có trong `address_labels` hoặc `wallets`.
-- Hook `useSyncRewardLabels` đang cố upsert nhãn nhưng bị **RLS chặn** (yêu cầu `auth.uid() = created_by` cho non-admin, và chỉ admin mới ghi được toàn cục) → đa số người dùng (kể cả guest) không thể seed nhãn → bảng vẫn hiện địa chỉ ngắn `0xd90c...fef3`.
-- Cặp BNB 0.03 đã được sync nhưng không có liên kết nào tới `gifts/camly_transfers` (chỉ CAMLY có) → kể cả khi nhãn cho recipient có sẵn, BNB tx vẫn hiện đúng nếu `to_address` khớp; vấn đề là **chưa có nhãn nào được seed**.
+**File:** `src/components/settings/AddressLabelManager.tsx`
 
-## Giải pháp
+- Thay `editing: string | null` + `editValue: string` bằng state `editing: { oldAddress, label, address } | null`.
+- Khi bấm bút chì → mở 2 ô input cạnh nhau: **Tên** + **Địa chỉ ví** (font mono), kèm nút ✓ Lưu và ✗ Huỷ.
+- Mutation `updateLabel` mới:
+  - Validate địa chỉ mới khớp `0x...{40}` hoặc `bc1...`.
+  - Nếu địa chỉ **không đổi** → `upsert({ address, label })`.
+  - Nếu địa chỉ **đổi** → `delete` row cũ theo `oldAddress`, sau đó `upsert` row mới `{ address: newAddress.toLowerCase(), label }`. (Làm tuần tự, không cần transaction vì admin-only.)
+  - Báo lỗi nếu địa chỉ mới đã tồn tại ở row khác (check trước khi delete).
+- Giữ nguyên nút xoá 🗑.
 
-Tạo **edge function** `sync-reward-labels` chạy bằng service role để bypass RLS, tổng hợp toàn bộ nguồn tên rồi upsert vào `address_labels`. Trang `/transactions` tự gọi function này (debounce) mỗi khi mở.
+## Phần B — Bước 2: Command Palette ⌘K (Spotlight cho Treasury)
 
-### 1. Edge function mới: `supabase/functions/sync-reward-labels/index.ts`
+Mục tiêu: bấm **⌘K** (Mac) / **Ctrl+K** (Win) ở bất cứ trang nào → mở popup tìm kiếm nhanh, gõ tên ví / nhãn / địa chỉ / route → Enter để nhảy tới.
 
-Public (`verify_jwt = false`), dùng `SUPABASE_SERVICE_ROLE_KEY`.
+**Tạo mới:** `src/components/CommandPalette.tsx`
 
-Logic:
-1. Đọc `camly_transfers` (recipient_address, recipient_name) → map address → name.
-2. Đọc `gifts` (status='confirmed') → join `profiles` (user_id, display_name, wallet_address) → map wallet_address → display_name.
-3. Đọc `profiles` có wallet_address + display_name (kể cả không liên quan gifts) → fallback.
-4. Đọc `address_labels` hiện có → bỏ qua địa chỉ đã có nhãn (không ghi đè nhãn admin đặt tay).
-5. Bulk upsert `address_labels` (address lowercase, label, created_by=null).
-6. Trả về `{ inserted, skipped }`.
+- Dùng sẵn `@/components/ui/command` (cmdk) + `Dialog`.
+- Listen global `keydown`: `(e.metaKey||e.ctrlKey) && e.key==='k'` → toggle open.
+- Indexes (gộp vào 1 list, có group heading):
+  1. **Trang** (tĩnh): Dashboard, Ví Treasury, Giao dịch, Phần thưởng (Rewards), CAMLY, Ánh Sáng, NFT, Báo cáo, Cài đặt, Cộng đồng/Posts.
+  2. **Ví Treasury** từ `wallets` (name + address rút gọn) → nhảy `/?wallet=<address>` hoặc Dashboard.
+  3. **Nhãn** từ `address_labels` (label + address) → copy address vào clipboard + toast, hoặc mở Settings.
+  4. **Hành động nhanh:**
+     - "Cập nhật từ fun.rich" → invoke `scrape-funrich-labels`.
+     - "Gửi CAMLY" → mở modal Send (nếu ở trang Camly) hoặc điều hướng `/camly`.
+     - "Đổi theme sáng/tối", "Đăng xuất".
+- Mỗi item có icon (lucide), shortcut hint khi liên quan.
+- Mount global trong `src/components/layout/AppLayout.tsx` (luôn render).
+- Thêm nút nhỏ "⌘K" trong `AppHeader` (desktop) để khám phá.
+- i18n: chuỗi tiếng Việt, có thể bổ sung key vào `vi.json`/`en.json` cho 5 nhãn chính (search placeholder, group titles).
 
-Cũng đăng ký block trong `supabase/config.toml`:
-```
-[functions.sync-reward-labels]
-verify_jwt = false
-```
+### Kỹ thuật
 
-### 2. Cập nhật `src/hooks/useSyncRewardLabels.ts`
+- Dữ liệu lấy qua React Query (`wallets`, `address-labels`) — đã có hook/queryKey sẵn nên cache dùng chung, không tạo request thừa.
+- Fuzzy filter: cmdk tự lo (default scoring).
+- Không tạo bảng/migration mới. Không đổi backend.
 
-Thay vì client-side upsert (bị RLS chặn), gọi edge function:
-```ts
-await supabase.functions.invoke('sync-reward-labels');
-queryClient.invalidateQueries({ queryKey: ['address-labels'] });
-```
-Giữ debounce 1 lần/phiên qua `useRef` + `localStorage` key `last-reward-label-sync` (TTL 5 phút) để tránh gọi liên tục.
+### Files
 
-### 3. Không thay đổi UI
+- New: `src/components/CommandPalette.tsx`
+- Edit: `src/components/layout/AppLayout.tsx` (mount), `src/components/layout/AppHeader.tsx` (nút ⌘K), `src/components/settings/AddressLabelManager.tsx` (sửa địa chỉ).
+- Optional edit: `src/locales/vi.json`, `src/locales/en.json` (5 keys).
 
-Cột From/To, badge `FUN.RICH ↗`, cột Tx Hash đã hiển thị đúng. Sau khi nhãn được seed bởi function trên, các dòng 500.000 CAMLY và 0.03 BNB cùng `to_address` sẽ tự hiện tên (ví dụ "Hoàng Điệp FunRich") mà không cần đụng vào component.
-
-### 4. (Tùy chọn nhỏ) Cải thiện độ ưu tiên trong `useAddressLabels.ts`
-
-Thứ tự áp dụng nhãn (đã đúng): wallets → address_labels (override). Không cần đổi.
-
-## Files thay đổi
-
-- **Mới**: `supabase/functions/sync-reward-labels/index.ts`
-- **Sửa**: `supabase/config.toml` (thêm block function mới)
-- **Sửa**: `src/hooks/useSyncRewardLabels.ts` (chuyển sang gọi edge function)
-
-Không sửa `Transactions.tsx`, `funTreasury.ts`, hay schema DB.
-
-## Kết quả mong đợi
-
-Mở `/transactions` → sau ~1–2 giây (function chạy nền) → toàn bộ giao dịch của các ví FUN TREASURY hiển thị tên người nhận giống fun.rich, badge `FUN.RICH ↗` link tới `https://fun.rich/funtreasury`. Không cần admin ghi chú thủ công.
+Sau khi xong Phần B, sẵn sàng chuyển **Bước 3: Onboarding Tour (driver.js)**.
