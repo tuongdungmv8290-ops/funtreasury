@@ -1466,7 +1466,7 @@ const Settings = () => {
                 </Select>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-wrap gap-2">
                 <Button
                   onClick={handleSyncNow}
                   disabled={isSyncing}
@@ -1474,6 +1474,15 @@ const Settings = () => {
                 >
                   <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                   {isSyncing ? 'Syncing...' : 'Sync Now'}
+                </Button>
+                <Button
+                  onClick={handleFullResync}
+                  disabled={isSyncing}
+                  variant="outline"
+                  className="gap-2 border-primary/40 text-primary hover:bg-primary/10 shadow-sm"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                  Đồng bộ lại toàn bộ lịch sử
                 </Button>
               </div>
             </div>
