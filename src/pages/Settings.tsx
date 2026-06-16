@@ -485,6 +485,48 @@ const Settings = () => {
     }
   };
 
+  const handleFullResync = async () => {
+    if (!window.confirm('Quét lại TOÀN BỘ lịch sử giao dịch của tất cả ví từ block 0?\n\nThao tác này có thể mất 1–3 phút và sẽ đảm bảo mọi giao dịch gửi/nhận đều được nạp đầy đủ.')) {
+      return;
+    }
+    setIsSyncing(true);
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+        setIsSyncing(false);
+        return;
+      }
+
+      toast.info('Đang quét lại toàn bộ lịch sử... (có thể mất vài phút)');
+      const { data, error } = await supabase.functions.invoke('sync-transactions', {
+        body: { force_full_sync: true }
+      });
+
+      if (error) {
+        console.error('Full resync error:', error);
+        toast.error('Không thể kết nối tới server sync');
+        return;
+      }
+
+      if (data?.success) {
+        toast.success(`✅ Resync hoàn tất: +${data.totalNewTransactions || 0} giao dịch mới`, {
+          description: data.results?.map((r: any) =>
+            `${r.wallet}: +${r.newTxCount}${r.error ? ` (${r.error})` : ''}`
+          ).join(' | '),
+          duration: 15000
+        });
+      } else {
+        toast.error(data?.error || 'Resync thất bại');
+      }
+    } catch (e) {
+      console.error('Full resync error:', e);
+      toast.error('Lỗi kết nối khi resync');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleTestMoralisConnection = async () => {
     if (!moralisApiKey.trim()) {
       toast.error('Vui lòng nhập Moralis API Key');
@@ -1424,7 +1466,7 @@ const Settings = () => {
                 </Select>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-wrap gap-2">
                 <Button
                   onClick={handleSyncNow}
                   disabled={isSyncing}
@@ -1432,6 +1474,15 @@ const Settings = () => {
                 >
                   <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                   {isSyncing ? 'Syncing...' : 'Sync Now'}
+                </Button>
+                <Button
+                  onClick={handleFullResync}
+                  disabled={isSyncing}
+                  variant="outline"
+                  className="gap-2 border-primary/40 text-primary hover:bg-primary/10 shadow-sm"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                  Đồng bộ lại toàn bộ lịch sử
                 </Button>
               </div>
             </div>
