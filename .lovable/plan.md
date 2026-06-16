@@ -1,49 +1,56 @@
-## Phần A — Nâng cấp chỉnh sửa nhãn (cho phép sửa CẢ tên và địa chỉ)
+# Mục tiêu
 
-Hiện tại nút bút chì chỉ cho sửa **tên**. Nâng cấp để sửa được cả địa chỉ ví.
+Cập nhật **toàn bộ lịch sử giao dịch gửi (OUT) và nhận (IN)** từ 7 ví FUN Treasury (5 BNB + 2 BTC) một cách chính xác, không bỏ sót, không trùng lặp.
 
-**File:** `src/components/settings/AddressLabelManager.tsx`
+# Hiện trạng
 
-- Thay `editing: string | null` + `editValue: string` bằng state `editing: { oldAddress, label, address } | null`.
-- Khi bấm bút chì → mở 2 ô input cạnh nhau: **Tên** + **Địa chỉ ví** (font mono), kèm nút ✓ Lưu và ✗ Huỷ.
-- Mutation `updateLabel` mới:
-  - Validate địa chỉ mới khớp `0x...{40}` hoặc `bc1...`.
-  - Nếu địa chỉ **không đổi** → `upsert({ address, label })`.
-  - Nếu địa chỉ **đổi** → `delete` row cũ theo `oldAddress`, sau đó `upsert` row mới `{ address: newAddress.toLowerCase(), label }`. (Làm tuần tự, không cần transaction vì admin-only.)
-  - Báo lỗi nếu địa chỉ mới đã tồn tại ở row khác (check trước khi delete).
-- Giữ nguyên nút xoá 🗑.
+- Edge function `sync-transactions` đã hỗ trợ `force_full_sync: true` (reset `last_block_synced`, quét lại từ đầu) — nhưng UI hiện chỉ chạy được cho **từng ví riêng lẻ** qua nút trong `WalletSummaryCards.tsx`.
+- Nút "Sync" tổng (Settings, Dashboard, Transactions) chỉ chạy **incremental sync**, nên các ví có `last_block_synced` cao (vd. `VÍ TỔNG FUN TREASURY - BNB 2 = 84268655`) sẽ luôn trả về "0 new" dù lịch sử cũ chưa đầy đủ.
+- Log cho thấy 2 vấn đề kỹ thuật:
+  1. Etherscan V2 fallback trả `status:0 NOTOK` cho ví BNB 2 → có thể do API key BSCSCAN/ETHERSCAN sai hoặc rate limit.
+  2. Moralis ERC20 chỉ gọi `page 1` rồi dừng (không lặp `cursor`) cho nhánh fallback, nên các ví có >100 token transfer cũ chưa được lấy hết khi full-resync.
 
-## Phần B — Bước 2: Command Palette ⌘K (Spotlight cho Treasury)
+# Phạm vi thay đổi
 
-Mục tiêu: bấm **⌘K** (Mac) / **Ctrl+K** (Win) ở bất cứ trang nào → mở popup tìm kiếm nhanh, gõ tên ví / nhãn / địa chỉ / route → Enter để nhảy tới.
+## 1. UI — Nút "Resync toàn bộ lịch sử" (Settings → Wallets)
 
-**Tạo mới:** `src/components/CommandPalette.tsx`
+- Thêm 1 nút mới (admin-only) **"Đồng bộ lại toàn bộ lịch sử"** bên cạnh nút "Sync" hiện có trong `src/pages/Settings.tsx`.
+- Hộp xác nhận (AlertDialog): cảnh báo sẽ quét lại từ block 0 cho **tất cả ví**, có thể mất 1–3 phút.
+- Gọi `supabase.functions.invoke('sync-transactions', { body: { force_full_sync: true } })` (không truyền `wallet_id` → áp dụng cho mọi ví).
+- Toast tiến trình + hiển thị kết quả `{ added, cleaned_up }` per-wallet từ response.
 
-- Dùng sẵn `@/components/ui/command` (cmdk) + `Dialog`.
-- Listen global `keydown`: `(e.metaKey||e.ctrlKey) && e.key==='k'` → toggle open.
-- Indexes (gộp vào 1 list, có group heading):
-  1. **Trang** (tĩnh): Dashboard, Ví Treasury, Giao dịch, Phần thưởng (Rewards), CAMLY, Ánh Sáng, NFT, Báo cáo, Cài đặt, Cộng đồng/Posts.
-  2. **Ví Treasury** từ `wallets` (name + address rút gọn) → nhảy `/?wallet=<address>` hoặc Dashboard.
-  3. **Nhãn** từ `address_labels` (label + address) → copy address vào clipboard + toast, hoặc mở Settings.
-  4. **Hành động nhanh:**
-     - "Cập nhật từ fun.rich" → invoke `scrape-funrich-labels`.
-     - "Gửi CAMLY" → mở modal Send (nếu ở trang Camly) hoặc điều hướng `/camly`.
-     - "Đổi theme sáng/tối", "Đăng xuất".
-- Mỗi item có icon (lucide), shortcut hint khi liên quan.
-- Mount global trong `src/components/layout/AppLayout.tsx` (luôn render).
-- Thêm nút nhỏ "⌘K" trong `AppHeader` (desktop) để khám phá.
-- i18n: chuỗi tiếng Việt, có thể bổ sung key vào `vi.json`/`en.json` cho 5 nhãn chính (search placeholder, group titles).
+## 2. Edge Function `sync-transactions` — Sửa pagination & fallback
 
-### Kỹ thuật
+- **Moralis ERC20 pagination**: trong nhánh full-sync, lặp `cursor` đến khi hết (giới hạn an toàn 50 trang) thay vì dừng ở page 1. (Native BNB đã lặp đúng.)
+- **Etherscan V2 fallback**: 
+  - Log rõ URL + response body khi `NOTOK` để chẩn đoán.
+  - Nếu key BSCSCAN/ETHERSCAN không hợp lệ, fallback hoàn toàn về Moralis (không cố Etherscan).
+  - Thêm pagination `page=1..N` (offset 3000/page) cho Etherscan V2 đến khi trả về <3000 records.
+- **BTC**: hiện đã lấy đủ (logs cho thấy đúng số tx so với mempool.space). Giữ nguyên, chỉ đảm bảo `force_full_sync` xoá `last_block_synced` để re-scan và upsert.
+- **Idempotent**: tiếp tục dùng `upsert` theo `(wallet_id, tx_hash, direction, token_symbol)` để tránh trùng — đã có.
 
-- Dữ liệu lấy qua React Query (`wallets`, `address-labels`) — đã có hook/queryKey sẵn nên cache dùng chung, không tạo request thừa.
-- Fuzzy filter: cmdk tự lo (default scoring).
-- Không tạo bảng/migration mới. Không đổi backend.
+## 3. Báo cáo kết quả
 
-### Files
+- Response của edge function trả về mảng `wallet_results: [{ name, added_in, added_out, total_in, total_out, errors[] }]`.
+- UI hiển thị bảng tóm tắt sau khi sync xong (modal hoặc toast mở rộng).
 
-- New: `src/components/CommandPalette.tsx`
-- Edit: `src/components/layout/AppLayout.tsx` (mount), `src/components/layout/AppHeader.tsx` (nút ⌘K), `src/components/settings/AddressLabelManager.tsx` (sửa địa chỉ).
-- Optional edit: `src/locales/vi.json`, `src/locales/en.json` (5 keys).
+# Chi tiết kỹ thuật
 
-Sau khi xong Phần B, sẵn sàng chuyển **Bước 3: Onboarding Tour (driver.js)**.
+**Files thay đổi:**
+- `supabase/functions/sync-transactions/index.ts` — sửa loop cursor Moralis, fallback Etherscan, thêm `wallet_results` vào response.
+- `src/pages/Settings.tsx` — thêm nút "Đồng bộ lại toàn bộ lịch sử" + AlertDialog + state hiển thị kết quả.
+- `src/locales/vi.json` + `en.json` — 4 string mới (label nút, tiêu đề dialog, mô tả, success message).
+
+**Không đụng tới:**
+- Schema DB (transactions/sync_state đã đủ cột).
+- Logic dedupe, RLS, address_labels.
+
+# Kiểm thử sau khi build
+
+1. Bấm nút mới → confirm → đợi ~2 phút.
+2. So sánh số tx mỗi ví với BscScan/Mempool.space:
+   - `0xa4967d...DA5d` (FUN.RICH BNB) — kỳ vọng đầy đủ cả OUT (gửi) và IN (nhận).
+   - `bc1q8t7eumw...` (FUN.RICH BTC) — kỳ vọng khớp 100% với mempool.space.
+3. Chạy lại nút "Sync" thường → phải trả "0 new" (xác nhận incremental không bị trùng).
+
+Sẵn sàng chuyển sang build mode khi bạn duyệt.
