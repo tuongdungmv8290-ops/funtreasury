@@ -704,7 +704,7 @@ serve(async (req) => {
           const fromBlockParam = lastBlockSynced > 0 ? `&from_block=${lastBlockSynced + 1}` : '';
           let erc20Cursor: string | null = null;
           let pageCount = 0;
-          const MAX_PAGES = 30;
+          const MAX_PAGES = forceFullSync ? 100 : 30;
           
           do {
             const cursorParam = erc20Cursor ? `&cursor=${erc20Cursor}` : '';
