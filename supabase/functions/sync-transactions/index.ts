@@ -82,26 +82,31 @@ function getNativeSymbol(chain: string): string {
   return symbols[chain] || 'BNB';
 }
 
-// Fetch ERC20 transfers from Etherscan V2 as fallback (supports multi-chain)
+// Fetch ERC20 transfers from Etherscan V2 (paginated, supports multi-chain)
 async function fetchFromEtherscanV2(address: string, apiKey: string, chainId: number = 56): Promise<BSCScanTransfer[]> {
-  // Etherscan API V2 - chainid=56 for BSC Mainnet, chainid=1 for Ethereum, etc.
-  const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&page=1&offset=3000&sort=desc&apikey=${apiKey}`;
-  console.log(`Calling Etherscan V2 API (chainid=${chainId}) for address: ${address.substring(0, 10)}...`);
-  
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (data.status === '1' && Array.isArray(data.result)) {
-      console.log(`Etherscan V2 returned ${data.result.length} transfers`);
-      return data.result;
+  const PAGE_SIZE = 3000;
+  const MAX_PAGES = 20;
+  const all: BSCScanTransfer[] = [];
+  console.log(`Calling Etherscan V2 API (chainid=${chainId}) for ${address.substring(0, 10)}... (paginated)`);
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&page=${page}&offset=${PAGE_SIZE}&sort=desc&apikey=${apiKey}`;
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.status === '1' && Array.isArray(data.result)) {
+        all.push(...data.result);
+        console.log(`Etherscan V2 page ${page}: ${data.result.length} transfers (total ${all.length})`);
+        if (data.result.length < PAGE_SIZE) break;
+      } else {
+        console.log(`Etherscan V2 page ${page} status: ${data.status}, message: ${data.message}`);
+        break;
+      }
+    } catch (error) {
+      console.error('Etherscan V2 API error:', error);
+      break;
     }
-    console.log(`Etherscan V2 returned status: ${data.status}, message: ${data.message}`);
-    return [];
-  } catch (error) {
-    console.error('Etherscan V2 API error:', error);
-    return [];
   }
+  return all;
 }
 
 // Get Etherscan chain ID from internal chain name
