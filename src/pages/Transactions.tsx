@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
@@ -227,6 +228,37 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
       /* silent */
     });
   }, []);
+
+  // Realtime: refresh transactions/wallet summary when new rows are inserted/updated/deleted
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const channel = supabase
+      .channel('transactions-page-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+          queryClient.invalidateQueries({ queryKey: ['wallet-summary'] });
+          queryClient.invalidateQueries({ queryKey: ['transaction-stats'] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  // Periodic background sync (every 60s) while page is open
+  useEffect(() => {
+    const id = setInterval(() => {
+      supabase.functions.invoke('sync-transactions').catch(() => {
+        /* silent */
+      });
+    }, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   
   const updateMetadata = useUpdateTxMetadata();
   const [savingTxId, setSavingTxId] = useState<string | null>(null);
