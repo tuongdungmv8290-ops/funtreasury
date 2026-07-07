@@ -23,7 +23,7 @@ import { useViewMode } from '@/contexts/ViewModeContext';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 import { GiftDialog } from '@/components/gifts/GiftDialog';
-import { GameFunTreasurySection } from '@/components/dashboard/GameFunTreasurySection';
+
 
 const Index = () => {
   const { t } = useTranslation();
