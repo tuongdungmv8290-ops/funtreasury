@@ -59,6 +59,7 @@ const App = () => (
                   <Route path="/docs/platform" element={<PlatformDocs />} />
                   <Route path="/constitution" element={<Constitution />} />
                   <Route path="/rewards" element={<Rewards />} />
+                  <Route path="/game-fun-treasury" element={<GameFunTreasury />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
