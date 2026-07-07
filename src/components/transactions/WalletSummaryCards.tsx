@@ -62,13 +62,21 @@ const TokenLogo = ({ symbol, size = 32 }: { symbol: string; size?: number }) => 
 
 interface WalletSummaryCardsProps {
   restrictedWalletIds?: string[];
+  excludedWalletIds?: string[];
 }
 
-export function WalletSummaryCards({ restrictedWalletIds }: WalletSummaryCardsProps = {}) {
+export function WalletSummaryCards({ restrictedWalletIds, excludedWalletIds }: WalletSummaryCardsProps = {}) {
   const { data: allSummaries, isLoading, refetch } = useWalletSummary();
-  const summaries = restrictedWalletIds
-    ? allSummaries?.filter((s) => restrictedWalletIds.includes(s.wallet_id))
-    : allSummaries;
+  const summaries = (() => {
+    if (restrictedWalletIds) {
+      return allSummaries?.filter((s) => restrictedWalletIds.includes(s.wallet_id));
+    }
+    if (excludedWalletIds && excludedWalletIds.length > 0) {
+      const ex = new Set(excludedWalletIds);
+      return allSummaries?.filter((s) => !ex.has(s.wallet_id));
+    }
+    return allSummaries;
+  })();
   const [syncingWalletId, setSyncingWalletId] = useState<string | null>(null);
 
   const handleSyncWallet = async (walletId: string, walletName: string, forceFullSync = false) => {

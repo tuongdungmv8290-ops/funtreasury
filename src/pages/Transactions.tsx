@@ -174,13 +174,30 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
 
   useSyncRewardLabels();
   const { data: allWallets } = useWallets();
-  const wallets = useMemo(
+  // GAME FUN TREASURY wallet addresses — excluded from the main Transactions page
+  // (they have their own dedicated page). Filter is skipped when restrictedWalletIds is set.
+  const GAME_TREASURY_ADDRESSES = useMemo(
     () =>
-      restrictedWalletIds
-        ? allWallets?.filter((w) => restrictedWalletIds.includes(w.id))
-        : allWallets,
-    [allWallets, restrictedWalletIds]
+      new Set([
+        '0x032269c811a2e58683df9514d3bf6ce70d1d09bb',
+        'bc1q05nm7esjp4d96jyaypgc4499lfnclf2g4f787n',
+      ]),
+    []
   );
+  const excludedWalletIds = useMemo(() => {
+    if (restrictedWalletIds) return new Set<string>();
+    return new Set(
+      (allWallets || [])
+        .filter((w) => GAME_TREASURY_ADDRESSES.has(w.address.toLowerCase()))
+        .map((w) => w.id)
+    );
+  }, [allWallets, restrictedWalletIds, GAME_TREASURY_ADDRESSES]);
+  const wallets = useMemo(() => {
+    if (restrictedWalletIds) {
+      return allWallets?.filter((w) => restrictedWalletIds.includes(w.id));
+    }
+    return allWallets?.filter((w) => !excludedWalletIds.has(w.id));
+  }, [allWallets, restrictedWalletIds, excludedWalletIds]);
   const { getLabel, labelMap } = useAddressLabels();
   const { data: walletSummaries } = useWalletSummary();
   const { data: allTransactions, isLoading } = useTransactions({
@@ -189,13 +206,12 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
     tokenSymbol: tokenFilter !== 'all' ? tokenFilter : undefined,
     recipientAddress: recipientFilter !== 'all' ? recipientFilter : undefined,
   });
-  const transactions = useMemo(
-    () =>
-      restrictedWalletIds
-        ? allTransactions?.filter((tx) => restrictedWalletIds.includes(tx.wallet_id))
-        : allTransactions,
-    [allTransactions, restrictedWalletIds]
-  );
+  const transactions = useMemo(() => {
+    if (restrictedWalletIds) {
+      return allTransactions?.filter((tx) => restrictedWalletIds.includes(tx.wallet_id));
+    }
+    return allTransactions?.filter((tx) => !excludedWalletIds.has(tx.wallet_id));
+  }, [allTransactions, restrictedWalletIds, excludedWalletIds]);
 
   // Auto-trigger background sync (debounced 60s) so all wallets have latest tx
   useEffect(() => {
@@ -753,7 +769,10 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
         </div>
 
         {/* Wallet Summary Cards */}
-        <WalletSummaryCards restrictedWalletIds={restrictedWalletIds} />
+        <WalletSummaryCards
+          restrictedWalletIds={restrictedWalletIds}
+          excludedWalletIds={restrictedWalletIds ? undefined : Array.from(excludedWalletIds)}
+        />
 
         {/* Transactions Table - Excel Style */}
         <div className="bg-white rounded-lg border border-treasury-gold/20 shadow-lg overflow-hidden">
