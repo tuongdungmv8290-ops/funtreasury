@@ -296,8 +296,7 @@ const Index = () => {
           )}
         </div>
 
-        {/* GAME FUN TREASURY - dedicated section */}
-        <GameFunTreasurySection />
+        {/* GAME FUN TREASURY hiển thị ở trang riêng /game-fun-treasury */}
 
         {/* Portfolio History Chart */}
         <div className="mb-6 md:mb-8">
