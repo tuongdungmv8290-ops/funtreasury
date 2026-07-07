@@ -32,6 +32,24 @@ export function GameFunTreasurySection() {
   const [chainFilter, setChainFilter] = useState<'ALL' | 'BNB' | 'BTC'>('ALL');
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // Realtime: auto-refresh when new transactions arrive
+  useEffect(() => {
+    const channel = supabase
+      .channel('game-fun-treasury-tx')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+          queryClient.invalidateQueries({ queryKey: ['wallets-raw'] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const gameWallets = useMemo(
     () =>
       (allWallets || []).filter((w) =>
