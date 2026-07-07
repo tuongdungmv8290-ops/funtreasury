@@ -210,8 +210,16 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
     if (restrictedWalletIds) {
       return allTransactions?.filter((tx) => restrictedWalletIds.includes(tx.wallet_id));
     }
-    return allTransactions?.filter((tx) => !excludedWalletIds.has(tx.wallet_id));
-  }, [allTransactions, restrictedWalletIds, excludedWalletIds]);
+    // Ẩn cả tx của ví game VÀ tx có đối tác là ví game (gửi/nhận với GAME FUN TREASURY)
+    return allTransactions?.filter((tx) => {
+      if (excludedWalletIds.has(tx.wallet_id)) return false;
+      const from = tx.from_address?.toLowerCase();
+      const to = tx.to_address?.toLowerCase();
+      if (from && GAME_TREASURY_ADDRESSES.has(from)) return false;
+      if (to && GAME_TREASURY_ADDRESSES.has(to)) return false;
+      return true;
+    });
+  }, [allTransactions, restrictedWalletIds, excludedWalletIds, GAME_TREASURY_ADDRESSES]);
 
   // Auto-trigger sync on every page open so users always see the latest tx
   useEffect(() => {
