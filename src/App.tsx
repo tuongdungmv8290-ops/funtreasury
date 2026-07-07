@@ -24,6 +24,7 @@ import PlatformDocs from "./pages/PlatformDocs";
 import Constitution from "./pages/Constitution";
 import Rewards from "./pages/Rewards";
 import PublicRewards from "./pages/PublicRewards";
+import GameFunTreasury from "./pages/GameFunTreasury";
 
 const queryClient = new QueryClient();
 
