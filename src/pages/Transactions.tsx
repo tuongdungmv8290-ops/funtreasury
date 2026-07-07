@@ -682,27 +682,63 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
 
         {/* fun.rich link banner — only on main Transactions page */}
         {!restrictedWalletIds && (
-          <a
-            href={FUN_RICH_TREASURY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group mb-4 flex items-center gap-3 rounded-xl border border-treasury-gold/40 bg-gradient-to-r from-amber-50/80 to-yellow-50/80 dark:from-amber-950/30 dark:to-yellow-950/30 px-4 py-3 shadow-sm hover:shadow-md hover:border-treasury-gold transition-all"
-            title="Mở trang fun.rich của FUN TREASURY"
-          >
-            <div className="w-10 h-10 rounded-lg bg-treasury-gold/20 flex items-center justify-center shrink-0">
-              <Wallet className="w-5 h-5 text-treasury-gold" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-heading font-bold text-foreground">
-                FUN TREASURY trên fun.rich
+          <div className="mb-4 rounded-xl border border-treasury-gold/40 bg-gradient-to-r from-amber-50/80 to-yellow-50/80 dark:from-amber-950/30 dark:to-yellow-950/30 px-4 py-3 shadow-sm hover:shadow-md transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-treasury-gold/20 flex items-center justify-center shrink-0">
+                <Wallet className="w-5 h-5 text-treasury-gold" />
               </div>
-              <div className="font-mono text-xs text-muted-foreground truncate">
-                {FUN_RICH_TREASURY_URL}
+              <div className="flex-1 min-w-0">
+                <div className="font-heading font-bold text-foreground">
+                  FUN TREASURY trên fun.rich
+                </div>
+                <a
+                  href={FUN_RICH_TREASURY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs text-muted-foreground hover:text-treasury-gold truncate block"
+                >
+                  {FUN_RICH_TREASURY_URL}
+                </a>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="font-mono text-xs text-muted-foreground truncate">
+                    0xa4967da72d012151950627483285c3042957da5d
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard('0xa4967da72d012151950627483285c3042957da5d', 'main-fun-treasury')}
+                    className="text-muted-foreground hover:text-treasury-gold transition-colors shrink-0"
+                    title="Copy mã ví chính FUN TREASURY"
+                  >
+                    {copiedId === 'main-fun-treasury' ? (
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  <a
+                    href="https://bscscan.com/address/0xa4967da72d012151950627483285c3042957da5d"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-treasury-gold transition-colors shrink-0"
+                    title="Xem trên BscScan"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </div>
+              <a
+                href={FUN_RICH_TREASURY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group shrink-0"
+                title="Mở fun.rich"
+              >
+                <ExternalLink className="w-5 h-5 text-treasury-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </a>
             </div>
-            <ExternalLink className="w-5 h-5 text-treasury-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
-          </a>
+          </div>
         )}
+
 
 
         {/* Filters - Excel-style toolbar */}
