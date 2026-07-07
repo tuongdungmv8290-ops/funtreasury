@@ -60,8 +60,15 @@ const TokenLogo = ({ symbol, size = 32 }: { symbol: string; size?: number }) => 
   );
 };
 
-export function WalletSummaryCards() {
-  const { data: summaries, isLoading, refetch } = useWalletSummary();
+interface WalletSummaryCardsProps {
+  restrictedWalletIds?: string[];
+}
+
+export function WalletSummaryCards({ restrictedWalletIds }: WalletSummaryCardsProps = {}) {
+  const { data: allSummaries, isLoading, refetch } = useWalletSummary();
+  const summaries = restrictedWalletIds
+    ? allSummaries?.filter((s) => restrictedWalletIds.includes(s.wallet_id))
+    : allSummaries;
   const [syncingWalletId, setSyncingWalletId] = useState<string | null>(null);
 
   const handleSyncWallet = async (walletId: string, walletName: string, forceFullSync = false) => {
