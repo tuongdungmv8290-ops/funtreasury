@@ -281,9 +281,17 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {wallets?.map((wallet, index) => (
-                <WalletCard key={wallet.id} wallet={wallet} index={index} />
-              ))}
+              {wallets
+                ?.filter(
+                  (w) =>
+                    ![
+                      '0x032269c811a2e58683df9514d3bf6ce70d1d09bb',
+                      'bc1q05nm7esjp4d96jyaypgc4499lfnclf2g4f787n',
+                    ].includes(w.address.toLowerCase())
+                )
+                .map((wallet, index) => (
+                  <WalletCard key={wallet.id} wallet={wallet} index={index} />
+                ))}
             </div>
           )}
         </div>
