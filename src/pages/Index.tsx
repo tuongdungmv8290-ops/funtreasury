@@ -23,6 +23,7 @@ import { useViewMode } from '@/contexts/ViewModeContext';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 import { GiftDialog } from '@/components/gifts/GiftDialog';
+import { GameFunTreasurySection } from '@/components/dashboard/GameFunTreasurySection';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -286,6 +287,9 @@ const Index = () => {
             </div>
           )}
         </div>
+
+        {/* GAME FUN TREASURY - dedicated section */}
+        <GameFunTreasurySection />
 
         {/* Portfolio History Chart */}
         <div className="mb-6 md:mb-8">

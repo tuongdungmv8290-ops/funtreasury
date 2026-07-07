@@ -1,56 +1,76 @@
-# Mục tiêu
+# Kế hoạch: Thêm ví GAME FUN TREASURY
 
-Cập nhật **toàn bộ lịch sử giao dịch gửi (OUT) và nhận (IN)** từ 7 ví FUN Treasury (5 BNB + 2 BTC) một cách chính xác, không bỏ sót, không trùng lặp.
+## Thông tin ví mới
+- **Tên:** GAME FUN TREASURY
+- **BNB Smart Chain:** `0x032269c811a2e58683df9514d3bf6ce70d1d09bb`
+- **Bitcoin:** `bc1q05nm7esjp4d96jyaypgc4499lfnclf2g4f787n`
+- **Nguồn:** https://fun.rich/game_funtreasury
 
-# Hiện trạng
+## Các bước thực hiện
 
-- Edge function `sync-transactions` đã hỗ trợ `force_full_sync: true` (reset `last_block_synced`, quét lại từ đầu) — nhưng UI hiện chỉ chạy được cho **từng ví riêng lẻ** qua nút trong `WalletSummaryCards.tsx`.
-- Nút "Sync" tổng (Settings, Dashboard, Transactions) chỉ chạy **incremental sync**, nên các ví có `last_block_synced` cao (vd. `VÍ TỔNG FUN TREASURY - BNB 2 = 84268655`) sẽ luôn trả về "0 new" dù lịch sử cũ chưa đầy đủ.
-- Log cho thấy 2 vấn đề kỹ thuật:
-  1. Etherscan V2 fallback trả `status:0 NOTOK` cho ví BNB 2 → có thể do API key BSCSCAN/ETHERSCAN sai hoặc rate limit.
-  2. Moralis ERC20 chỉ gọi `page 1` rồi dừng (không lặp `cursor`) cho nhánh fallback, nên các ví có >100 token transfer cũ chưa được lấy hết khi full-resync.
+### 1. Thêm ví vào database (migration)
+- Insert 2 dòng vào bảng `wallets`:
+  - `GAME FUN TREASURY - BNB` (chain=BNB)
+  - `GAME FUN TREASURY - BTC` (chain=BTC)
+- Insert vào `sync_state` với `last_block_synced = 0` để lần sync đầu tiên quét toàn bộ lịch sử.
+- Thêm cả 2 địa chỉ vào `address_labels` với nhãn "GAME FUN TREASURY" (để hiển thị tên đẹp trong các giao dịch liên quan).
+- Cập nhật `src/lib/funTreasury.ts` — thêm 2 địa chỉ vào `FUN_TREASURY_WALLETS` để nút "fun.rich" hiển thị đúng.
 
-# Phạm vi thay đổi
+### 2. Đồng bộ giao dịch on-chain
+- Sau khi thêm ví, chạy edge function `sync-transactions` với `force_full_sync: true` cho 2 ví mới:
+  - BNB: Moralis ERC20 (CAMLY, USDT, BTCB) + Moralis Native (BNB) — pagination đầy đủ đã có sẵn.
+  - BTC: mempool.space full history — đã có sẵn.
+- Chạy `get-token-balances` để cập nhật số dư hiện tại vào bảng `tokens`.
 
-## 1. UI — Nút "Resync toàn bộ lịch sử" (Settings → Wallets)
+### 3. UI Dashboard — Khu vực riêng "GAME FUN TREASURY"
+Thêm 1 section mới trên `src/pages/Index.tsx` (Dashboard), đặt phía dưới các thẻ ví hiện tại:
 
-- Thêm 1 nút mới (admin-only) **"Đồng bộ lại toàn bộ lịch sử"** bên cạnh nút "Sync" hiện có trong `src/pages/Settings.tsx`.
-- Hộp xác nhận (AlertDialog): cảnh báo sẽ quét lại từ block 0 cho **tất cả ví**, có thể mất 1–3 phút.
-- Gọi `supabase.functions.invoke('sync-transactions', { body: { force_full_sync: true } })` (không truyền `wallet_id` → áp dụng cho mọi ví).
-- Toast tiến trình + hiển thị kết quả `{ added, cleaned_up }` per-wallet từ response.
+**Component mới:** `src/components/dashboard/GameFunTreasurySection.tsx`
 
-## 2. Edge Function `sync-transactions` — Sửa pagination & fallback
+Bố cục:
+```text
+┌─ GAME FUN TREASURY ────────────────────────┐
+│  [Card BNB wallet]      [Card BTC wallet]  │
+│   ─ Total Balance USD    ─ Total Balance   │
+│   ─ CAMLY / BNB /        ─ BTC balance     │
+│     USDT / BTCB balances                    │
+├────────────────────────────────────────────┤
+│  Lịch sử giao dịch (bảng riêng)            │
+│   Cột: Thời gian | Hướng (IN/OUT) |        │
+│         Token | Số lượng | USD |            │
+│         Từ/Đến (có nhãn) | Tx hash          │
+│   Filter: All / BNB / BTC / theo token      │
+│   Phân trang 20/page, có nút "Xem thêm"     │
+└────────────────────────────────────────────┘
+```
 
-- **Moralis ERC20 pagination**: trong nhánh full-sync, lặp `cursor` đến khi hết (giới hạn an toàn 50 trang) thay vì dừng ở page 1. (Native BNB đã lặp đúng.)
-- **Etherscan V2 fallback**: 
-  - Log rõ URL + response body khi `NOTOK` để chẩn đoán.
-  - Nếu key BSCSCAN/ETHERSCAN không hợp lệ, fallback hoàn toàn về Moralis (không cố Etherscan).
-  - Thêm pagination `page=1..N` (offset 3000/page) cho Etherscan V2 đến khi trả về <3000 records.
-- **BTC**: hiện đã lấy đủ (logs cho thấy đúng số tx so với mempool.space). Giữ nguyên, chỉ đảm bảo `force_full_sync` xoá `last_block_synced` để re-scan và upsert.
-- **Idempotent**: tiếp tục dùng `upsert` theo `(wallet_id, tx_hash, direction, token_symbol)` để tránh trùng — đã có.
+- Dùng lại `useWalletSummary()` — lọc theo tên ví bắt đầu bằng "GAME FUN TREASURY" để lấy số dư.
+- Dùng lại `useTransactions({ walletIds: [gameBnbId, gameBtcId] })` — cần bổ sung param `walletIds` (mảng) vào hook nếu chưa có, hoặc thêm 1 hook nhỏ `useGameFunTreasuryTx`.
+- Style: cùng token màu như `WalletSummaryCards` để nhất quán (gold primary, JetBrains Mono cho số).
+- Realtime: đã được xử lý sẵn qua channel `transactions` + `tokens`.
 
-## 3. Báo cáo kết quả
+### 4. Đa ngôn ngữ
+- Thêm keys vào `src/locales/vi.json` + `en.json` (chỉ 2 ngôn ngữ chính lần này, các ngôn ngữ khác dùng fallback):
+  - `dashboard.gameFunTreasury.title`
+  - `dashboard.gameFunTreasury.transactionsTitle`
+  - `dashboard.gameFunTreasury.emptyState`
 
-- Response của edge function trả về mảng `wallet_results: [{ name, added_in, added_out, total_in, total_out, errors[] }]`.
-- UI hiển thị bảng tóm tắt sau khi sync xong (modal hoặc toast mở rộng).
+## Chi tiết kỹ thuật
 
-# Chi tiết kỹ thuật
+**File thay đổi:**
+- `supabase/migrations/xxx_add_game_fun_treasury.sql` (mới)
+- `src/lib/funTreasury.ts` (thêm 2 address)
+- `src/components/dashboard/GameFunTreasurySection.tsx` (mới)
+- `src/pages/Index.tsx` (mount section mới)
+- `src/hooks/useTransactions.ts` (thêm filter `walletIds` nếu cần)
+- `src/locales/vi.json`, `src/locales/en.json`
 
-**Files thay đổi:**
-- `supabase/functions/sync-transactions/index.ts` — sửa loop cursor Moralis, fallback Etherscan, thêm `wallet_results` vào response.
-- `src/pages/Settings.tsx` — thêm nút "Đồng bộ lại toàn bộ lịch sử" + AlertDialog + state hiển thị kết quả.
-- `src/locales/vi.json` + `en.json` — 4 string mới (label nút, tiêu đề dialog, mô tả, success message).
+**Không thay đổi:**
+- Schema DB (chỉ insert dữ liệu)
+- `sync-transactions` edge function
+- Các ví FUN TREASURY hiện có
+- RLS / policies
 
-**Không đụng tới:**
-- Schema DB (transactions/sync_state đã đủ cột).
-- Logic dedupe, RLS, address_labels.
-
-# Kiểm thử sau khi build
-
-1. Bấm nút mới → confirm → đợi ~2 phút.
-2. So sánh số tx mỗi ví với BscScan/Mempool.space:
-   - `0xa4967d...DA5d` (FUN.RICH BNB) — kỳ vọng đầy đủ cả OUT (gửi) và IN (nhận).
-   - `bc1q8t7eumw...` (FUN.RICH BTC) — kỳ vọng khớp 100% với mempool.space.
-3. Chạy lại nút "Sync" thường → phải trả "0 new" (xác nhận incremental không bị trùng).
-
-Sẵn sàng chuyển sang build mode khi bạn duyệt.
+## Sau khi build xong
+1. Bấm nút "Đồng bộ lại toàn bộ lịch sử" trong Settings để kéo full history 2 ví mới.
+2. Kiểm tra section mới trên Dashboard hiển thị đúng số dư và giao dịch.
