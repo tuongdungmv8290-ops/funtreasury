@@ -680,6 +680,31 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
           )}
         </div>
 
+        {/* fun.rich link banner — only on main Transactions page */}
+        {!restrictedWalletIds && (
+          <a
+            href={FUN_RICH_TREASURY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group mb-4 flex items-center gap-3 rounded-xl border border-treasury-gold/40 bg-gradient-to-r from-amber-50/80 to-yellow-50/80 dark:from-amber-950/30 dark:to-yellow-950/30 px-4 py-3 shadow-sm hover:shadow-md hover:border-treasury-gold transition-all"
+            title="Mở trang fun.rich của FUN TREASURY"
+          >
+            <div className="w-10 h-10 rounded-lg bg-treasury-gold/20 flex items-center justify-center shrink-0">
+              <Wallet className="w-5 h-5 text-treasury-gold" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-heading font-bold text-foreground">
+                FUN TREASURY trên fun.rich
+              </div>
+              <div className="font-mono text-xs text-muted-foreground truncate">
+                {FUN_RICH_TREASURY_URL}
+              </div>
+            </div>
+            <ExternalLink className="w-5 h-5 text-treasury-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
+          </a>
+        )}
+
+
         {/* Filters - Excel-style toolbar */}
         <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-treasury-gold/20 rounded-lg p-4 mb-4 shadow-sm">
           <div className="flex flex-col lg:flex-row gap-4">
