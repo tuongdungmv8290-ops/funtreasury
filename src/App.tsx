@@ -24,6 +24,7 @@ import PlatformDocs from "./pages/PlatformDocs";
 import Constitution from "./pages/Constitution";
 import Rewards from "./pages/Rewards";
 import PublicRewards from "./pages/PublicRewards";
+import GameFunTreasury from "./pages/GameFunTreasury";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
                   <Route path="/docs/platform" element={<PlatformDocs />} />
                   <Route path="/constitution" element={<Constitution />} />
                   <Route path="/rewards" element={<Rewards />} />
+                  <Route path="/game-fun-treasury" element={<GameFunTreasury />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

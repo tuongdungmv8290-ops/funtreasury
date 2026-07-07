@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, ExternalLink, Gamepad2, Loader2, RefreshCw } from 'lucide-react';
 import { useWallets } from '@/hooks/useWallets';
 import { useTransactions } from '@/hooks/useTransactions';
@@ -31,6 +31,24 @@ export function GameFunTreasurySection() {
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [chainFilter, setChainFilter] = useState<'ALL' | 'BNB' | 'BTC'>('ALL');
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Realtime: auto-refresh when new transactions arrive
+  useEffect(() => {
+    const channel = supabase
+      .channel('game-fun-treasury-tx')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+          queryClient.invalidateQueries({ queryKey: ['wallets-raw'] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const gameWallets = useMemo(
     () =>
