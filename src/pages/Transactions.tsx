@@ -206,13 +206,12 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
     tokenSymbol: tokenFilter !== 'all' ? tokenFilter : undefined,
     recipientAddress: recipientFilter !== 'all' ? recipientFilter : undefined,
   });
-  const transactions = useMemo(
-    () =>
-      restrictedWalletIds
-        ? allTransactions?.filter((tx) => restrictedWalletIds.includes(tx.wallet_id))
-        : allTransactions,
-    [allTransactions, restrictedWalletIds]
-  );
+  const transactions = useMemo(() => {
+    if (restrictedWalletIds) {
+      return allTransactions?.filter((tx) => restrictedWalletIds.includes(tx.wallet_id));
+    }
+    return allTransactions?.filter((tx) => !excludedWalletIds.has(tx.wallet_id));
+  }, [allTransactions, restrictedWalletIds, excludedWalletIds]);
 
   // Auto-trigger background sync (debounced 60s) so all wallets have latest tx
   useEffect(() => {
