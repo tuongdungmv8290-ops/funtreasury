@@ -3,12 +3,34 @@ import { cn } from '@/lib/utils';
 import { formatCurrency, shortenAddress, formatDate } from '@/lib/formatUtils';
 import { Link } from 'react-router-dom';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useWallets } from '@/hooks/useWallets';
+import { useMemo } from 'react';
+
+const GAME_TREASURY_ADDRESSES = new Set([
+  '0x032269c811a2e58683df9514d3bf6ce70d1d09bb',
+  'bc1q05nm7esjp4d96jyaypgc4499lfnclf2g4f787n',
+]);
 
 export function RecentTransactions() {
   const { data: transactions, isLoading } = useTransactions({ days: 30 });
-  // Filter để chỉ hiển thị CAMLY và USDT với amount > 0
+  const { data: wallets } = useWallets();
+  const excludedWalletIds = useMemo(
+    () =>
+      new Set(
+        (wallets || [])
+          .filter((w) => GAME_TREASURY_ADDRESSES.has(w.address.toLowerCase()))
+          .map((w) => w.id)
+      ),
+    [wallets]
+  );
+  // Filter để chỉ hiển thị CAMLY và USDT với amount > 0, ẩn ví GAME FUN TREASURY
   const recentTxs = transactions
-    ?.filter(tx => tx.amount > 0 && ['CAMLY', 'USDT'].includes(tx.token_symbol.toUpperCase()))
+    ?.filter(
+      (tx) =>
+        tx.amount > 0 &&
+        ['CAMLY', 'USDT'].includes(tx.token_symbol.toUpperCase()) &&
+        !excludedWalletIds.has(tx.wallet_id)
+    )
     .slice(0, 5) || [];
 
   return (
