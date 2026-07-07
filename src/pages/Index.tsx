@@ -288,6 +288,9 @@ const Index = () => {
           )}
         </div>
 
+        {/* GAME FUN TREASURY - dedicated section */}
+        <GameFunTreasurySection />
+
         {/* Portfolio History Chart */}
         <div className="mb-6 md:mb-8">
           <PortfolioHistoryChart />
