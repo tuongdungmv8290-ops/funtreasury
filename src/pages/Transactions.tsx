@@ -150,7 +150,13 @@ const getFileNameDate = (): string => {
   return `${day}-${month}-${year}`;
 };
 
-const Transactions = () => {
+interface TransactionsProps {
+  restrictedWalletIds?: string[];
+  titleOverride?: string;
+  subtitleOverride?: string;
+}
+
+const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: TransactionsProps = {}) => {
   const { t } = useTranslation();
   const { isViewOnly } = useViewMode();
   const [search, setSearch] = useState('');
@@ -167,15 +173,29 @@ const Transactions = () => {
   const [monthlyReportOpen, setMonthlyReportOpen] = useState(false);
 
   useSyncRewardLabels();
-  const { data: wallets } = useWallets();
+  const { data: allWallets } = useWallets();
+  const wallets = useMemo(
+    () =>
+      restrictedWalletIds
+        ? allWallets?.filter((w) => restrictedWalletIds.includes(w.id))
+        : allWallets,
+    [allWallets, restrictedWalletIds]
+  );
   const { getLabel, labelMap } = useAddressLabels();
   const { data: walletSummaries } = useWalletSummary();
-  const { data: transactions, isLoading } = useTransactions({
+  const { data: allTransactions, isLoading } = useTransactions({
     walletId: walletFilter !== 'all' ? walletFilter : undefined,
     direction: directionFilter !== 'all' ? (directionFilter as 'IN' | 'OUT') : undefined,
     tokenSymbol: tokenFilter !== 'all' ? tokenFilter : undefined,
     recipientAddress: recipientFilter !== 'all' ? recipientFilter : undefined,
   });
+  const transactions = useMemo(
+    () =>
+      restrictedWalletIds
+        ? allTransactions?.filter((tx) => restrictedWalletIds.includes(tx.wallet_id))
+        : allTransactions,
+    [allTransactions, restrictedWalletIds]
+  );
 
   // Auto-trigger background sync (debounced 60s) so all wallets have latest tx
   useEffect(() => {
