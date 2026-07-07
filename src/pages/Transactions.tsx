@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallets } from '@/hooks/useWallets';
