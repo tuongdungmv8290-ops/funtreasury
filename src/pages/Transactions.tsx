@@ -589,10 +589,10 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-heading text-3xl font-bold tracking-wide text-foreground mb-1">
-              <span className="gold-text">📊 Transactions</span>
+              <span className="gold-text">{titleOverride ?? '📊 Transactions'}</span>
             </h1>
             <p className="font-body text-muted-foreground">
-              {sortedTransactions.length} transactions found • Excel-style view
+              {subtitleOverride ?? `${sortedTransactions.length} transactions found • Excel-style view`}
             </p>
           </div>
           
