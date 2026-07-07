@@ -1,25 +1,40 @@
-import { GameFunTreasurySection } from '@/components/dashboard/GameFunTreasurySection';
+import { useMemo } from 'react';
+import Transactions from './Transactions';
+import { useWallets } from '@/hooks/useWallets';
 import { useTransactionNotifications } from '@/hooks/useTransactionNotifications';
+import { Loader2 } from 'lucide-react';
+
+const GAME_ADDRESSES = new Set([
+  '0x032269c811a2e58683df9514d3bf6ce70d1d09bb',
+  'bc1q05nm7esjp4d96jyaypgc4499lfnclf2g4f787n',
+]);
 
 const GameFunTreasuryPage = () => {
-  // Realtime toast notifications for new transactions
   useTransactionNotifications();
+  const { data: wallets, isLoading } = useWallets();
+
+  const gameWalletIds = useMemo(
+    () =>
+      (wallets || [])
+        .filter((w) => GAME_ADDRESSES.has(w.address.toLowerCase()))
+        .map((w) => w.id),
+    [wallets]
+  );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-treasury-gold" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container py-6 md:py-8">
-        <div className="mb-6">
-          <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-1 tracking-wide">
-            GAME <span className="gold-text">FUN TREASURY</span>
-          </h1>
-          <p className="font-body text-sm md:text-base text-muted-foreground">
-            Số dư và toàn bộ lịch sử giao dịch on-chain gửi vào / chuyển ra — tự động cập nhật khi có giao dịch mới.
-          </p>
-        </div>
-
-        <GameFunTreasurySection />
-      </main>
-    </div>
+    <Transactions
+      restrictedWalletIds={gameWalletIds}
+      titleOverride="🎮 GAME FUN TREASURY"
+      subtitleOverride="Toàn bộ giao dịch on-chain gửi vào & chuyển ra — tự động cập nhật"
+    />
   );
 };
 
