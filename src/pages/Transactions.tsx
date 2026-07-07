@@ -150,7 +150,13 @@ const getFileNameDate = (): string => {
   return `${day}-${month}-${year}`;
 };
 
-const Transactions = () => {
+interface TransactionsProps {
+  restrictedWalletIds?: string[];
+  titleOverride?: string;
+  subtitleOverride?: string;
+}
+
+const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: TransactionsProps = {}) => {
   const { t } = useTranslation();
   const { isViewOnly } = useViewMode();
   const [search, setSearch] = useState('');
@@ -167,15 +173,29 @@ const Transactions = () => {
   const [monthlyReportOpen, setMonthlyReportOpen] = useState(false);
 
   useSyncRewardLabels();
-  const { data: wallets } = useWallets();
+  const { data: allWallets } = useWallets();
+  const wallets = useMemo(
+    () =>
+      restrictedWalletIds
+        ? allWallets?.filter((w) => restrictedWalletIds.includes(w.id))
+        : allWallets,
+    [allWallets, restrictedWalletIds]
+  );
   const { getLabel, labelMap } = useAddressLabels();
   const { data: walletSummaries } = useWalletSummary();
-  const { data: transactions, isLoading } = useTransactions({
+  const { data: allTransactions, isLoading } = useTransactions({
     walletId: walletFilter !== 'all' ? walletFilter : undefined,
     direction: directionFilter !== 'all' ? (directionFilter as 'IN' | 'OUT') : undefined,
     tokenSymbol: tokenFilter !== 'all' ? tokenFilter : undefined,
     recipientAddress: recipientFilter !== 'all' ? recipientFilter : undefined,
   });
+  const transactions = useMemo(
+    () =>
+      restrictedWalletIds
+        ? allTransactions?.filter((tx) => restrictedWalletIds.includes(tx.wallet_id))
+        : allTransactions,
+    [allTransactions, restrictedWalletIds]
+  );
 
   // Auto-trigger background sync (debounced 60s) so all wallets have latest tx
   useEffect(() => {
@@ -569,10 +589,10 @@ const Transactions = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-heading text-3xl font-bold tracking-wide text-foreground mb-1">
-              <span className="gold-text">📊 Transactions</span>
+              <span className="gold-text">{titleOverride ?? '📊 Transactions'}</span>
             </h1>
             <p className="font-body text-muted-foreground">
-              {sortedTransactions.length} transactions found • Excel-style view
+              {subtitleOverride ?? `${sortedTransactions.length} transactions found • Excel-style view`}
             </p>
           </div>
           
@@ -733,7 +753,7 @@ const Transactions = () => {
         </div>
 
         {/* Wallet Summary Cards */}
-        <WalletSummaryCards />
+        <WalletSummaryCards restrictedWalletIds={restrictedWalletIds} />
 
         {/* Transactions Table - Excel Style */}
         <div className="bg-white rounded-lg border border-treasury-gold/20 shadow-lg overflow-hidden">
