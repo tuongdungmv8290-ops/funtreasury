@@ -213,12 +213,8 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
     return allTransactions?.filter((tx) => !excludedWalletIds.has(tx.wallet_id));
   }, [allTransactions, restrictedWalletIds, excludedWalletIds]);
 
-  // Auto-trigger background sync (debounced 60s) so all wallets have latest tx
+  // Auto-trigger sync on every page open so users always see the latest tx
   useEffect(() => {
-    const KEY = 'last-tx-sync';
-    const last = Number(localStorage.getItem(KEY) || 0);
-    if (Date.now() - last < 60_000) return;
-    localStorage.setItem(KEY, String(Date.now()));
     supabase.functions.invoke('sync-transactions').catch(() => {
       /* silent */
     });
