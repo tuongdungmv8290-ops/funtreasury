@@ -769,7 +769,10 @@ const Transactions = ({ restrictedWalletIds, titleOverride, subtitleOverride }: 
         </div>
 
         {/* Wallet Summary Cards */}
-        <WalletSummaryCards restrictedWalletIds={restrictedWalletIds} />
+        <WalletSummaryCards
+          restrictedWalletIds={restrictedWalletIds}
+          excludedWalletIds={restrictedWalletIds ? undefined : Array.from(excludedWalletIds)}
+        />
 
         {/* Transactions Table - Excel Style */}
         <div className="bg-white rounded-lg border border-treasury-gold/20 shadow-lg overflow-hidden">
