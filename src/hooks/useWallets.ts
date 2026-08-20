@@ -40,7 +40,7 @@ export function useWallets() {
     let debounceTimer: ReturnType<typeof setTimeout>;
     
     const channel = supabase
-      .channel('tokens-realtime-updates')
+      .channel(`tokens-realtime-updates-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

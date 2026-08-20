@@ -23,7 +23,7 @@ export function useUpdateTxMetadata() {
 
       if (existing) {
         // Update existing record
-        const updateData: Record<string, unknown> = {};
+        const updateData: { category?: string | null; note?: string | null; tags?: string[] | null } = {};
         if (category !== undefined) updateData.category = category;
         if (note !== undefined) updateData.note = note;
         if (tags !== undefined) updateData.tags = tags;
