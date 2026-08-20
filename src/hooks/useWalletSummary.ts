@@ -256,7 +256,8 @@ export function useWalletSummary() {
 
   // STEP 3: Realtime updates with debounce (listen to BOTH transactions AND tokens)
   useEffect(() => {
-    let debounceTimer: NodeJS.Timeout;
+    let debounceTimer: ReturnType<typeof setTimeout>;
+    const suffix = Math.random().toString(36).slice(2);
 
     const invalidateWithDebounce = () => {
       clearTimeout(debounceTimer);
@@ -267,7 +268,7 @@ export function useWalletSummary() {
 
     // Listen to transactions table
     const txChannel = supabase
-      .channel('wallet-summary-transactions')
+      .channel(`wallet-summary-transactions-${suffix}`)
       .on(
         'postgres_changes',
         {
@@ -281,7 +282,7 @@ export function useWalletSummary() {
 
     // Listen to tokens table for balance updates
     const tokensChannel = supabase
-      .channel('wallet-summary-tokens')
+      .channel(`wallet-summary-tokens-${suffix}`)
       .on(
         'postgres_changes',
         {
