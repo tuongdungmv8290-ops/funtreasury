@@ -222,7 +222,7 @@ serve(async (req) => {
             from_address: from,
             to_address: to,
             gas_fee: 0,
-            status: 'confirmed',
+            status: 'success',
             block_number: parseInt(log.blockNumber, 16),
             timestamp: new Date((blockTimes.get(log.blockNumber) ?? 0) * 1000).toISOString(),
           });
