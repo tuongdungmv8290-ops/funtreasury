@@ -204,7 +204,7 @@ serve(async (req) => {
           const token = TOKENS[log.address.toLowerCase()];
           if (!token) continue;
           const amount = decodeAmount(log.data, token.decimals);
-          if (!(amount > 0)) continue;
+          if (!(amount > 0.000001)) continue; // bỏ qua giao dịch bụi/spam
           const from = topicToAddress(log.topics[1]);
           const to = topicToAddress(log.topics[2]);
           const symbol = token.symbol === 'BTCB' ? 'BTC' : token.symbol;
