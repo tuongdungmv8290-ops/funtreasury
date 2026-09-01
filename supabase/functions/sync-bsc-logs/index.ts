@@ -135,6 +135,13 @@ serve(async (req) => {
     let totalNew = 0;
     const runStartedAt = Date.now();
     const outOfTime = () => Date.now() - runStartedAt > RUN_DEADLINE_MS;
+    const backfillers: Array<{
+      name: string;
+      failed?: boolean;
+      done: () => boolean;
+      state: () => any;
+      step: () => Promise<void>;
+    }> = [];
 
     for (const wallet of wallets ?? []) {
       if (outOfTime()) {
