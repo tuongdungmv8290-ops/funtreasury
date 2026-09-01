@@ -185,7 +185,10 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
     const bearer = authHeader.replace(/^Bearer\s+/i, '').trim();
-    const isServiceRole = bearer === serviceRoleKey;
+    const autoSecret = Deno.env.get('AUTO_REFRESH_SECRET');
+    const isServiceRole = bearer === serviceRoleKey ||
+      (!!autoSecret && req.headers.get('x-refresh-secret') === autoSecret);
+
 
     if (isServiceRole) {
       console.log('Authenticated via service role (automated refresh)');
