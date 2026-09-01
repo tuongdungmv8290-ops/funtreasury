@@ -25,6 +25,13 @@ const TOKENS: Record<string, { symbol: string; decimals: number }> = {
   '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c': { symbol: 'BTCB', decimals: 18 },
 };
 
+// Ngưỡng tối thiểu để loại bỏ giao dịch bụi/spam
+const MIN_AMOUNT: Record<string, number> = {
+  CAMLY: 100,
+  USDT: 0.5,
+  BTCB: 0.000001,
+};
+
 interface RpcLog {
   address: string;
   topics: string[];
