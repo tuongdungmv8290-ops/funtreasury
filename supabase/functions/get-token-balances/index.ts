@@ -159,6 +159,46 @@ async function fetchBitcoinBalance(address: string, existingBalance?: number): P
   }
 }
 
+// ---- Direct RPC fallback (no API key needed) ----
+const RPC_URLS: Record<string, string> = {
+  'BNB': 'https://bsc-dataseed.binance.org',
+  'ETH': 'https://eth.llamarpc.com',
+  'POLYGON': 'https://polygon-rpc.com',
+};
+
+async function rpcCall(chain: string, to: string, data: string): Promise<string | null> {
+  const url = RPC_URLS[chain] || RPC_URLS['BNB'];
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to, data }, 'latest'] }),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return typeof json.result === 'string' ? json.result : null;
+  } catch (e) {
+    console.error('RPC error:', e);
+    return null;
+  }
+}
+
+// balanceOf(address) + decimals() through public RPC
+async function fetchErc20BalanceViaRpc(
+  chain: string,
+  contract: string,
+  wallet: string
+): Promise<number | null> {
+  const padded = wallet.toLowerCase().replace('0x', '').padStart(64, '0');
+  const balHex = await rpcCall(chain, contract, '0x70a08231' + padded);
+  if (!balHex || balHex === '0x') return null;
+  const decHex = await rpcCall(chain, contract, '0x313ce567');
+  const decimals = decHex && decHex !== '0x' ? Number(BigInt(decHex)) : 18;
+  const raw = BigInt(balHex);
+  return Number(raw) / Math.pow(10, decimals);
+}
+
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -182,43 +222,55 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      console.error('Authentication failed:', authError?.message);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Unauthorized - Invalid token'
-      }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    const bearer = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const autoSecret = Deno.env.get('AUTO_REFRESH_SECRET');
+    const isServiceRole = bearer === serviceRoleKey ||
+      (!!autoSecret && req.headers.get('x-refresh-secret') === autoSecret);
+
+
+    if (isServiceRole) {
+      console.log('Authenticated via service role (automated refresh)');
+    } else {
+      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
       });
+
+      const { data: { user }, error: authError } = await authClient.auth.getUser();
+      if (authError || !user) {
+        console.error('Authentication failed:', authError?.message);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Unauthorized - Invalid token'
+        }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Check admin role
+      const { data: roleData } = await authClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .single();
+
+      if (!roleData) {
+        console.error('User is not an admin:', user.id);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Forbidden - Admin access required'
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      console.log('Authenticated admin user:', user.email);
     }
 
-    // Check admin role
-    const { data: roleData } = await authClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
-
-    if (!roleData) {
-      console.error('User is not an admin:', user.id);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Forbidden - Admin access required'
-      }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    console.log('Authenticated admin user:', user.email);
 
     // Fetch prices first
     const prices = await fetchPricesFromCoinGecko();
@@ -372,11 +424,38 @@ serve(async (req) => {
                 });
               }
             }
+          } else {
+            console.log(`Moralis ERC20 failed (${tokensResponse.status}) for ${wallet.name}, using RPC fallback`);
+          }
+
+          // Always verify tracked tokens directly on-chain (source of truth)
+          for (const tc of tokenContracts || []) {
+            if (!tc.contract_address || !tc.contract_address.startsWith('0x')) continue;
+            const already = walletTokens.find(
+              t => t.contract_address.toLowerCase() === tc.contract_address!.toLowerCase()
+            );
+            const rpcBalance = await fetchErc20BalanceViaRpc(wallet.chain, tc.contract_address, wallet.address);
+            if (rpcBalance === null) continue;
+            const price = await getTokenPrice(tc.symbol, prices);
+            if (already) {
+              already.balance = rpcBalance.toFixed(6);
+              already.usd_value = rpcBalance * price;
+            } else if (rpcBalance > 0) {
+              walletTokens.push({
+                symbol: tc.symbol,
+                name: tc.name || tc.symbol,
+                balance: rpcBalance.toFixed(6),
+                decimals: 18,
+                usd_value: rpcBalance * price,
+                contract_address: tc.contract_address
+              });
+            }
           }
         } else {
           console.log(`Skipping wallet ${wallet.name}: unsupported address format`);
           continue;
         }
+
 
         allBalances.push({
           wallet: wallet.address,
