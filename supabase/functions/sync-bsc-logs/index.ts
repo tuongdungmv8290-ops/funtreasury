@@ -9,15 +9,19 @@ const corsHeaders = {
 // Public BSC RPC endpoints that support eth_getLogs with a 5000 block range
 const RPC_ENDPOINTS = [
   'https://bsc.rpc.blxrbdn.com',
+  'https://binance.llamarpc.com',
+  'https://bsc-rpc.publicnode.com',
 ];
 
 const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const CHUNK_SIZE = 5000;
-const BATCH = 3;                       // concurrent block-range scans
+const BATCH = 6;                       // concurrent block-range scans
 const RUN_DEADLINE_MS = 100 * 1000;    // wall-clock budget per invocation
-const MAX_BACKFILL_DEPTH = 3_500_000;  // how far back a fresh wallet is backfilled
+const MAX_BACKFILL_DEPTH = 4_000_000;  // how far back history is scanned
 const LOCK_KEY = 'bsc_logs_lock';
 const LOCK_TTL_MS = 4 * 60 * 1000;
+const TOP_KEY = 'bsc_logs_top_all';
+const FLOOR_KEY = 'bsc_logs_floor_all';
 
 const TOKENS: Record<string, { symbol: string; decimals: number }> = {
   '0x0910320181889fefde0bb1ca63962b0a8882e413': { symbol: 'CAMLY', decimals: 3 },
@@ -26,7 +30,7 @@ const TOKENS: Record<string, { symbol: string; decimals: number }> = {
 };
 
 // Số block quét lùi an toàn khi khởi tạo con trỏ tiến (~1 ngày trên BSC)
-const FORWARD_SAFETY_BLOCKS = 30_000;
+const FORWARD_SAFETY_BLOCKS = 200_000;
 
 // Ngưỡng tối thiểu để loại bỏ giao dịch bụi/spam
 const MIN_AMOUNT: Record<string, number> = {
@@ -85,6 +89,7 @@ async function rpcCall(method: string, params: unknown[]): Promise<any> {
 
 const toHex = (n: number) => '0x' + n.toString(16);
 const topicToAddress = (topic: string) => '0x' + topic.slice(26).toLowerCase();
+const addressToTopic = (address: string) => '0x' + '0'.repeat(24) + address.slice(2).toLowerCase();
 
 function decodeAmount(dataHex: string, decimals: number): number {
   const raw = BigInt(dataHex && dataHex !== '0x' ? dataHex : '0x0');
@@ -139,97 +144,86 @@ serve(async (req) => {
       .neq('chain', 'BTC');
     if (walletsError) throw walletsError;
 
+    const walletByAddress = new Map<string, { id: string; name: string }>();
+    for (const w of wallets ?? []) {
+      walletByAddress.set(w.address.toLowerCase(), { id: w.id, name: w.name });
+    }
+    const walletTopics = [...walletByAddress.keys()].map(addressToTopic);
+    if (walletTopics.length === 0) {
+      await setSetting(LOCK_KEY, '0');
+      return new Response(JSON.stringify({ success: true, message: 'Không có ví BNB nào.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const head: number = parseInt(await rpcCall('eth_blockNumber', []), 16);
     const contracts = Object.keys(TOKENS);
-    const results: any[] = [];
-    let totalNew = 0;
     const runStartedAt = Date.now();
     const outOfTime = () => Date.now() - runStartedAt > RUN_DEADLINE_MS;
-    const backfillers: Array<{
-      name: string;
-      failed?: boolean;
-      done: () => boolean;
-      state: () => any;
-      step: () => Promise<void>;
-    }> = [];
 
-    for (const wallet of wallets ?? []) {
-      if (outOfTime()) {
-        results.push({ wallet: wallet.name, newTxCount: 0, deferred: true });
-        continue;
+    let top = Number((await getSetting(TOP_KEY)) ?? 0);
+    let floor = Number((await getSetting(FLOOR_KEY)) ?? 0);
+    if (!top || top > head) {
+      top = Math.max(0, head - FORWARD_SAFETY_BLOCKS);
+      await setSetting(TOP_KEY, String(top));
+    }
+    if (!floor || floor > head) {
+      floor = top;
+      await setSetting(FLOOR_KEY, String(floor));
+    }
+    const targetStart = Math.max(0, head - MAX_BACKFILL_DEPTH);
+
+    let totalNew = 0;
+
+    // Một lần quét cho TẤT CẢ ví (topic dạng mảng) -> nhanh hơn nhiều
+    const scanRange = async (from: number, to: number): Promise<RpcLog[]> => {
+      const base = { fromBlock: toHex(from), toBlock: toHex(to), address: contracts };
+      const [outLogs, inLogs] = await Promise.all([
+        rpcCall('eth_getLogs', [{ ...base, topics: [TRANSFER_TOPIC, walletTopics] }]),
+        rpcCall('eth_getLogs', [{ ...base, topics: [TRANSFER_TOPIC, null, walletTopics] }]),
+      ]);
+      return [...(outLogs as RpcLog[]), ...(inLogs as RpcLog[])];
+    };
+
+    const persistLogs = async (logs: RpcLog[]) => {
+      if (logs.length === 0) return;
+
+      const blockNumbers = [...new Set(logs.map((l) => l.blockNumber))];
+      const blockTimes = new Map<string, number>();
+      for (const bn of blockNumbers) {
+        const block = await rpcCall('eth_getBlockByNumber', [bn, false]);
+        blockTimes.set(bn, parseInt(block.timestamp, 16));
       }
 
-      const topKey = `bsc_logs_cursor_${wallet.id}`;
-      const floorKey = `bsc_logs_floor_${wallet.id}`;
-      const walletTopic = '0x' + '0'.repeat(24) + wallet.address.slice(2).toLowerCase();
-
-      let top = Number((await getSetting(topKey)) ?? 0);
-      let floor = Number((await getSetting(floorKey)) ?? 0);
-      if (!top || top > head) {
-        // Khởi tạo con trỏ tiến lùi lại một khoảng an toàn để không bỏ sót block mới
-        // (lịch sử cũ do pha quét lùi đảm nhiệm)
-        top = Math.max(0, head - FORWARD_SAFETY_BLOCKS);
-        await setSetting(topKey, String(top));
-      }
-      if (!floor || floor > head) floor = head;
-
-      // Oldest block worth scanning: history before it was already imported earlier
-      const { data: syncRow } = await supabase
-        .from('sync_state')
-        .select('last_block_synced')
-        .eq('wallet_id', wallet.id)
-        .maybeSingle();
-      const targetStart = Math.max(
-        Number(syncRow?.last_block_synced ?? 0) || head - MAX_BACKFILL_DEPTH,
-        head - MAX_BACKFILL_DEPTH
+      const hashes = [...new Set(logs.map((l) => l.transactionHash))];
+      const { data: existing } = await supabase
+        .from('transactions')
+        .select('tx_hash, token_symbol, wallet_id')
+        .in('tx_hash', hashes);
+      const existingKeys = new Set(
+        (existing ?? []).map((e) => `${e.tx_hash}_${e.token_symbol}_${e.wallet_id}`)
       );
 
-      let newTxCount = 0;
+      const rows: any[] = [];
+      const seen = new Set<string>();
+      for (const log of logs) {
+        const token = TOKENS[log.address.toLowerCase()];
+        if (!token) continue;
+        const amount = decodeAmount(log.data, token.decimals);
+        if (amount < MIN_AMOUNT[token.symbol]) continue; // bỏ qua giao dịch bụi/spam
+        const from = topicToAddress(log.topics[1]);
+        const to = topicToAddress(log.topics[2]);
+        const symbol = token.symbol === 'BTCB' ? 'BTC' : token.symbol;
 
-      const scanRange = async (from: number, to: number): Promise<RpcLog[]> => {
-        const base = { fromBlock: toHex(from), toBlock: toHex(to), address: contracts };
-        const [outLogs, inLogs] = await Promise.all([
-          rpcCall('eth_getLogs', [{ ...base, topics: [TRANSFER_TOPIC, walletTopic] }]),
-          rpcCall('eth_getLogs', [{ ...base, topics: [TRANSFER_TOPIC, null, walletTopic] }]),
-        ]);
-        return [...(outLogs as RpcLog[]), ...(inLogs as RpcLog[])];
-      };
-
-      const persistLogs = async (logs: RpcLog[]) => {
-        if (logs.length === 0) return;
-
-        const blockNumbers = [...new Set(logs.map((l) => l.blockNumber))];
-        const blockTimes = new Map<string, number>();
-        for (const bn of blockNumbers) {
-          const block = await rpcCall('eth_getBlockByNumber', [bn, false]);
-          blockTimes.set(bn, parseInt(block.timestamp, 16));
-        }
-
-        const hashes = [...new Set(logs.map((l) => l.transactionHash))];
-        const { data: existing } = await supabase
-          .from('transactions')
-          .select('tx_hash, token_symbol')
-          .eq('wallet_id', wallet.id)
-          .in('tx_hash', hashes);
-        const existingKeys = new Set((existing ?? []).map((e) => `${e.tx_hash}_${e.token_symbol}`));
-
-        const rows: any[] = [];
-        const seen = new Set<string>();
-        for (const log of logs) {
-          const token = TOKENS[log.address.toLowerCase()];
-          if (!token) continue;
-          const amount = decodeAmount(log.data, token.decimals);
-          if (amount < MIN_AMOUNT[token.symbol]) continue; // bỏ qua giao dịch bụi/spam
-          const from = topicToAddress(log.topics[1]);
-          const to = topicToAddress(log.topics[2]);
-          const symbol = token.symbol === 'BTCB' ? 'BTC' : token.symbol;
-          const key = `${log.transactionHash}_${symbol}`;
+        for (const [address, wallet] of walletByAddress) {
+          if (from !== address && to !== address) continue;
+          const key = `${log.transactionHash}_${symbol}_${wallet.id}`;
           if (existingKeys.has(key) || seen.has(key)) continue;
           seen.add(key);
           rows.push({
             tx_hash: log.transactionHash,
             wallet_id: wallet.id,
-            direction: to === wallet.address.toLowerCase() ? 'IN' : 'OUT',
+            direction: to === address ? 'IN' : 'OUT',
             token_symbol: symbol,
             token_address: log.address.toLowerCase(),
             amount,
@@ -242,79 +236,58 @@ serve(async (req) => {
             timestamp: new Date((blockTimes.get(log.blockNumber) ?? 0) * 1000).toISOString(),
           });
         }
-
-        if (rows.length > 0) {
-          const { error: insertError } = await supabase
-            .from('transactions')
-            .upsert(rows, { onConflict: 'tx_hash,wallet_id', ignoreDuplicates: true });
-          if (insertError) throw insertError;
-          newTxCount += rows.length;
-          totalNew += rows.length;
-          console.log(`[${wallet.name}] inserted ${rows.length} transactions`);
-        }
-      };
-
-      try {
-        // ---- Phase A: forward scan (newest blocks first) ---------------------
-        while (top < head && !outOfTime()) {
-          const batch: Array<[number, number]> = [];
-          let cursor = top;
-          while (cursor < head && batch.length < BATCH) {
-            const from = cursor + 1;
-            const to = Math.min(from + CHUNK_SIZE - 1, head);
-            batch.push([from, to]);
-            cursor = to;
-          }
-          const logs = (await Promise.all(batch.map(([f, t]) => scanRange(f, t)))).flat();
-          await persistLogs(logs);
-          top = cursor;
-          await setSetting(topKey, String(top));
-        }
-      } catch (walletError) {
-        console.error(`[${wallet.name}] forward scan stopped:`, walletError instanceof Error ? walletError.message : walletError);
       }
 
-      // ---- Phase B is executed round-robin below so every wallet advances ----
-      backfillers.push({
-        name: wallet.name,
-        done: () => floor <= targetStart,
-        state: () => ({ wallet: wallet.name, newTxCount, top, floor, targetStart, caughtUp: top >= head && floor <= targetStart }),
-        step: async () => {
-          const batch: Array<[number, number]> = [];
-          let cursor = floor;
-          while (cursor > targetStart && batch.length < BATCH) {
-            const to = cursor - 1;
-            const from = Math.max(targetStart, to - CHUNK_SIZE + 1);
-            batch.push([from, to]);
-            cursor = from;
-          }
-          if (batch.length === 0) return;
-          const logs = (await Promise.all(batch.map(([f, t]) => scanRange(f, t)))).flat();
-          await persistLogs(logs);
-          floor = cursor;
-          await setSetting(floorKey, String(floor));
-          console.log(`[${wallet.name}] backfilled down to block ${floor} (target ${targetStart})`);
-        },
-      });
-    }
-
-    // ---- Round-robin backfill so all wallets progress in every run ----------
-    let active = backfillers.filter((b) => !b.done());
-    while (active.length > 0 && !outOfTime()) {
-      for (const backfiller of active) {
-        if (outOfTime()) break;
-        try {
-          await backfiller.step();
-        } catch (stepError) {
-          console.error(`[${backfiller.name}] backfill stopped:`, stepError instanceof Error ? stepError.message : stepError);
-          backfiller.failed = true;
-        }
+      if (rows.length > 0) {
+        const { error: insertError } = await supabase
+          .from('transactions')
+          .upsert(rows, { onConflict: 'tx_hash,wallet_id', ignoreDuplicates: true });
+        if (insertError) throw insertError;
+        totalNew += rows.length;
+        console.log(`inserted ${rows.length} transactions`);
       }
-      active = backfillers.filter((b) => !b.done() && !b.failed);
+    };
+
+    // ---- Phase A: forward scan (blocks mới nhất) ----------------------------
+    try {
+      while (top < head && !outOfTime()) {
+        const batch: Array<[number, number]> = [];
+        let cursor = top;
+        while (cursor < head && batch.length < BATCH) {
+          const from = cursor + 1;
+          const to = Math.min(from + CHUNK_SIZE - 1, head);
+          batch.push([from, to]);
+          cursor = to;
+        }
+        const logs = (await Promise.all(batch.map(([f, t]) => scanRange(f, t)))).flat();
+        await persistLogs(logs);
+        top = cursor;
+        await setSetting(TOP_KEY, String(top));
+      }
+    } catch (forwardError) {
+      console.error('forward scan stopped:', forwardError instanceof Error ? forwardError.message : forwardError);
     }
 
-    for (const backfiller of backfillers) results.push(backfiller.state());
-
+    // ---- Phase B: backfill lịch sử (quét lùi) -------------------------------
+    try {
+      while (floor > targetStart && !outOfTime()) {
+        const batch: Array<[number, number]> = [];
+        let cursor = floor;
+        while (cursor > targetStart && batch.length < BATCH) {
+          const to = cursor - 1;
+          const from = Math.max(targetStart, to - CHUNK_SIZE + 1);
+          batch.push([from, to]);
+          cursor = from;
+        }
+        if (batch.length === 0) break;
+        const logs = (await Promise.all(batch.map(([f, t]) => scanRange(f, t)))).flat();
+        await persistLogs(logs);
+        floor = cursor;
+        await setSetting(FLOOR_KEY, String(floor));
+      }
+    } catch (backfillError) {
+      console.error('backfill stopped:', backfillError instanceof Error ? backfillError.message : backfillError);
+    }
 
     await setSetting(LOCK_KEY, '0');
 
@@ -332,7 +305,15 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, head, totalNewTransactions: totalNew, results }),
+      JSON.stringify({
+        success: true,
+        head,
+        top,
+        floor,
+        targetStart,
+        caughtUp: top >= head && floor <= targetStart,
+        totalNewTransactions: totalNew,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
