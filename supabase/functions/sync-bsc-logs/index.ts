@@ -229,7 +229,9 @@ serve(async (req) => {
         }
 
         if (rows.length > 0) {
-          const { error: insertError } = await supabase.from('transactions').insert(rows);
+          const { error: insertError } = await supabase
+            .from('transactions')
+            .upsert(rows, { onConflict: 'tx_hash,wallet_id', ignoreDuplicates: true });
           if (insertError) throw insertError;
           newTxCount += rows.length;
           totalNew += rows.length;
