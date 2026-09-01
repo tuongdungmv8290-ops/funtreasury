@@ -182,43 +182,52 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      console.error('Authentication failed:', authError?.message);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Unauthorized - Invalid token'
-      }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    const bearer = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const isServiceRole = bearer === serviceRoleKey;
+
+    if (isServiceRole) {
+      console.log('Authenticated via service role (automated refresh)');
+    } else {
+      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
       });
+
+      const { data: { user }, error: authError } = await authClient.auth.getUser();
+      if (authError || !user) {
+        console.error('Authentication failed:', authError?.message);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Unauthorized - Invalid token'
+        }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Check admin role
+      const { data: roleData } = await authClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .single();
+
+      if (!roleData) {
+        console.error('User is not an admin:', user.id);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Forbidden - Admin access required'
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      console.log('Authenticated admin user:', user.email);
     }
 
-    // Check admin role
-    const { data: roleData } = await authClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
-
-    if (!roleData) {
-      console.error('User is not an admin:', user.id);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Forbidden - Admin access required'
-      }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    console.log('Authenticated admin user:', user.email);
 
     // Fetch prices first
     const prices = await fetchPricesFromCoinGecko();
