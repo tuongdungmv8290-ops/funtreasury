@@ -166,18 +166,9 @@ serve(async (req) => {
       let top = Number((await getSetting(topKey)) ?? 0);
       let floor = Number((await getSetting(floorKey)) ?? 0);
       if (!top || top > head) {
-        // Khởi tạo con trỏ tiến từ giao dịch mới nhất đã lưu, lùi lại một khoảng an toàn
-        const { data: lastTx } = await supabase
-          .from('transactions')
-          .select('block_number')
-          .eq('wallet_id', wallet.id)
-          .order('block_number', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        const lastBlock = Number(lastTx?.block_number ?? 0);
-        top = lastBlock > 0
-          ? Math.max(0, Math.min(lastBlock, head) - FORWARD_SAFETY_BLOCKS)
-          : head - FORWARD_SAFETY_BLOCKS;
+        // Khởi tạo con trỏ tiến lùi lại một khoảng an toàn để không bỏ sót block mới
+        // (lịch sử cũ do pha quét lùi đảm nhiệm)
+        top = Math.max(0, head - FORWARD_SAFETY_BLOCKS);
         await setSetting(topKey, String(top));
       }
       if (!floor || floor > head) floor = head;
