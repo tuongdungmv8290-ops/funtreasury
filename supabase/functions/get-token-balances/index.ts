@@ -159,6 +159,46 @@ async function fetchBitcoinBalance(address: string, existingBalance?: number): P
   }
 }
 
+// ---- Direct RPC fallback (no API key needed) ----
+const RPC_URLS: Record<string, string> = {
+  'BNB': 'https://bsc-dataseed.binance.org',
+  'ETH': 'https://eth.llamarpc.com',
+  'POLYGON': 'https://polygon-rpc.com',
+};
+
+async function rpcCall(chain: string, to: string, data: string): Promise<string | null> {
+  const url = RPC_URLS[chain] || RPC_URLS['BNB'];
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to, data }, 'latest'] }),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return typeof json.result === 'string' ? json.result : null;
+  } catch (e) {
+    console.error('RPC error:', e);
+    return null;
+  }
+}
+
+// balanceOf(address) + decimals() through public RPC
+async function fetchErc20BalanceViaRpc(
+  chain: string,
+  contract: string,
+  wallet: string
+): Promise<number | null> {
+  const padded = wallet.toLowerCase().replace('0x', '').padStart(64, '0');
+  const balHex = await rpcCall(chain, contract, '0x70a08231' + padded);
+  if (!balHex || balHex === '0x') return null;
+  const decHex = await rpcCall(chain, contract, '0x313ce567');
+  const decimals = decHex && decHex !== '0x' ? Number(BigInt(decHex)) : 18;
+  const raw = BigInt(balHex);
+  return Number(raw) / Math.pow(10, decimals);
+}
+
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
