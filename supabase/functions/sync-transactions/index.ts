@@ -82,32 +82,47 @@ function getNativeSymbol(chain: string): string {
   return symbols[chain] || 'BNB';
 }
 
-// Fetch ERC20 transfers from Etherscan V2 (paginated, supports multi-chain)
-async function fetchFromEtherscanV2(address: string, apiKey: string, chainId: number = 56): Promise<BSCScanTransfer[]> {
+// Fetch ERC20 transfers from Etherscan V2 (paginated, supports multi-chain, multi-key failover)
+async function fetchFromEtherscanV2(address: string, apiKeys: string[], chainId: number = 56): Promise<BSCScanTransfer[]> {
   const PAGE_SIZE = 3000;
   const MAX_PAGES = 20;
-  const all: BSCScanTransfer[] = [];
-  console.log(`Calling Etherscan V2 API (chainid=${chainId}) for ${address.substring(0, 10)}... (paginated)`);
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&page=${page}&offset=${PAGE_SIZE}&sort=desc&apikey=${apiKey}`;
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.status === '1' && Array.isArray(data.result)) {
-        all.push(...data.result);
-        console.log(`Etherscan V2 page ${page}: ${data.result.length} transfers (total ${all.length})`);
-        if (data.result.length < PAGE_SIZE) break;
-      } else {
-        console.log(`Etherscan V2 page ${page} status: ${data.status}, message: ${data.message}`);
+  for (let k = 0; k < apiKeys.length; k++) {
+    const apiKey = apiKeys[k];
+    const all: BSCScanTransfer[] = [];
+    let keyFailed = false;
+    console.log(`Calling Etherscan V2 API (chainid=${chainId}, key #${k + 1}/${apiKeys.length}) for ${address.substring(0, 10)}...`);
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&page=${page}&offset=${PAGE_SIZE}&sort=desc&apikey=${apiKey}`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.status === '1' && Array.isArray(data.result)) {
+          all.push(...data.result);
+          console.log(`Etherscan V2 page ${page}: ${data.result.length} transfers (total ${all.length})`);
+          if (data.result.length < PAGE_SIZE) break;
+        } else {
+          const detail = typeof data.result === 'string' ? data.result : JSON.stringify(data.result ?? null);
+          console.log(`Etherscan V2 page ${page} status: ${data.status}, message: ${data.message}, result: ${detail}`);
+          // "No transactions found" is a valid empty answer; anything else = key problem
+          if (!/no transactions found/i.test(String(data.message) + String(detail)) && all.length === 0) {
+            keyFailed = true;
+          }
+          break;
+        }
+      } catch (error) {
+        console.error('Etherscan V2 API error:', error);
+        keyFailed = all.length === 0;
         break;
       }
-    } catch (error) {
-      console.error('Etherscan V2 API error:', error);
-      break;
+      // gentle rate limit
+      await new Promise((r) => setTimeout(r, 250));
     }
+    if (!keyFailed) return all;
+    console.log(`Etherscan V2 key #${k + 1} failed, trying next key if available...`);
   }
-  return all;
+  return [];
 }
+
 
 // Get Etherscan chain ID from internal chain name
 function getEtherscanChainId(chain: string): number {
@@ -137,25 +152,29 @@ interface BSCScanNativeTx {
 
 async function fetchNativeFromEtherscanV2(
   address: string,
-  apiKey: string,
+  apiKeys: string[],
   chainId: number = 56
 ): Promise<BSCScanNativeTx[]> {
-  const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=3000&sort=desc&apikey=${apiKey}`;
-  console.log(`Calling Etherscan V2 NATIVE API (chainid=${chainId}) for address: ${address.substring(0, 10)}...`);
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.status === '1' && Array.isArray(data.result)) {
-      console.log(`Etherscan V2 returned ${data.result.length} native transfers`);
-      return data.result;
+  for (let k = 0; k < apiKeys.length; k++) {
+    const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=3000&sort=desc&apikey=${apiKeys[k]}`;
+    console.log(`Calling Etherscan V2 NATIVE API (chainid=${chainId}, key #${k + 1}) for ${address.substring(0, 10)}...`);
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.status === '1' && Array.isArray(data.result)) {
+        console.log(`Etherscan V2 returned ${data.result.length} native transfers`);
+        return data.result;
+      }
+      const detail = typeof data.result === 'string' ? data.result : JSON.stringify(data.result ?? null);
+      console.log(`Etherscan V2 native status: ${data.status}, message: ${data.message}, result: ${detail}`);
+      if (/no transactions found/i.test(String(data.message) + String(detail))) return [];
+    } catch (error) {
+      console.error('Etherscan V2 native API error:', error);
     }
-    console.log(`Etherscan V2 native returned status: ${data.status}, message: ${data.message}`);
-    return [];
-  } catch (error) {
-    console.error('Etherscan V2 native API error:', error);
-    return [];
   }
+  return [];
 }
+
 
 // Fetch native (BNB/ETH) transfers from Moralis (paginated, supports BSC on free plan)
 async function fetchNativeFromMoralis(
@@ -529,11 +548,15 @@ serve(async (req) => {
       moralisApiKey = apiSettings?.key_value || null;
     }
 
-    // Get Etherscan API key for fallback (supports multi-chain via V2 API)
-    const etherscanApiKey = Deno.env.get('ETHERSCAN_API_KEY');
-    console.log(`Etherscan API key available: ${etherscanApiKey ? 'yes' : 'no'}`);
+    // Get Etherscan-compatible API keys for fallback (V2 multichain, failover between keys)
+    const etherscanKeys = [
+      Deno.env.get('ETHERSCAN_API_KEY'),
+      Deno.env.get('BSCSCAN_API_KEY'),
+    ].filter((k): k is string => Boolean(k && k.trim().length > 0));
+    const etherscanApiKey = etherscanKeys[0] ?? null;
+    console.log(`Etherscan-compatible keys available: ${etherscanKeys.length}`);
 
-    if (!moralisApiKey && !etherscanApiKey) {
+    if (!moralisApiKey && etherscanKeys.length === 0) {
       console.error('No API keys found (Moralis or Etherscan)');
       return new Response(JSON.stringify({
         success: false,
@@ -543,6 +566,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+
 
     console.log(`Moralis API key: ${moralisApiKey ? 'found' : 'not found'}`);
 
@@ -744,7 +768,7 @@ serve(async (req) => {
           console.log(`Using Etherscan V2 fallback for ${wallet.name} (chainid=${chainId})...`);
           usedSource = 'Etherscan V2';
           
-          const etherscanTransfers = await fetchFromEtherscanV2(wallet.address, etherscanApiKey, chainId);
+          const etherscanTransfers = await fetchFromEtherscanV2(wallet.address, etherscanKeys, chainId);
           
           // Filter only CAMLY, USDT, and BTCB tokens, then convert to ERC20Transfer format
           erc20Transfers = etherscanTransfers
@@ -777,7 +801,7 @@ serve(async (req) => {
             nativeTxs = await fetchNativeFromMoralis(wallet.address, moralisApiKey, moralisChainNative, 15);
           }
           if (nativeTxs.length === 0 && etherscanApiKey) {
-            nativeTxs = await fetchNativeFromEtherscanV2(wallet.address, etherscanApiKey, chainId);
+            nativeTxs = await fetchNativeFromEtherscanV2(wallet.address, etherscanKeys, chainId);
           }
           const nativePrice = tokenPrices[nativeSym] || 0;
           const MIN_NATIVE_AMOUNT = 0.0001;
