@@ -231,7 +231,7 @@ serve(async (req) => {
       };
 
       try {
-        // ---- Phase A: forward scan (newest blocks first priority) -----------
+        // ---- Phase A: forward scan (newest blocks first) ---------------------
         while (top < head && !outOfTime()) {
           const batch: Array<[number, number]> = [];
           let cursor = top;
@@ -246,9 +246,16 @@ serve(async (req) => {
           top = cursor;
           await setSetting(topKey, String(top));
         }
+      } catch (walletError) {
+        console.error(`[${wallet.name}] forward scan stopped:`, walletError instanceof Error ? walletError.message : walletError);
+      }
 
-        // ---- Phase B: backward backfill -------------------------------------
-        while (floor > targetStart && !outOfTime()) {
+      // ---- Phase B is executed round-robin below so every wallet advances ----
+      backfillers.push({
+        name: wallet.name,
+        done: () => floor <= targetStart,
+        state: () => ({ wallet: wallet.name, newTxCount, top, floor, targetStart, caughtUp: top >= head && floor <= targetStart }),
+        step: async () => {
           const batch: Array<[number, number]> = [];
           let cursor = floor;
           while (cursor > targetStart && batch.length < BATCH) {
@@ -257,25 +264,33 @@ serve(async (req) => {
             batch.push([from, to]);
             cursor = from;
           }
+          if (batch.length === 0) return;
           const logs = (await Promise.all(batch.map(([f, t]) => scanRange(f, t)))).flat();
           await persistLogs(logs);
           floor = cursor;
           await setSetting(floorKey, String(floor));
           console.log(`[${wallet.name}] backfilled down to block ${floor} (target ${targetStart})`);
-        }
-      } catch (walletError) {
-        console.error(`[${wallet.name}] scan stopped:`, walletError instanceof Error ? walletError.message : walletError);
-      }
-
-      results.push({
-        wallet: wallet.name,
-        newTxCount,
-        top,
-        floor,
-        targetStart,
-        caughtUp: top >= head && floor <= targetStart,
+        },
       });
     }
+
+    // ---- Round-robin backfill so all wallets progress in every run ----------
+    let active = backfillers.filter((b) => !b.done());
+    while (active.length > 0 && !outOfTime()) {
+      for (const backfiller of active) {
+        if (outOfTime()) break;
+        try {
+          await backfiller.step();
+        } catch (stepError) {
+          console.error(`[${backfiller.name}] backfill stopped:`, stepError instanceof Error ? stepError.message : stepError);
+          backfiller.failed = true;
+        }
+      }
+      active = backfillers.filter((b) => !b.done() && !b.failed);
+    }
+
+    for (const backfiller of backfillers) results.push(backfiller.state());
+
 
     await setSetting(LOCK_KEY, '0');
 
