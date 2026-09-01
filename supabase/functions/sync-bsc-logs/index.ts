@@ -20,10 +20,13 @@ const LOCK_KEY = 'bsc_logs_lock';
 const LOCK_TTL_MS = 4 * 60 * 1000;
 
 const TOKENS: Record<string, { symbol: string; decimals: number }> = {
-  '0x0910320181889fefde0bb1ca63962b0a8882e413': { symbol: 'CAMLY', decimals: 18 },
+  '0x0910320181889fefde0bb1ca63962b0a8882e413': { symbol: 'CAMLY', decimals: 3 },
   '0x55d398326f99059ff775485246999027b3197955': { symbol: 'USDT', decimals: 18 },
   '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c': { symbol: 'BTCB', decimals: 18 },
 };
+
+// Số block quét lùi an toàn khi khởi tạo con trỏ tiến (~1 ngày trên BSC)
+const FORWARD_SAFETY_BLOCKS = 30_000;
 
 // Ngưỡng tối thiểu để loại bỏ giao dịch bụi/spam
 const MIN_AMOUNT: Record<string, number> = {
@@ -162,7 +165,12 @@ serve(async (req) => {
 
       let top = Number((await getSetting(topKey)) ?? 0);
       let floor = Number((await getSetting(floorKey)) ?? 0);
-      if (!top || top > head) top = head;
+      if (!top || top > head) {
+        // Khởi tạo con trỏ tiến lùi lại một khoảng an toàn để không bỏ sót block mới
+        // (lịch sử cũ do pha quét lùi đảm nhiệm)
+        top = Math.max(0, head - FORWARD_SAFETY_BLOCKS);
+        await setSetting(topKey, String(top));
+      }
       if (!floor || floor > head) floor = head;
 
       // Oldest block worth scanning: history before it was already imported earlier
