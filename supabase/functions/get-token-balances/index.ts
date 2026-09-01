@@ -424,11 +424,38 @@ serve(async (req) => {
                 });
               }
             }
+          } else {
+            console.log(`Moralis ERC20 failed (${tokensResponse.status}) for ${wallet.name}, using RPC fallback`);
+          }
+
+          // Always verify tracked tokens directly on-chain (source of truth)
+          for (const tc of tokenContracts || []) {
+            if (!tc.contract_address || !tc.contract_address.startsWith('0x')) continue;
+            const already = walletTokens.find(
+              t => t.contract_address.toLowerCase() === tc.contract_address!.toLowerCase()
+            );
+            const rpcBalance = await fetchErc20BalanceViaRpc(wallet.chain, tc.contract_address, wallet.address);
+            if (rpcBalance === null) continue;
+            const price = await getTokenPrice(tc.symbol, prices);
+            if (already) {
+              already.balance = rpcBalance.toFixed(6);
+              already.usd_value = rpcBalance * price;
+            } else if (rpcBalance > 0) {
+              walletTokens.push({
+                symbol: tc.symbol,
+                name: tc.name || tc.symbol,
+                balance: rpcBalance.toFixed(6),
+                decimals: 18,
+                usd_value: rpcBalance * price,
+                contract_address: tc.contract_address
+              });
+            }
           }
         } else {
           console.log(`Skipping wallet ${wallet.name}: unsupported address format`);
           continue;
         }
+
 
         allBalances.push({
           wallet: wallet.address,
