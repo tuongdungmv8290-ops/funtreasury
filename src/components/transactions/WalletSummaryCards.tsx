@@ -172,11 +172,17 @@ export function WalletSummaryCards({ restrictedWalletIds, excludedWalletIds }: W
 
   // Format token amount with compact notation
   const formatCompactAmount = (amount: number, symbol: string): string => {
-    // BTCB/BTC - handle zero and small numbers
-    if (symbol === 'BTCB' || symbol === 'BTC') {
-      if (amount === 0) {
-        return '0.0000';  // Hiển thị rõ ràng là 0
-      }
+    // Native Bitcoin always uses all 8 decimals so small movements and zero
+    // balances cannot be mistaken for rounded or missing data.
+    if (symbol === 'BTC') {
+      return amount.toLocaleString('en-US', {
+        minimumFractionDigits: 8,
+        maximumFractionDigits: 8,
+      });
+    }
+
+    if (symbol === 'BTCB') {
+      if (amount === 0) return '0.000000';
       if (amount < 1) {
         return formatNumber(amount, { minDecimals: 4, maxDecimals: 6 });
       }
@@ -241,8 +247,10 @@ export function WalletSummaryCards({ restrictedWalletIds, excludedWalletIds }: W
                     {CHAIN_ICONS[wallet.wallet_chain] || ''} {wallet.wallet_name}
                   </h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="font-mono text-xs text-muted-foreground truncate">
-                      {wallet.wallet_address.slice(0, 8)}...{wallet.wallet_address.slice(-6)}
+                    <span className="font-mono text-xs text-muted-foreground break-all" title={wallet.wallet_address}>
+                      {wallet.wallet_chain === 'BTC'
+                        ? wallet.wallet_address
+                        : `${wallet.wallet_address.slice(0, 8)}...${wallet.wallet_address.slice(-6)}`}
                     </span>
                     <button
                       onClick={() => {
@@ -359,6 +367,11 @@ export function WalletSummaryCards({ restrictedWalletIds, excludedWalletIds }: W
                         )}>
                           {formatUSD(token.inflow_usd ?? 0)}
                         </div>
+                        {wallet.wallet_chain === 'BTC' && (
+                          <div className="mt-1 font-body text-xs text-muted-foreground">
+                            {token.inflow_count} giao dịch nhận
+                          </div>
+                        )}
                       </div>
 
                       {/* Outflow */}
@@ -383,6 +396,11 @@ export function WalletSummaryCards({ restrictedWalletIds, excludedWalletIds }: W
                         )}>
                           {formatUSD(token.outflow_usd ?? 0)}
                         </div>
+                        {wallet.wallet_chain === 'BTC' && (
+                          <div className="mt-1 font-body text-xs text-muted-foreground">
+                            {token.outflow_count} giao dịch gửi
+                          </div>
+                        )}
                       </div>
 
                       {/* Current Balance */}
