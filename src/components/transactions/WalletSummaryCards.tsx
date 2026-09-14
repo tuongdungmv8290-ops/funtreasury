@@ -367,11 +367,6 @@ export function WalletSummaryCards({ restrictedWalletIds, excludedWalletIds }: W
                         )}>
                           {formatUSD(token.inflow_usd ?? 0)}
                         </div>
-                        {wallet.wallet_chain === 'BTC' && (
-                          <div className="mt-1 font-body text-xs text-muted-foreground">
-                            {token.inflow_count} giao dịch nhận
-                          </div>
-                        )}
                       </div>
 
                       {/* Outflow */}
