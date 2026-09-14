@@ -311,7 +311,7 @@ serve(async (req) => {
     // Get wallets
     const { data: wallets } = await supabase
       .from('wallets')
-      .select('id, address, chain, name');
+      .select('id, address, chain, name, extra_addresses, manual_balance');
 
     if (!wallets || wallets.length === 0) {
       return new Response(JSON.stringify({
@@ -343,15 +343,24 @@ serve(async (req) => {
         const walletTokens: TokenBalance[] = [];
 
         if (wallet.chain === 'BTC') {
-          // Fetch existing BTC balance from DB to preserve if needed
+          // Existing value is only used if every BTC API call fails
           const { data: existingToken } = await supabase
             .from('tokens')
             .select('balance')
             .eq('wallet_id', wallet.id)
             .eq('symbol', 'BTC')
             .maybeSingle();
-          
-          const btcBalance = await fetchBitcoinBalance(wallet.address, existingToken?.balance ?? undefined);
+
+          const addresses = [wallet.address, ...((wallet.extra_addresses as string[] | null) || [])]
+            .filter((a): a is string => !!a);
+
+          const manual = wallet.manual_balance === null || wallet.manual_balance === undefined
+            ? null
+            : Number(wallet.manual_balance);
+
+          const btcBalance = manual !== null
+            ? manual
+            : await fetchBitcoinBalance(addresses, existingToken?.balance ?? undefined);
           const btcPrice = await getTokenPrice('BTC', prices);
           walletTokens.push({
             symbol: 'BTC',
