@@ -127,36 +127,41 @@ function getMoralisChain(chain: string): string {
   return chainMap[chain] || '0x38';
 }
 
-// Fetch Bitcoin balance using Blockstream API, with fallback to existing DB value
-async function fetchBitcoinBalance(address: string, existingBalance?: number): Promise<number> {
-  try {
-    const url = `https://blockstream.info/api/address/${address}`;
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      console.log(`Blockstream API error for ${address}: ${response.status}`);
-      // If API fails, keep existing balance
-      return existingBalance ?? 0;
+// Fetch Bitcoin balance for a single address (null = API failure, do not overwrite)
+async function fetchBitcoinAddressBalance(address: string): Promise<number | null> {
+  const endpoints = [
+    `https://blockstream.info/api/address/${address}`,
+    `https://mempool.space/api/address/${address}`,
+  ];
+  for (const url of endpoints) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.log(`BTC API error for ${address} at ${url}: ${response.status}`);
+        continue;
+      }
+      const data = await response.json();
+      const funded = (data.chain_stats?.funded_txo_sum || 0) + (data.mempool_stats?.funded_txo_sum || 0);
+      const spent = (data.chain_stats?.spent_txo_sum || 0) + (data.mempool_stats?.spent_txo_sum || 0);
+      const btcBalance = (funded - spent) / 100000000;
+      console.log(`BTC balance for ${address}: ${btcBalance}`);
+      return btcBalance;
+    } catch (error) {
+      console.error(`Error fetching Bitcoin balance for ${address}:`, error);
     }
-    
-    const data = await response.json();
-    const funded = (data.chain_stats?.funded_txo_sum || 0) + (data.mempool_stats?.funded_txo_sum || 0);
-    const spent = (data.chain_stats?.spent_txo_sum || 0) + (data.mempool_stats?.spent_txo_sum || 0);
-    const btcBalance = (funded - spent) / 100000000;
-    console.log(`Blockstream balance for ${address}: ${btcBalance} BTC`);
-    
-    // If on-chain shows 0 but we have a manually-set balance, preserve it
-    // (MetaMask/wallet apps may show pending or unconfirmed balance)
-    if (btcBalance === 0 && existingBalance && existingBalance > 0) {
-      console.log(`Preserving existing balance ${existingBalance} BTC (on-chain shows 0, likely pending/unconfirmed)`);
-      return existingBalance;
-    }
-    
-    return btcBalance;
-  } catch (error) {
-    console.error(`Error fetching Bitcoin balance:`, error);
-    return existingBalance ?? 0;
   }
+  return null;
+}
+
+// Sum the main address plus any extra (change/derived) addresses of the same wallet
+async function fetchBitcoinBalance(
+  addresses: string[],
+  existingBalance?: number
+): Promise<number> {
+  const results = await Promise.all(addresses.map(fetchBitcoinAddressBalance));
+  // Every endpoint failed -> keep the stored value rather than writing a false 0
+  if (results.every(r => r === null)) return existingBalance ?? 0;
+  return results.reduce((sum: number, r) => sum + (r ?? 0), 0);
 }
 
 // ---- Direct RPC fallback (no API key needed) ----
