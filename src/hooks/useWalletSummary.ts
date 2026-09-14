@@ -65,12 +65,29 @@ export function useWalletSummary() {
     queryFn: async (): Promise<RawWalletSummary[]> => {
       if (!wallets || wallets.length === 0) return [];
 
-      // Fetch transactions
-      const { data: txData, error: txError } = await supabase
-        .from('transactions')
-        .select('wallet_id, token_symbol, direction, amount, usd_value');
+      // Fetch every transaction page for the visible wallets. The database API
+      // caps one response at 1,000 rows; a single unpaged request caused newer
+      // Bitcoin wallets to show zero flows even though their rows existed.
+      const txData: Array<{
+        wallet_id: string;
+        token_symbol: string;
+        direction: string;
+        amount: number;
+        usd_value: number;
+      }> = [];
+      const pageSize = 1000;
 
-      if (txError) throw txError;
+      for (let from = 0; ; from += pageSize) {
+        const { data: page, error: txError } = await supabase
+          .from('transactions')
+          .select('wallet_id, token_symbol, direction, amount, usd_value')
+          .in('wallet_id', walletIds)
+          .range(from, from + pageSize - 1);
+
+        if (txError) throw txError;
+        txData.push(...(page || []));
+        if (!page || page.length < pageSize) break;
+      }
 
       // Fetch current balances from tokens table
       const { data: tokenBalances, error: tokenError } = await supabase
@@ -91,7 +108,7 @@ export function useWalletSummary() {
       // Group transactions by wallet_id, token_symbol, direction
       const summaryMap = new Map<string, Map<string, { in: { amount: number; count: number }; out: { amount: number; count: number } }>>();
 
-      (txData || []).forEach(tx => {
+      txData.forEach(tx => {
         const amount = Number(tx.amount) || 0;
         
         if (!summaryMap.has(tx.wallet_id)) {
