@@ -26,6 +26,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AddressLabelManager } from '@/components/settings/AddressLabelManager';
+import { BitcoinWalletSettings } from '@/components/settings/BitcoinWalletSettings';
 
 
 // Chain display names
@@ -1614,6 +1615,7 @@ const Settings = () => {
             <WalletConnect viewOnly={isViewOnly} />
 
             {/* Address Label Manager - Admin only */}
+            {!isViewOnly && <BitcoinWalletSettings />}
             {!isViewOnly && <AddressLabelManager />}
           </div>
         </div>

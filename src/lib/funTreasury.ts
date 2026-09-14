@@ -8,6 +8,7 @@ export const FUN_TREASURY_WALLETS = new Set<string>([
   '0x032269c811a2e58683df9514d3bf6ce70d1d09bb', // GAME FUN TREASURY - BNB
   // BTC
   'bc1q8t7eumwz552nljr2p2x5ckpl55ju26avlu4fxq',
+  'bc1qgwwhk0x9qw5w7nkshe0w29y8h6zepaqh3wgnzc', // FUN TREASURY - Bitcoin (địa chỉ phụ)
   'bc1qp37dxs5w5xljvarg9zhwzc6n9smkx5p3yqzc7y',
   'bc1qe4eh3z6gzj9dqxr2k7l8n4m5p6q7r8s9t0u1v2',
   'bc1q05nm7esjp4d96jyaypgc4499lfnclf2g4f787n', // GAME FUN TREASURY - BTC

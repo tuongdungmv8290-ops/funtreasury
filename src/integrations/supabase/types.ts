@@ -824,7 +824,9 @@ export type Database = {
           address: string
           chain: string
           created_at: string
+          extra_addresses: string[]
           id: string
+          manual_balance: number | null
           name: string
           updated_at: string
         }
@@ -832,7 +834,9 @@ export type Database = {
           address: string
           chain?: string
           created_at?: string
+          extra_addresses?: string[]
           id?: string
+          manual_balance?: number | null
           name: string
           updated_at?: string
         }
@@ -840,7 +844,9 @@ export type Database = {
           address?: string
           chain?: string
           created_at?: string
+          extra_addresses?: string[]
           id?: string
+          manual_balance?: number | null
           name?: string
           updated_at?: string
         }
